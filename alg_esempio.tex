@@ -1,0 +1,18 @@
+%%%
+%%%
+%%%	the Q-learning algorithm
+%%%
+%%%
+\begin{algorithmic}[1]
+\State Initialize $Q(\cdot,\cdot)$ arbitrarily
+\ForAll{episodes}
+   \State $t$ $\leftarrow$ 0
+   \State Initialize $s_{t}$
+   \Repeat
+      \State $a_{t} \gets \pi(s_{t})$
+      \State perform action $a_{t}$; observe $r_{t+1}$ and $s_{t+1}$
+      \State $Q(s_{t},a_{t}) \gets Q(s_t,a_t) + \alpha( r_{t+1} + \gamma \max_{a\in A} Q(s_{t+1},a) -  Q(s_t,a_t))$
+      \State $t \gets t+1$
+   \Until{$s_{t}$ is terminal}
+\EndFor
+\end{algorithmic}

@@ -1,17 +1,16 @@
 \select@language {english}
 \contentsline {chapter}{\numberline {1}Introduction}{1}
-\contentsline {section}{\numberline {1.1}\dots }{1}
 \contentsline {chapter}{\numberline {2}\dots }{3}
 \contentsline {section}{\numberline {2.1}Introduction}{3}
 \contentsline {section}{\numberline {2.2}\dots }{3}
 \contentsline {section}{\numberline {2.3}Figure}{3}
 \contentsline {section}{\numberline {2.4}Algoritmi}{3}
 \contentsline {section}{\numberline {2.5}Summary}{3}
-\contentsline {chapter}{\numberline {3}Conclusions and Future Works}{9}
-\contentsline {part}{Appendices}{11}
-\contentsline {chapter}{\numberline {A}\dots }{13}
-\contentsline {section}{\numberline {A.1}Introduction}{13}
-\contentsline {section}{\numberline {A.2}\dots }{13}
-\contentsline {chapter}{\numberline {B}\dots }{15}
-\contentsline {section}{\numberline {B.1}Introduction}{15}
-\contentsline {section}{\numberline {B.2}\dots }{15}
+\contentsline {chapter}{\numberline {3}Conclusions and Future Works}{7}
+\contentsline {part}{Appendices}{9}
+\contentsline {chapter}{\numberline {A}\dots }{11}
+\contentsline {section}{\numberline {A.1}Introduction}{11}
+\contentsline {section}{\numberline {A.2}\dots }{11}
+\contentsline {chapter}{\numberline {B}\dots }{13}
+\contentsline {section}{\numberline {B.1}Introduction}{13}
+\contentsline {section}{\numberline {B.2}\dots }{13}

@@ -121,13 +121,13 @@
 % include the abstract in italian
 %--------------------------------------------------------------------------------
 \chapter*{Estratto}
-\input{estratto}
+\input{content/estratto}
 
 %--------------------------------------------------------------------------------
 % include the abstract in english
 %--------------------------------------------------------------------------------
 \chapter*{Abstract}
-\input{abstract}
+\input{content/abstract}
 
 %--------------------------------------------------------------------------------
 % talbe of contents
@@ -144,35 +144,62 @@
 %--------------------------------------------------------------------------------
 \chapter{Introduction}
 \label{chap:one}
-\input{chap_one}
+\input{content/introduction}
 
 %--------------------------------------------------------------------------------
-% chapters
+% Problem setting
 %--------------------------------------------------------------------------------
-\chapter{\dots}
-\label{chap:two}
-\input{chap_two}
+\chapter{Problem setting}
+\label{chap:ps}
+\input{content/problem-setting}
 
+%--------------------------------------------------------------------------------
+% State of the art
+%--------------------------------------------------------------------------------
+\chapter{State of the art}
+\label{chap:soa}
+\input{content/soa}
 
 %--------------------------------------------------------------------------------
-% conclusions and future works
+% Kundera extension
 %--------------------------------------------------------------------------------
-\chapter{Conclusions and Future Works}
+\chapter{Kundera extension}
+\label{chap:kundera}
+\input{content/kundera-extension}
+
+%--------------------------------------------------------------------------------
+% CPIM extension
+%--------------------------------------------------------------------------------
+\chapter{CPIM extension}
+\label{chap:cpim}
+\input{content/cpim-extension}
+
+%--------------------------------------------------------------------------------
+% Evaluation
+%--------------------------------------------------------------------------------
+\chapter{Evaluation}
+\label{chap:eval}
+\input{content/evaluation}
+
+%--------------------------------------------------------------------------------
+% Conclusions and future works
+%--------------------------------------------------------------------------------
+\chapter{Conclusions and future Works}
 \label{chap:conclusions}
-\input{chap_conclusions}
+\input{content/conclusions}
 
 %--------------------------------------------------------------------------------
 % appendices
 %--------------------------------------------------------------------------------
 \part*{Appendices\label{part:app}\addcontentsline{toc}{part}{Appendices}}
 \appendix
-\chapter{\dots}
-\label{app:one}
-\input{app_one}
+\chapter{Configuring Kundera extensions}
+\label{app:kconfig}
+\input{content/kundera-configuration}
 
-\chapter{\dots}
-\label{app:two}
-\input{app_two}
+\chapter{Run YCSB tests}
+\label{app:ycsb}
+\input{content/ycsb-tests}
 
 \bibliographystyle{plain}
 \bibliography{tesi.bib}

@@ -1,31 +1,66 @@
 \section{Introduction}
-Introduzione agli argomenti trattati nel capitolo, dalle 4 alle 10 righe.
+In this chapter will be presented the way in which Kundera is supposed to be extended, the problems occurred in the process and how the community helped in achieving the result.
+In section \ref{sec:kundera-datastore} are discussed the detail fo the extension for Google Datastore and in the section \ref{sec:kundera-table} the details for Azure Table.
 
-\section{Kundera community}
+\section{Kundera's Client Extension Framework}
+Kundera as on open source project, thought that other developers could be interested in using it and extending its support to other datastore.
+So in the wiki is presented the Client Extension Framework which provides a short description on how Kunders clients should work and provides the interfaces and classes that should be developed in order to make the client work properly.
 
-\section{Approach to extensions developing}
+Looking at Kundera architecture, described in chapter \ref{chap:soa}, is clear the modularity on which Kundera has been developed. When dealing with classes JPA annotated, the Kundera core provides the necessary logic to fully support the JPA 2.1 specification and when it's time to interact with the underlying database (for persisting, updating or reading entities) it delegate the operation to the configured client in the persistence.xml file.
+
+The steps to build a new Kundera client, basically these are the blocks to be developed:
+\begin{itemize}
+\item the Client, which is the gateway to CRUD operations on database, except for queries;
+\item the Client Factory, which is used by Kundera to instantiate the Client;
+\item the Query implementor, which is used by Kundera to run JPA queries by invoking appropriate
+methods in Entity Readers;
+\item the Entity Reader, which is used by Kundera to translate the queries into correct client
+method calls;
+\item optionally the Schema Manager, to support automatic schema generation.
+\end{itemize}
+
+\subsection{Approaching the extension}
+It all seems quite simple but the problem is that the wiki is actually outdated. 
+Two were the main problem in understaing what to do and how, firstly it turns out that the required interfaces are actualy a little different and also are the required methods
+secondary, and slightly more time consuming, is that no hints are given on the structure and informations carried by the methods arguments.
+The arguments carry data structures containing informations organized in the kundera metamodel which is the implementation of the JPA metamodel that contains all the information associated (throug annotations) to a class or a field.
+
+Due to those problems and to shrink the developing time, the solution was to write on the Kundera google group page to ask the community for more updated infos about Kundera extension.
+Briefly an answer has come and I've started a conversation with one of the developers of Kundera who helped me giving the updated infos for the Kundera's Client Extension Framework and tell me to look forward to the other client implementation for some examples. Unfortunatley that was not enough since my question about the metamodel were ignored so the main problem was still unresolved.
+
+At this point the most valid solution was to approach the extesion as a test driven development, so looking at the tests code of the other clients I've writed a set of unit tests one foreach feature (tests are analyzed in detail in chapter \ref{chap:eval}.
+With the tests failing and the code of Kundera core was then possible to reverse engineer the arguments thath were not documented and thus be able to develop the new extensions.
 
 \section{GAE Datastore client}
+\label{sec:kundera-datastore}
 
 \subsection{Datastore structure}
-Here task also about strong vs eventual consistency
+Here talk also about strong vs eventual consistency
 
 \subsection{Implementing JPA relationships}
 
+
 \subsection{Other supported JPA features}
 
+
 \subsection{Query support}
+
 
 \section{Azure Table client}
+\label{sec:kundera-table}
 
 \subsection{Azure Table structure}
-Here task also about strong vs eventual consistency
+Here talk also about strong vs eventual consistency
 
 \subsection{Implementing JPA relationships}
 
+
 \subsection{Other supported JPA features}
+
 
 \subsection{Query support}
 
+
 \section{Summary}
-Riassunto del capitolo
+In this chpater has been introduced in details how Kundera extension should been developed, the problem encountered during the development, how tey've been addressed and the detail of the implementation of the two extensions including what the feature currently supported.
+In the next chapter will be explained how has been possible to integrate Kundera into CPIM as part of the NoSQL service.

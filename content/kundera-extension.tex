@@ -1,24 +1,22 @@
 \section{Introduction}
 In this chapter will be presented briefly the Kundera modular architecture, the way in which Kundera is supposed to be extended, the problems occurred in the process and how the community helped in achieving the result.
-In section \ref{sec:kundera-datastore} are discussed the detail fo the extension for Google Datastore and in the section \ref{sec:kundera-table} the details for Azure Table.
+Then are discussed the detail of the two Kundera extension developed, in section \ref{sec:kundera-datastore} the one for Google Datastore and in section \ref{sec:kundera-table} the one for Azure Table.
 
 \section{Overview of Kundera}
-Kundera \cite{book:projpa2}{online:kundera} is an implementation for the JPA interface that now supports various NoSQL datastore. It supports by itself cross-datastore persistence in the sense that its allows an application to store and fetch data from different datastores.
-Kundera provides all the code necessary to implement the JPA 2.1 standard interface independently from the underlying NoSQL database. In the \texttt{persistence.xml} configuration file is then possible to specify to Kundera what database is to be used for persistence.
-The currently supported NoSQL databases are:
+Kundera \cite{online:kundera} is an implementation of the JPA interface that now supports various NoSQL datastore. It supports by itself cross-datastore persistence in the sense that its allows an application to store and fetch data from different datastores.
+Kundera provides all the code necessary to implement the JPA 2.1 standard interface independently from the underlying NoSQL database. 
+
+\newparagraph The currently supported NoSQL databases are:
 \begin{itemize}
 \item Oracle NoSQL (versions 2.0.26 and 3.0.5)
-\item HBase (version 0.94.3)
-\item MongoDB (version 2.9.1)
-\item Cassandra(versions1.2.9 and 2.0.4)
-\item Redis (version 2.6.6)
+\item HBase (version 0.96)
+\item MongoDB (version 2.6.3)
+\item Cassandra(versions 1.2.9 and 2.0.4)
+\item Redis (version 2.8.5)
 \item Neo4j (version 1.8.1)
 \item CouchDB (version 1.0.4)
-\item Elastic Search (version 0.90.3)
+\item Elastic Search (version 1.4.2)
 \end{itemize}
-
-Each of the supported databases has its own client implementation that uses a factory pattern, a Client- Factory is invoked to instantiate a Client which then use the database-specific API to interact with the underlying database.
-The Client is invoked by Kundera-Core each time an operation has to be performed on the database. 
 
 \begin{figure}[tbh]
   \centering
@@ -27,44 +25,46 @@ The Client is invoked by Kundera-Core each time an operation has to be performed
   \label{fig:kundera_architecture}
 \end{figure}
 
-The architecture of Kundera is shown in Figure \ref{fig:kundera_architecture}. The figure highlights the fact that the user application interacts with Kundera by exploiting the JPA interface. The Kundera-Core, in turn, interacts with the databases through the corresponding Clients.
+\newparagraph The architecture of Kundera is shown in Figure \ref{fig:kundera_architecture}. The figure highlights the fact that the user application interacts with Kundera simply by exploiting the standard JPA interface implemented in the Kundera-Core.
+Kundera-Core, each time an operation need to be executed on the underlying database, delegates the operation to the appropriate \texttt{Client} creating it through a \texttt{Client Factory} if it does not exists yet.
 
 \subsection{Kundera's Client Extension Framework}
-Kundera as on open source project, thought that other developers could be interested in using it and extending its support to other datastore.
-So in the wiki is presented the Client Extension Framework which provides a short description on how Kunders clients should work and provides the interfaces and classes that should be developed in order to make the client work properly.
+Kundera try to offer a common way to interacts with NoSQL databases through a well defined interface and as on open source project make other developers able, if interested, in using and extending it adding support to other datastore.
+Is so available a Client Extension Framework descripted in the Kundera wiki which provides a short introduction on how Kunders clients should work and provides the interfaces and classes that should be developed in order to make the client work properly.
 
-Looking at Kundera architecture, is clear the modularity on which Kundera has been developed. When dealing with classes JPA annotated, the Kundera core provides the necessary logic to fully support the JPA 2.1 specification and when it's time to interact with the underlying database (for persisting, updating or reading entities) it delegate the operation to the configured client in the persistence.xml file.
-
-The steps to build a new Kundera client, basically these are the blocks to be developed:
+\newparagraph Basically to build a new Kundera client, these are the blocks to be developed:
 \begin{itemize}
-\item the Client, which is the gateway to CRUD operations on database, except for queries;
-\item the Client Factory, which is used by Kundera to instantiate the Client;
-\item the Query implementor, which is used by Kundera to run JPA queries by invoking appropriate methods in Entity Readers;
-\item the Entity Reader, which is used by Kundera to translate the queries into correct client
+\item the \texttt{Client}, which is the gateway to CRUD operations on database, except for queries;
+\item the \texttt{Client Factory}, which is used by Kundera to instantiate the Client;
+\item the \texttt{Query implementor}, which is used by Kundera to run JPA queries by invoking appropriate methods in Entity Readers;
+\item the \texttt{Entity Reader}, which is used by Kundera to translate the queries into correct client
 method calls;
-\item optionally the Schema Manager, to support automatic schema generation.
+\item optionally the \texttt{Schema Manager}, to support automatic schema generation.
 \end{itemize}
 
 \subsection{Approaching the extension}
-It all seems quite simple but the problem is that the wiki is actually outdated. 
+It all seems quite simple but the problem is that the documentation is actually outdated. 
 Two were the main problem in understaing what to do and how, firstly it turns out that the required interfaces are actualy a little different and also are the required methods
-secondary, and slightly more time consuming, is that no hints are given on the structure and informations carried by the methods arguments.
-The arguments carry data structures containing informations organized in the kundera metamodel which is the implementation of the JPA metamodel that contains all the information associated (throug annotations) to a class or a field.
+secondary, and slightly more time consuming, is that no hints nor documentation are given on the structure and informations carried by the methods arguments.
+The arguments carrys data structures containing informations organized in the kundera metamodel which is the implementation of the JPA metamodel that contains all the information associated (throug annotations) to a class or a field.
 
-Due to those problems and to shrink the developing time, the solution was to write on the Kundera google group page to ask the community for more updated infos about Kundera extension.
-Briefly an answer has come and I've started a conversation with one of the developers of Kundera who helped me giving the updated infos for the Kundera's Client Extension Framework and tell me to look forward to the other client implementation for some examples. 
-In light of the updated information it turns out that the Entity Reader was unnecessary and all the translation from JPA queries to datastore specific queries and their executions should be done in the Query Implementor.  
+\newparagraph Due to those problems and to shrink the developing time, the solution was to write on the Kundera google group page to ask the community for more updated infos about Kundera extension.
+Briefly an answer has come and I've started a conversation with one of the developers of Kundera who helped me giving the updated informations for the Kundera's Client Extension Framework and tell me to look forward to the other client implementation for some examples. 
+Thanks to the updated information it turns out that the \texttt{Entity Reader} was unnecessary and all the translation from JPA queries to datastore specific queries and their executions should be done in the \texttt{Query Implementor}.  
 
-At this point since no answer were given about the Kundera metamodel, the most valid solution was to approach the extesion as a test driven development, so looking at the tests code of the other clients I've writed a set of unit tests one foreach feature (tests are analyzed in detail in chapter \ref{chap:eval}.
-With the tests failing and the code of Kundera core was then possible to reverse engineer the arguments thath were not documented and thus be able to develop the new extensions.
+\noindent At this point since no answer were given about the Kundera metamodel, the most valid solution was to approach the extesion as a test driven development, so, looking at the tests code of the other clients, I've writed a set of unit tests one for each feature.
+With the tests failing and studyng the code of the other Kundera clients was then possible to reverse engineer the arguments thath were not documented and thus be able to develop the new extensions.
 
-\section{Developing client extension}
-Has been developed two different extension for Kundera, the first one for Google Datastore and the second one for Azure Table.
-After a first difficulty in figuring out how the extension have to be carried out, a main workflow has been the two projects have many parts in common. In the following sections the extensions are presented separately, the concepts are introduced the first time are encoutred and will be referenced further on if necessary specifying the differences, if any.
+\newparagraph Unit tests are analyzed in detail in the chapter \ref{chap:eval}.
+
+\section{Developing client extensions}
+Have been developed two different extension for Kundera, the first one for Google Datastore and the second one for Azure Table.
+After a first difficulty in figuring out how the extension have to be carried out, a main structure has been defined so the two projects have many parts in common. 
+In the following sections the extensions are presented separately, the concepts are introduced as they are encountered and will be referenced further on if necessary specifying the differences if any.
 
 \subsection{Google App Engine Datastore client}
 \label{sec:kundera-datastore}
-The first extension that has been done is the one for Google App Engine (GAE) Datastore the NoSQL solution available in the App Engine runtime, is a key-value storage build on top of Google BigTable.
+The first extension that has been faced is the one for Google App Engine (GAE) Datastore \cite{online:datastore} the NoSQL solution available in the App Engine runtime, is a key-value storage build on top of Google BigTable.
 
 \subsubsection{JPA identifier}
 Google Datastore is a key-value storage in which the most basic unit that can be stored is an Entity which is identified by a Key and composed of Properties.
@@ -74,29 +74,30 @@ Entities Keys contains various information about the entity itself:
 \item an entity identifier, used to distinguish entities of the same type;
 \item an optional parent entity. 
 \end{itemize}
-Inspired by the Google JPA implementation on Datastore the idea was to use the Java class representing the datastore Key as indentifier for the POJO but unfortunately this is not possible since Kundera support only a well known set of Java datatypes.
+Inspired by the Google JPA implementation on Datastore the idea was to use the Java class representing the datastore Key as indentifier for the POJO but unfortunately this was not possible since Kundera support only a pre defined set of Java datatypes.
 
-The adopted solution is to handle the key internally, each time an opertion is required on Datastore the key relative to the entity is builded, the key Kind is directly mapped to the table name and the Key identifier is the user defined id in the @Id annotation.
+\newparagraph The adopted solution is to handle the key internally, each time an opertion is required on Datastore the key relative to the entity is builded, the key Kind is directly mapped to the table name and the Key identifier is the user defined id in the \texttt{@Id} annotation.
 
-IDs can be specified by the user or automatically generated, there are three possibilities:
+\noindent IDs can be specified by the user or automatically generated, there are three possibilities:
 \begin{itemize}
-\item @Id annotation on a String type field
-\item @Id annotation on a Long type field
-\item @Id annotation on a long type field
+\item \texttt{@Id} annotation on a \texttt{String} type field
+\item \texttt{@Id} annotation on a \texttt{Long} type field
+\item \texttt{@Id} annotation on a primitive \texttt{long} type field
 \end{itemize}
-For each case the ID can be user specified before the persist operation but in case of ID auto-generated the field must be of type String and the generated ID will be a string representation of a random java UUID.
+For each case the ID can be user specified before the persist operation but in case of ID auto-generated the field must be of type \texttt{String} and the generated ID will be a string representation of a random java \texttt{UUID}.
 
-Auto-geenerated ID are supported by Kundera thorugh @GeneratedValue with AUTO or TABLE strategy, only AUTO strategy is supported as a random Java UUID. It was not possible to use the Datastore API to generate ids since is necessary to know the Kind of the entity to be persisted but neither the AUTO strategy nor the TABLE one provides this infomation at generation time.
+\noindent Auto-geenerated ID are supported by Kundera thorugh \texttt{@GeneratedValue} with \texttt{AUTO} or \texttt{TABLE} strategy, only \texttt{AUTO} strategy is supported. 
+It was not possible to use the Datastore API to generate IDs since is necessary to know the Kind of the entity to be persisted but neither the \texttt{AUTO} strategy nor the \texttt{TABLE} one provides this infomation at generation time.
 
 \subsubsection{Consistency}
-In Datastore, entities are organized in Entity Groups based on their Ancestor Path, the ancestor path is a hierarchy containing the keys of the entities which are parents of the given one and thus are in the same entity group.
+In Datastore entities are organized in Entity Groups based on their Ancestor Path, the ancestor path is a hierarchy containing the keys of the entities which are parents of the given one and thus in the same entity group.
 
-In Datastore consistency is managed through Entity Groups and so by defining the ancestor paths, entities within the same Entity Groups are managed in storng consistency, eventual consistency is used otherwise.
+\noindent Consistency is managed through Entity Groups and so by defining the ancestor paths, entities within the same Entity Groups are managed in storng consistency, eventual consistency is used otherwise.
 
-Datastore provide the possibility to create Ancestor path by defining them parent to other entities and is basically a task leaved to the user, no automated sorting or guessing is provided. Other wrapper around Datastore low-level API also leave this to the user, for example in Objectify the developer make use of an @Parent annotation that make the user able to specify the Ancestor Path.
+\noindent Datastore provide the possibility to create Ancestor path by defining entities parent to other entities and is basically a task left to the user, no automated sorting or guessing is provided. Other wrapper around Datastore low-level API also leave this to the user, for example in Objectify \cite{online:objectify} the developer make use of an \texttt{@Parent} annotation that make the user able to specify the Ancestor Path.
 Since JPA is well defined and adding such annotation will break the standard the only alternative way is trying to automatic guess the ancestor path.
 
-Relationsips are clearly a good indicator when trying to guess if two entitiy kind can be hirearchically related:
+\newparagraph Relationsips are clearly a good point where found information for guessing if two entitiy kind can be hirearchically related, so for each type of relation must be defined what solution can be adopted
 \begin{itemize}
 \item One to Many, since ther's a "many" side which is the non-owning side of the relationship the owning side can be clear used as parent for every entity in the "many" side;
 \item Many to One, this is the inverse of the previous type and thus entities sould be already organized;
@@ -108,9 +109,9 @@ Relationsips are clearly a good indicator when trying to guess if two entitiy ki
 \end{itemize}
 \end{itemize}
 
-This unfourtanently is not conventien since there's lot of possibilities, thinks for the Many to Many case but more important is that if an entity is in more than one on those relationships is not possible to prioritize them and choose unless asking to the user which is the case, furthermore when declaring a entity parent to another is always necessary to know the Key of the parent beside the Key of the entity itself to be able to retrieve it from Datastore and as Kundera is structured this kind of information is not available in the client but must be serached inside the kundera metadata when possible.
+\newparagraph This unfourtanently is not conventien since there's lot of possibilities, thinks for the Many to Many case but more important is that if an entity is in more than one on those relationships is not possible to prioritize them and choose unless asking to the user which is the case, furthermore when declaring a entity parent to another is always necessary to know the Key of the parent beside the Key of the entity itself to be able to retrieve it from Datastore and as Kundera is structured this kind of information is not available in the client but must be serached inside the kundera metadata when possible.
 
-For those reasons was not possible without causing strange behaviours, automatically guess the Ancestor Paths through JPA relationships so at the end is not possible for the user to manage entity consistency, each entity is stored in a separated entity group identified by its Kind (the name of the JPA table associated to the entity).
+\noindent For those reasons was not possible without causing strange behaviours, automatically guess the Ancestor Paths through JPA relationships so at the end is not possible for the user to manage entity consistency, each entity is stored in a separated entity group identified by its Kind (the name of the JPA table associated to the entity).
 
 \subsubsection{JPA relationships}
 All the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.

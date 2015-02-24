@@ -5,9 +5,9 @@ In section \ref{sec:kundera-datastore} are discussed the detail fo the extension
 \section{Kundera's Client Extension Framework}
 Kundera as on open source project, thought that other developers could be interested in using it and extending its support to other datastore.
 So in the wiki is presented the Client Extension Framework which provides a short description on how Kunders clients should work and provides the interfaces and classes that should be developed in order to make the client work properly.
-\\
+
 Looking at Kundera architecture, described in chapter \ref{chap:soa}, is clear the modularity on which Kundera has been developed. When dealing with classes JPA annotated, the Kundera core provides the necessary logic to fully support the JPA 2.1 specification and when it's time to interact with the underlying database (for persisting, updating or reading entities) it delegate the operation to the configured client in the persistence.xml file.
-\\
+
 The steps to build a new Kundera client, basically these are the blocks to be developed:
 \begin{itemize}
 \item the Client, which is the gateway to CRUD operations on database, except for queries;
@@ -57,19 +57,6 @@ For each case the ID can be user specified before the persist operation but in c
 
 Auto-geenerated ID are supported by Kundera thorugh @GeneratedValue with AUTO or TABLE strategy, only AUTO strategy is supported as a random Java UUID. It was not possible to use the Datastore API to generate ids since is necessary to know the Kind of the entity to be persisted but neither the AUTO strategy nor the TABLE one provides this infomation at generation time.
 
-\subsection{JPA relationships}
-All the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.
-So for One to One and One to Many relationships, where on the onwer side of the relationships there's a link to the non-owning side, the connection is keeped persisting within the entity the Key (Kind and identified) of the related entity.
-
-For the Many to One relationships there would be to solutions:
-\begin{itemize}
-\item persist a list of Key of the related entities;
-\item do not persist anything within the entity but fill the relationship with a query.
-\end{itemize}
-The second solution has been adopted since more consistent with the other client implementation and with the classic implementation of the relation type for RDBMS.
-
-For the Many to Many relationships a join table is created based on the directives of the user specified in the annotations, then is filled each time one entity is persisted and is related with another one through a many to many relationship.
-
 \subsection{Consistency}
 In Datastore, entities are organized in Entity Groups based on their Ancestor Path, the ancestor path is a hierarchy containing the keys of the entities which are parents of the given one and thus are in the same entity group.
 
@@ -94,13 +81,33 @@ This unfourtanently is not conventien since there's lot of possibilities, thinks
 
 For those reasons was not possible without causing strange behaviours, automatically guess the Ancestor Paths through JPA relationships so at the end is not possible for the user to manage entity consistency, each entity is stored in a separated entity group identified by its Kind (the name of the JPA table associated to the entity).
 
+\subsection{JPA relationships}
+All the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.
+So for One to One and One to Many relationships, where on the onwer side of the relationships there's a link to the non-owning side, the connection is keeped persisting within the entity the Key (Kind and identified) of the related entity.
+
+For the Many to One relationships there would be to solutions:
+\begin{itemize}
+\item persist a list of Key of the related entities;
+\item do not persist anything within the entity but fill the relationship with a query.
+\end{itemize}
+The second solution has been adopted since more consistent with the other client implementation and with the classic implementation of the relation type for RDBMS.
+
+For the Many to Many relationships a join table is created based on the directives of the user specified in the annotations, then is filled each time one entity is persisted and is related with another one through a many to many relationship.
+
 \subsection{Other JPA features}
 
 \subsubsection{Embedded entities}
+For JPA embedded entities eh implementation for Datastore is straightforward because its supports natively embedded entities.
+
+The implementation so make use of this feature translating the embedded POJO in a Datastore embedded Entity and then persist it within the parent entity.
 
 \subsubsection{Collection fields}
+Collections and maps are natively supported by datastore but are supported only if composed of primitives Java datatypes, to be able to save whatever kind of collection or map independently by the datatype thath compose it, the collection or map itself is serialized when persisted and deserialized when readed.
+
+Serialization and deserialization is completely handled into the extension making it completely transparent to the user.
 
 \subsubsection{Enumeration fields}
+Enum fields are supported simply by persisting its string represention and instantiating the enum type bak when the entity is read.
 
 \subsection{Queries}
 
@@ -121,11 +128,7 @@ The remanining case "create\textunderscore drop" will so just drop the current s
 Table is the NoSQL solution developed by Microsoft, is a key-value storage and it's available inside Azure environment.
 
 \subsection{JPA identifier}
-
-\subsection{JPA relationships}
-Also for Azure Table, to keep uniform the extension behaviour, all the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.
-
-The only difference is that when is needed to keep a reference to another entity in the owning side of a relationship is persisted within the entity the partition key and the row key of the related entity since the pair partition key and row key universally identify an entity.
+In Azure Table an entity is identified by the pair partition key and row key 
 
 \subsection{Consistency}
 In Azure Table strong consistency is guaranteed while entities are stored within the same partition key otherwise consistency will be eventual. IDs are supported only in field of type String (so only a String field can be annotated with @Id). User can define IDs both with or without partition key.
@@ -147,13 +150,22 @@ There are three ways to do this:
 \item using AzureTableKey.asString passing as parameter the desired row key and assign its result to the entity ID field before persist.
 \end{itemize}
 
+\subsection{JPA relationships}
+Also for Azure Table, to keep uniform the extension behaviour, all the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.
+
+The only difference is that when is needed to keep a reference to another entity in the owning side of a relationship is persisted within the entity the partition key and the row key of the related entity since the pair partition key and row key universally identify an entity.
+
 \subsection{Other JPA features}
 
 \subsubsection{Embedded entities}
+Embedded fields are not supported natively by Azure Table so the solution adopted is to serialize the field annotated as embedded to be able to ave it to the storage and deserializing it when the entity is read.
 
 \subsubsection{Collection fields}
+Collection and maps are not supported by Azure Table since it supports only a set of primitive Java datatypes.
+To support even complex collection or maps the solution is, like Datastore, serialize the entire collection or map when persisting the entity and deserializing it when reading the entity from the storage.
 
 \subsubsection{Enumeration fields}
+Enum fields are supported simply by persisting its string represention and instantiating the enum type bak when the entity is read.
 
 \subsection{Queries}
 

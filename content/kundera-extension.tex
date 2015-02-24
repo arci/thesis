@@ -1,12 +1,39 @@
 \section{Introduction}
-In this chapter will be presented the way in which Kundera is supposed to be extended, the problems occurred in the process and how the community helped in achieving the result.
+In this chapter will be presented briefly the Kundera modular architecture, the way in which Kundera is supposed to be extended, the problems occurred in the process and how the community helped in achieving the result.
 In section \ref{sec:kundera-datastore} are discussed the detail fo the extension for Google Datastore and in the section \ref{sec:kundera-table} the details for Azure Table.
 
-\section{Kundera's Client Extension Framework}
+\section{Overview of Kundera}
+Kundera \cite{book:projpa2}{online:kundera} is an implementation for the JPA interface that now supports various NoSQL datastore. It supports by itself cross-datastore persistence in the sense that its allows an application to store and fetch data from different datastores.
+Kundera provides all the code necessary to implement the JPA 2.1 standard interface independently from the underlying NoSQL database. In the \texttt{persistence.xml} configuration file is then possible to specify to Kundera what database is to be used for persistence.
+The currently supported NoSQL databases are:
+\begin{itemize}
+\item Oracle NoSQL (versions 2.0.26 and 3.0.5)
+\item HBase (version 0.94.3)
+\item MongoDB (version 2.9.1)
+\item Cassandra(versions1.2.9 and 2.0.4)
+\item Redis (version 2.6.6)
+\item Neo4j (version 1.8.1)
+\item CouchDB (version 1.0.4)
+\item Elastic Search (version 0.90.3)
+\end{itemize}
+
+Each of the supported databases has its own client implementation that uses a factory pattern, a Client- Factory is invoked to instantiate a Client which then use the database-specific API to interact with the underlying database.
+The Client is invoked by Kundera-Core each time an operation has to be performed on the database. 
+
+\begin{figure}[tbh]
+  \centering
+  \includegraphics[scale=0.5]{images/kundera_architecture}
+  \caption{Kundera architecture}
+  \label{fig:kundera_architecture}
+\end{figure}
+
+The architecture of Kundera is shown in Figure \ref{fig:kundera_architecture}. The figure highlights the fact that the user application interacts with Kundera by exploiting the JPA interface. The Kundera-Core, in turn, interacts with the databases through the corresponding Clients.
+
+\subsection{Kundera's Client Extension Framework}
 Kundera as on open source project, thought that other developers could be interested in using it and extending its support to other datastore.
 So in the wiki is presented the Client Extension Framework which provides a short description on how Kunders clients should work and provides the interfaces and classes that should be developed in order to make the client work properly.
 
-Looking at Kundera architecture, described in chapter \ref{chap:soa}, is clear the modularity on which Kundera has been developed. When dealing with classes JPA annotated, the Kundera core provides the necessary logic to fully support the JPA 2.1 specification and when it's time to interact with the underlying database (for persisting, updating or reading entities) it delegate the operation to the configured client in the persistence.xml file.
+Looking at Kundera architecture, is clear the modularity on which Kundera has been developed. When dealing with classes JPA annotated, the Kundera core provides the necessary logic to fully support the JPA 2.1 specification and when it's time to interact with the underlying database (for persisting, updating or reading entities) it delegate the operation to the configured client in the persistence.xml file.
 
 The steps to build a new Kundera client, basically these are the blocks to be developed:
 \begin{itemize}
@@ -31,11 +58,15 @@ In light of the updated information it turns out that the Entity Reader was unne
 At this point since no answer were given about the Kundera metamodel, the most valid solution was to approach the extesion as a test driven development, so looking at the tests code of the other clients I've writed a set of unit tests one foreach feature (tests are analyzed in detail in chapter \ref{chap:eval}.
 With the tests failing and the code of Kundera core was then possible to reverse engineer the arguments thath were not documented and thus be able to develop the new extensions.
 
-\section{Google App Engine Datastore client}
+\section{Developing client extension}
+Has been developed two different extension for Kundera, the first one for Google Datastore and the second one for Azure Table.
+After a first difficulty in figuring out how the extension have to be carried out, a main workflow has been the two projects have many parts in common. In the following sections the extensions are presented separately, the concepts are introduced the first time are encoutred and will be referenced further on if necessary specifying the differences, if any.
+
+\subsection{Google App Engine Datastore client}
 \label{sec:kundera-datastore}
 The first extension that has been done is the one for Google App Engine (GAE) Datastore the NoSQL solution available in the App Engine runtime, is a key-value storage build on top of Google BigTable.
 
-\subsection{JPA identifier}
+\subsubsection{JPA identifier}
 Google Datastore is a key-value storage in which the most basic unit that can be stored is an Entity which is identified by a Key and composed of Properties.
 Entities Keys contains various information about the entity itself:
 \begin{itemize}
@@ -57,7 +88,7 @@ For each case the ID can be user specified before the persist operation but in c
 
 Auto-geenerated ID are supported by Kundera thorugh @GeneratedValue with AUTO or TABLE strategy, only AUTO strategy is supported as a random Java UUID. It was not possible to use the Datastore API to generate ids since is necessary to know the Kind of the entity to be persisted but neither the AUTO strategy nor the TABLE one provides this infomation at generation time.
 
-\subsection{Consistency}
+\subsubsection{Consistency}
 In Datastore, entities are organized in Entity Groups based on their Ancestor Path, the ancestor path is a hierarchy containing the keys of the entities which are parents of the given one and thus are in the same entity group.
 
 In Datastore consistency is managed through Entity Groups and so by defining the ancestor paths, entities within the same Entity Groups are managed in storng consistency, eventual consistency is used otherwise.
@@ -81,7 +112,7 @@ This unfourtanently is not conventien since there's lot of possibilities, thinks
 
 For those reasons was not possible without causing strange behaviours, automatically guess the Ancestor Paths through JPA relationships so at the end is not possible for the user to manage entity consistency, each entity is stored in a separated entity group identified by its Kind (the name of the JPA table associated to the entity).
 
-\subsection{JPA relationships}
+\subsubsection{JPA relationships}
 All the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.
 So for One to One and One to Many relationships, where on the onwer side of the relationships there's a link to the non-owning side, the connection is keeped persisting within the entity the Key (Kind and identified) of the related entity.
 
@@ -94,7 +125,28 @@ The second solution has been adopted since more consistent with the other client
 
 For the Many to Many relationships a join table is created based on the directives of the user specified in the annotations, then is filled each time one entity is persisted and is related with another one through a many to many relationship.
 
-\subsection{Other JPA features}
+\subsection{Queries}
+Here there's a comparative table for the JPQL operator suppoted:
+\begin{table}[h]
+\begin{tabular}{|l|c|}
+\hline
+\textbf{JPA-QL Clause} & \textbf{Datastore support} \\ \hline\hline
+\textit{SELECT}        & yes \\ \hline
+\textit{UPDATE}        & yes \\ \hline
+\textit{DELETE}        & yes \\ \hline
+\textit{ORDER BY}      & yes \\ \hline
+\textit{AND}           & yes \\ \hline
+\textit{OR}            & yes \\ \hline
+\textit{BETWEEN}       & yes \\ \hline
+\textit{LIKE}          & no  \\ \hline
+\textit{IN}            & yes  \\ \hline
+\textit{=}             & yes \\ \hline
+\textit{\textgreater}  & yes \\ \hline
+\textit{\textless}     & yes \\ \hline
+\textit{\textgreater=} & yes \\ \hline
+\textit{\textless=}    & yes \\ \hline
+\end{tabular}
+\end{table}
 
 \subsubsection{Embedded entities}
 For JPA embedded entities eh implementation for Datastore is straightforward because its supports natively embedded entities.
@@ -109,9 +161,7 @@ Serialization and deserialization is completely handled into the extension makin
 \subsubsection{Enumeration fields}
 Enum fields are supported simply by persisting its string represention and instantiating the enum type bak when the entity is read.
 
-\subsection{Queries}
-
-\subsection{Schema Manager}
+\subsubsection{Schema Manager}
 Schema manager as required by Kundera has to exploit four cases:
 \begin{itemize}
 \item validate which validates schema tables based on entity definition.
@@ -123,14 +173,14 @@ The first two cases are quite useless for a Datastore since ther'se no fixed sch
 Also the "create" case is usless for Datastore since if a new entity of an unknown Kind is persisted it's created withoud the need to explicitly define it first as a "table".
 The remanining case "create\textunderscore drop" will so just drop the current schema deleting all the entities af all the Kinds without recreating schema since it construct by itself.
 
-\section{Azure Table client}
+\subsection{Azure Table client}
 \label{sec:kundera-table}
 Table is the NoSQL solution developed by Microsoft, is a key-value storage and it's available inside Azure environment.
 
-\subsection{JPA identifier}
+\subsubsection{JPA identifier}
 In Azure Table an entity is identified by the pair partition key and row key 
 
-\subsection{Consistency}
+\subsubsection{Consistency}
 In Azure Table strong consistency is guaranteed while entities are stored within the same partition key otherwise consistency will be eventual. IDs are supported only in field of type String (so only a String field can be annotated with @Id). User can define IDs both with or without partition key.
 
 \subsubsection{Define both row key and partition key}
@@ -150,12 +200,33 @@ There are three ways to do this:
 \item using AzureTableKey.asString passing as parameter the desired row key and assign its result to the entity ID field before persist.
 \end{itemize}
 
-\subsection{JPA relationships}
+\subsubsection{JPA relationships}
 Also for Azure Table, to keep uniform the extension behaviour, all the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.
 
 The only difference is that when is needed to keep a reference to another entity in the owning side of a relationship is persisted within the entity the partition key and the row key of the related entity since the pair partition key and row key universally identify an entity.
 
-\subsection{Other JPA features}
+\subsection{Queries}
+Here there's a comparative table for the JPQL operator suppoted:
+\begin{table}[h]
+\begin{tabular}{|l|c|}
+\hline
+\textbf{JPA-QL Clause} & \textbf{Table support} \\ \hline\hline
+\textit{SELECT}        & yes \\ \hline
+\textit{UPDATE}        & yes \\ \hline
+\textit{DELETE}        & yes \\ \hline
+\textit{ORDER BY}      & no \\ \hline
+\textit{AND}           & yes \\ \hline
+\textit{OR}            & yes \\ \hline
+\textit{BETWEEN}       & yes \\ \hline
+\textit{LIKE}          & no  \\ \hline
+\textit{IN}            & no  \\ \hline
+\textit{=}             & yes \\ \hline
+\textit{\textgreater}  & yes \\ \hline
+\textit{\textless}     & yes \\ \hline
+\textit{\textgreater=} & yes \\ \hline
+\textit{\textless=}    & yes \\ \hline
+\end{tabular}
+\end{table}
 
 \subsubsection{Embedded entities}
 Embedded fields are not supported natively by Azure Table so the solution adopted is to serialize the field annotated as embedded to be able to ave it to the storage and deserializing it when the entity is read.
@@ -167,9 +238,7 @@ To support even complex collection or maps the solution is, like Datastore, seri
 \subsubsection{Enumeration fields}
 Enum fields are supported simply by persisting its string represention and instantiating the enum type bak when the entity is read.
 
-\subsection{Queries}
-
-\subsection{Schema Manager}
+\subsubsection{Schema Manager}
 Schema manager as required by Kundera has to exploit four cases:
 \begin{itemize}
 \item validate which validates schema tables based on entity definition.

@@ -67,7 +67,7 @@ In the following sections the extensions are presented separately, the concepts 
 The first extension that has been faced is the one for Google App Engine (GAE) Datastore \cite{online:datastore} the NoSQL solution available in the App Engine runtime, is a key-value storage build on top of Google BigTable.
 
 \subsubsection{JPA identifier}
-Google Datastore is a key-value storage in which the most basic unit that can be stored is an Entity which is identified by a Key and composed of Properties.
+In Google Datastore the most basic unit that can be stored is an Entity which is identified by a Key and composed of Properties.
 Entities Keys contains various information about the entity itself:
 \begin{itemize}
 \item the entity Kind, which is used to group entities of the same type;
@@ -97,161 +97,190 @@ In Datastore entities are organized in Entity Groups based on their Ancestor Pat
 \noindent Datastore provide the possibility to create Ancestor path by defining entities parent to other entities and is basically a task left to the user, no automated sorting or guessing is provided. Other wrapper around Datastore low-level API also leave this to the user, for example in Objectify \cite{online:objectify} the developer make use of an \texttt{@Parent} annotation that make the user able to specify the Ancestor Path.
 Since JPA is well defined and adding such annotation will break the standard the only alternative way is trying to automatic guess the ancestor path.
 
-\newparagraph Relationsips are clearly a good point where found information for guessing if two entitiy kind can be hirearchically related, so for each type of relation must be defined what solution can be adopted
+\newparagraph Relationsips are clearly a good point where found information for guessing if two entitiy kind can be hirearchically related, so for each type of relation must be defined what solution can be adopted.
 \begin{itemize}
-\item One to Many, since ther's a "many" side which is the non-owning side of the relationship the owning side can be clear used as parent for every entity in the "many" side;
-\item Many to One, this is the inverse of the previous type and thus entities sould be already organized;
-\item One to One, can be treated like the One to Many
-\item Many to Many, in this case since there's a join table between the entities there are several solutions:
-\begin{itemize}
-\item put the join table and the non-owning entities parent to the owning ones;
-\item put all the join table, the entities on the owning side and the ones on the non-owning side under a common fictitious root entity kind
-\end{itemize}
+\item for \textbf{One to Many} and \textbf{One to One} relationships, since there's an owning side, the owning entity can be used as parent for every related entity. 
+\item \textbf{Many to One} can be skipped since are the inverse of \textbf{One to Many} so such related entities should be already organized. 
+\item for \textbf{Many to Many}, since the realtionship is handeled through a join table, it does not make sense to relate the entities involved.
 \end{itemize}
 
-\newparagraph This unfourtanently is not conventien since there's lot of possibilities, thinks for the Many to Many case but more important is that if an entity is in more than one on those relationships is not possible to prioritize them and choose unless asking to the user which is the case, furthermore when declaring a entity parent to another is always necessary to know the Key of the parent beside the Key of the entity itself to be able to retrieve it from Datastore and as Kundera is structured this kind of information is not available in the client but must be serached inside the kundera metadata when possible.
+\noindent Also if possible this guessing was not done in the extension for two main reasons:
+\begin{enumerate}
+\item entities are not require to have a single relationship
+\item entities with a parent require the parent Key to be universally identified
+\end{enumerate}
+So for the first reason is impossible, unless asking to the user, to decide which relation use to hierarchically organize entities, furthermore for the second reason when declaring a entity parent to another is always necessary to know the Key of the parent (and thus its Kind and identified) beside the Key of the entity itself to be able to retrieve it from Datastore and for how Kundera is structured this information is not available during find operation in which Kundera provides only the table name, the identifier and the entity class.
 
-\noindent For those reasons was not possible without causing strange behaviours, automatically guess the Ancestor Paths through JPA relationships so at the end is not possible for the user to manage entity consistency, each entity is stored in a separated entity group identified by its Kind (the name of the JPA table associated to the entity).
+\newparagraph For those reasons was not possible, without causing errors, to automatically guess ancestor paths through JPA relationships or make the user able manage them directly through a specific annotation.
+Each Kind is persisted as a root Kind and so each entity is stored in a separated entity group identified by its Kind (the name of the JPA table associated to the entity).
 
 \subsubsection{JPA relationships}
-All the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.
-So for One to One and One to Many relationships, where on the onwer side of the relationships there's a link to the non-owning side, the connection is keeped persisting within the entity the Key (Kind and identified) of the related entity.
+All the JPA supported relationships \cite{book:projpa2} has been implemented in the client and  have been implemented like they would be in a RDBMS system.
+So for \textbf{One to One} and \textbf{One to Many} relationships on the owning side of the relationships a \textit{reference} to the non-owning side entity is saved.
 
-For the Many to One relationships there would be to solutions:
+\noindent For \textbf{Many to One} relationships there would be two solutions:
 \begin{itemize}
-\item persist a list of Key of the related entities;
-\item do not persist anything within the entity but fill the relationship with a query.
+\item persist a list of \textit{references} tp the related entities;
+\item do not persist anything within the entity and fill the relationship with a query.
 \end{itemize}
-The second solution has been adopted since more consistent with the other client implementation and with the classic implementation of the relation type for RDBMS.
+The second solution has been adopted since more consistent with other Kundera client implementation and with the classic implementation of this relation type in RDBMS.
+\noindent For \textbf{Many to Many} relationships a join table is created based on user directives specified in the POJO annotations. The join table is filled each time a many to many related entity is persisted and a new \textit{row} is created inside the join table with the \textit{references} to the entities involved in the relationship.
 
-For the Many to Many relationships a join table is created based on the directives of the user specified in the annotations, then is filled each time one entity is persisted and is related with another one through a many to many relationship.
+\noindent The so far called \textit{reference} for Datastore is exploited by persisting within the entity the Key (Kind and identifier) of the related entity.
 
-\subsection{Queries}
-Here there's a comparative table for the JPQL operator suppoted:
-\begin{table}[h]
-\begin{tabular}{|l|c|}
+\subsubsection{Queries}
+Queries in Kundera are supported in JPQL the JPA query language which is a  object oriented query language based on SQL \cite{book:projpa2}.
+Kundera supports all of the clauses of JPQL but with some restrictions, clauses can be applied on:
+\begin{itemize}
+\item primary key attributes (\texttt{@Id}) and column attributes (\texttt{@Column}).
+\item combination for primary key attribute and columns.
+\end{itemize}
+
+\newparagraph The JPQL query is parsed and validated by Kundera and to the \texttt{Query Implementor} is provided a filled metamodel of the query which needs to be \textit{explored} in order to build a datastore compatible query.    
+Datastore have on its own a very good support to queries so all the clauses are supported except for the \textit{LIKE} operator.
+
+\noindent In table \ref{table:queries} can be found a complete list of the supported JPQL clauses for both extensions.
+
+\begin{table}[p]
+\centering
+\begin{tabular}{|l|c|c|}
 \hline
-\textbf{JPA-QL Clause} & \textbf{Datastore support} \\ \hline\hline
-\textit{SELECT}        & yes \\ \hline
-\textit{UPDATE}        & yes \\ \hline
-\textit{DELETE}        & yes \\ \hline
-\textit{ORDER BY}      & yes \\ \hline
-\textit{AND}           & yes \\ \hline
-\textit{OR}            & yes \\ \hline
-\textit{BETWEEN}       & yes \\ \hline
-\textit{LIKE}          & no  \\ \hline
-\textit{IN}            & yes  \\ \hline
-\textit{=}             & yes \\ \hline
-\textit{\textgreater}  & yes \\ \hline
-\textit{\textless}     & yes \\ \hline
-\textit{\textgreater=} & yes \\ \hline
-\textit{\textless=}    & yes \\ \hline
+\textbf{JPA-QL Clause} & \textbf{Datastore support} & \textbf{Table support}\\ 
+\hline\hline
+\textit{SELECT}        & yes 	& yes 	\\ \hline
+\textit{UPDATE}        & yes 	& yes 	\\ \hline
+\textit{DELETE}        & yes 	& yes 	\\ \hline
+\textit{ORDER BY}      & yes 	& no 	\\ \hline
+\textit{AND}           & yes 	& yes 	\\ \hline
+\textit{OR}            & yes 	& yes 	\\ \hline
+\textit{BETWEEN}       & yes 	& yes 	\\ \hline
+\textit{LIKE}          & no  	& no  	\\ \hline
+\textit{IN}            & yes  	& no  	\\ \hline
+\textit{=}             & yes 	& yes 	\\ \hline
+\textit{\textgreater}  & yes  	& yes 	\\ \hline
+\textit{\textless}     & yes 	& yes 	\\ \hline
+\textit{\textgreater=} & yes 	& yes 	\\ \hline
+\textit{\textless=}    & yes  	& yes 	\\ \hline
+\textit{Projections}   & yes  	& yes 	\\ \hline
 \end{tabular}
+\caption{JPQL clauses support for the developed extension}
+\label{table:queries}
 \end{table}
 
 \subsubsection{Embedded entities}
-For JPA embedded entities eh implementation for Datastore is straightforward because its supports natively embedded entities.
+Embedded fields are supported by the JPA \cite{book:projpa2} annotating the field that needs to be embedded with the \texttt{@Embedded} annotation and annotating the corresponding POJO with the \texttt{@Embeddable} annotation.
 
-The implementation so make use of this feature translating the embedded POJO in a Datastore embedded Entity and then persist it within the parent entity.
+\newparagraph Implementation of those kind of entities is straightforward for Datastore because it supports tehm natively as Embedded Entity.
+\noindent The implementation so make use of this feature translating the embeddable POJO in a Datastore embedded entity and then persist it within the parent entity.
 
 \subsubsection{Collection fields}
-Collections and maps are natively supported by datastore but are supported only if composed of primitives Java datatypes, to be able to save whatever kind of collection or map independently by the datatype thath compose it, the collection or map itself is serialized when persisted and deserialized when readed.
+JPA standard supports collection or maps to be used as entities field throug the annotation \texttt{@ElementCollection}.
 
-Serialization and deserialization is completely handled into the extension making it completely transparent to the user.
+\newparagraph Lists are natively supported by Datastore but are supported only if composed of primitives Java datatypes.
+\noindent To be able to save whatever kind of collection or map independently by the datatype thath compose it, the collection or map itself is serialized to a \texttt{byte} array when persisted and deserialized when readed.
+\noindent To simplify the developing, also Lists of primitive types, even if supported natively, are serialized.
 
-\subsubsection{Enumeration fields}
-Enum fields are supported simply by persisting its string represention and instantiating the enum type bak when the entity is read.
+\subsubsection{Enum fields}
+Enum fields are supported by the JPA through the annotation \texttt{@Enumerated}  simply by persisting its string represention and instantiating the corresponding enum type back when the entity is read.
 
 \subsubsection{Schema Manager}
-Schema manager as required by Kundera has to exploit four cases:
+Schema manager as required by Kundera has to exploit four operations:
 \begin{itemize}
-\item validate which validates schema tables based on entity definition.
-\item update which updates schema tables based on entity definition.
-\item create which schema tables based on entity definitions.
-\item create\textunderscore drop which drops (if exists) schema, then creates schema tables based on entity definitions.
+\item \textit{validate}, which validates the persisted schema based on entity definition.
+\item \textit{update}, which updates the persisted schema based on entity definition.
+\item \textit{create}, which create the schema and thus the tables based on entity definitions.
+\item \textit{create\textunderscore drop}, which drops (if exists) the schema and then re-creates it by re-creating the tables based on entity definitions.
 \end{itemize}
-The first two cases are quite useless for a Datastore since ther'se no fixed schema for entities, entities with same Kind can have different Properties withouth restriction.
-Also the "create" case is usless for Datastore since if a new entity of an unknown Kind is persisted it's created withoud the need to explicitly define it first as a "table".
-The remanining case "create\textunderscore drop" will so just drop the current schema deleting all the entities af all the Kinds without recreating schema since it construct by itself.
+
+\noindent The first two cases are quite useless for a Datastore since there's no fixed schema for entities, entities with same Kind can have different Properties withouth restriction.
+Also the \textit{create} case is usless for Datastore since if a new entity of an unknown Kind is persisted it's created without the need to explicitly define it first as a new Kind.
+The last case \textit{"create\textunderscore drop} will so just drop the current schema, deleting all the persisted Kind(s) and so all the related entities, without re-creating the schema since it constructs by itself.
+
+\subsubsection{Datastore specific properties}
+Kundera offers the possibility to define some datastore specific properties in an external xml file that need to follow a simple structure. This file is referenced inside the \texttt{persistence.xml} and is optional.
+
+\newparagraph This possibility is exploited by the Datastore extension and make the user able to configure the following properties:
+\begin{itemize}
+\item \texttt{datastore.policy.read}, to set the read policy
+\item \texttt{datastore.deadline}, to define the RPCs calls deadline
+\item \texttt{datastore.policy.transaction}, to specify if Datastore have to issue implicit transactions
+\end{itemize}
+Those properties are read in the \texttt{Client Factory} and used to initialize the datastore connection with the required parameters.
+
+\newparagraph For a complete reference for Google Datastre extension configuration see the appendix \ref{appendix:datastore-config}.
 
 \subsection{Azure Table client}
 \label{sec:kundera-table}
-Table is the NoSQL solution developed by Microsoft, is a key-value storage and it's available inside Azure environment.
+Azure Table \cite{online:azuretable} is the NoSQL solution developed by Microsoft, is a key-value storage and it's available inside Azure environment.
 
 \subsubsection{JPA identifier}
-In Azure Table an entity is identified by the pair partition key and row key 
+In AzureTable an entity to be persisted must either implement a special interface \texttt{TableServiceEntity} or be translated into a \texttt{DynamicEntity} which is basically a property container.
+An entity is then uniquely identified inside a table by a \texttt{partitionKey} and a \texttt{rowKey}.
+\noindent Partition keys are used to handle consistency, strong consistency is guaranteed while entities are stored within the same partition key otherwise consistency will be eventual.
 
-\subsubsection{Consistency}
-In Azure Table strong consistency is guaranteed while entities are stored within the same partition key otherwise consistency will be eventual. IDs are supported only in field of type String (so only a String field can be annotated with @Id). User can define IDs both with or without partition key.
+Since both partition key and row key are are supported only in field of type \texttt{String} and since the JPA annotation \texttt{@Id} can be declared on only one field per POJO, partition key adn row key are concatenated in a single \texttt{String} and hadled internally by the extension through the class \texttt{AzureTableKey} builded ad hoc since for Table ther's no a class similar to \texttt{Key} of Datastore.
+\noindent This way the user have complete control over partition key and row key and thus on the consistency mechanism.
 
-\subsubsection{Define both row key and partition key}
-This can be done in two ways:
-\begin{itemize}
-\item using AzureTableKey.asString method by passing both partition key and row key to obtain a string representation of the whole key and assign it to the entity ID field before persist.
-\item manually define the entity ID before persist the entity, the string must follow the pattern partitionKey\textunderscore rowKey.
-\end{itemize}
+\newparagraph Are available for the user three different approaches to handle those identifiers:
+\begin{enumerate}
+\item define manually both row key and partition key
+\item define manually only the row key 
+\item let the extension to completely handle the identifier annotating the ID field also with \texttt{@GeneratedValue(strategy = GenerationType.AUTO)}
+\end{enumerate}
 
-\subsubsection{Define only the row key}
-If only the row key is defined, the partition key is implicitly the default one (which can be set in a datastore specific properties file).
-
-There are three ways to do this:
-\begin{itemize}
-\item auto-generated IDs (the row key is a random java UUID)
-\item manually define the entity ID before persist the entity
-\item using AzureTableKey.asString passing as parameter the desired row key and assign its result to the entity ID field before persist.
-\end{itemize}
+\noindent For the first case, to help the user in defining both the partition key and the row key indipendently of the way the extension handle them, a static method \texttt{AzureTableKey.asString(String partitionKey, String rowKey)} is provided. Is not required its usage but in this case the ID must follow the convention used by the extension which is \texttt{partitionKey\textunderscore rowKey}.
+\noindent The second case is exploited setting the ID to a string value, this value is interpreted by the extension as the row key while the partition key is set to a default value that can be modified in the datastore specific property file described later on. Also for this case, to have a more fluent API an utility method is provided: \texttt{AzureTableKey.asString(String rowKey)} 
+\noindent The third and last method will generate a java random \texttt{UUID} for the row key and set the partition key to the default value.
 
 \subsubsection{JPA relationships}
-Also for Azure Table, to keep uniform the extension behaviour, all the JPA supported relationships has been implemented in the client has been implemented like they would be in a RDBMS system.
+Also for Azure Table relationships are implemented similary to RDBMS as described previously for Datastore (\ref{sec:kundera-datastore}).
 
-The only difference is that when is needed to keep a reference to another entity in the owning side of a relationship is persisted within the entity the partition key and the row key of the related entity since the pair partition key and row key universally identify an entity.
+\noindent The only difference is that when is needed to keep a \textit{reference} to another entity, is persisted within the entity the partition key and the row key of the related entity.
+Even if the pair partition key and row key is not sufficient to identify an entity universally, it is sufficient for Kundera since the information of the table is available to the client just by looking at the metadata of the relationship. 
 
-\subsection{Queries}
-Here there's a comparative table for the JPQL operator suppoted:
-\begin{table}[h]
-\begin{tabular}{|l|c|}
-\hline
-\textbf{JPA-QL Clause} & \textbf{Table support} \\ \hline\hline
-\textit{SELECT}        & yes \\ \hline
-\textit{UPDATE}        & yes \\ \hline
-\textit{DELETE}        & yes \\ \hline
-\textit{ORDER BY}      & no \\ \hline
-\textit{AND}           & yes \\ \hline
-\textit{OR}            & yes \\ \hline
-\textit{BETWEEN}       & yes \\ \hline
-\textit{LIKE}          & no  \\ \hline
-\textit{IN}            & no  \\ \hline
-\textit{=}             & yes \\ \hline
-\textit{\textgreater}  & yes \\ \hline
-\textit{\textless}     & yes \\ \hline
-\textit{\textgreater=} & yes \\ \hline
-\textit{\textless=}    & yes \\ \hline
-\end{tabular}
-\end{table}
+\subsubsection{Queries}
+Supporting queries for Azure Tables was straightforward, the procedure was the same described in \ref{sec:kundera-datastore} but due to the different operator supported by Tables, beside the \textit{LIKE} operator also the \textit{IN} operator is not supported.
+
+\noindent In table \ref{table:queries} can be found a complete list of the supported JPQL clauses for both extensions.
 
 \subsubsection{Embedded entities}
-Embedded fields are not supported natively by Azure Table so the solution adopted is to serialize the field annotated as embedded to be able to ave it to the storage and deserializing it when the entity is read.
+Embedded fields (described in \ref{sec:kundera-datastore}) are not supported natively by Azure Table so the solution adopted is to serialize the field annotated with \texttt{@Embedded} to be able to persist it to the storage like a \texttt{byte} array and deserializing it when the entity is read.
 
 \subsubsection{Collection fields}
-Collection and maps are not supported by Azure Table since it supports only a set of primitive Java datatypes.
-To support even complex collection or maps the solution is, like Datastore, serialize the entire collection or map when persisting the entity and deserializing it when reading the entity from the storage.
+As described for Datastore (\ref{sec:kundera-datastore}) JPA supports collections but are not supported in Azure Tables even if composed of the supported datatypes.
 
-\subsubsection{Enumeration fields}
-Enum fields are supported simply by persisting its string represention and instantiating the enum type bak when the entity is read.
+\noindent To support even complex collection or maps the obvious solution is to serialize the entire collection or map to a \texttt{byte} array when persisting the entity and deserialize it when reading the entity from the storage.
+
+\subsubsection{Enum fields}
+Enum fields are supported by the JPA through the annotation \texttt{@Enumerated}  simply by persisting its string represention and instantiating the corresponding enum type back when the entity is read.
 
 \subsubsection{Schema Manager}
-Schema manager as required by Kundera has to exploit four cases:
-\begin{itemize}
-\item validate which validates schema tables based on entity definition.
-\item update which updates schema tables based on entity definition.
-\item create which schema tables based on entity definitions.
-\item create\textunderscore drop which drops (if exists) schema, then creates schema tables based on entity definitions.
-\end{itemize}
-Here, like Google Datastore, the first two cases are quite useless for Azure Table since ther'se no fixed schema and entities within the same Table can have different properties withouth restriction.
+Schema manager (as described in \ref{sec:kundera-datastore}) have been also implemented for Azure Table and like Google Datastore, the first two cases are quite useless since ther'se no fixed schema and entities within the same Table can have different properties withouth restriction.
 
-Azure Table need that the Table in which entities are stored exists before trying to create entities so the "create" case simply iterate over all table names and creates it in the database. 
-For the "create\textunderscore drop" case, all tables are dropped (and so all the contained entities) and re-created.
+\newparagraph Azure Table need that the Table in which entities are stored exists before trying to create entities so the \textit{create} case simply iterate over all table names and creates it in the database. 
+For the \textit{create\textunderscore drop} case, all tables should be dropped (and so all the contained entities) and re-created. The problem here is that Tables deletion is performed asynchronously and so exists an unpredictable amount of time in which the table cannot be re-created since it still exists even if not listed.
+\noindent To overcome to this problem two solution can be adopted:
+\begin{itemize}
+\item catch the \texttt{StorageException} thrown when the table is creaed while still exists, put the process to sleep for an amount of time and try again
+\item do not delete the Table itself but delete all its entities in bulk
+\end{itemize}
+
+\noindent The first method is clearly dangerous since no deadline is given for the Table delete operation, the second solution is actually not so convenient because, even if deletion is performed as a batch operation both the partition key and row key must be specified and thus a query must be performed over the table to retrieve at least partion key and row key for each entity in the table.  
+
+\noindent So for the \textit{create\textunderscore drop} case is performed a drop of all the Tables and then are re-created even if this can cause the previously mentioned conflict, this option is left as is for testing purposes since in the storage emulator the problem is not showing because the Table storage is emulated over a SQL server instance.
+
+\subsubsection{Datastore specific properties}
+As described for Datastore (\ref{sec:kundera-datastore}), Kundera provides a datastore specific properties file that let the user set some specific configuration.
+
+\noindent This possibility is supported also for Azure Tables with the following properties:
+\begin{itemize}
+\item \texttt{table.emulator} and \texttt{table.emulator.proxy}, to make the user able to test against the local storage emulator on Windows
+\item \texttt{table.protocol}, to make the user able to decide between \textit{http} or \textit{https} for storage calls
+\item \texttt{table.partition.default}, to let the user specify the value for the default partition key 
+\end{itemize} 
+
+\newparagraph For a complete reference for Azure Table extension configuration see the appendix \ref{appendix:table-config}.
 
 \section{Summary}
-In this chpater has been introduced in details how Kundera extension should been developed, the problem encountered during the development, how tey've been addressed and the detail of the implementation of the two extensions including what the feature currently supported.
+In this chpater has been introduced in details how Kundera extension should been developed, the problem encountered during the development, how tey've been addressed and the detail of the implementation of the two extensions including the feature that are currently supported.
 In the next chapter will be explained how has been possible to integrate Kundera into CPIM as part of the NoSQL service.

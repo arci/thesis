@@ -141,34 +141,6 @@ Datastore have on its own a very good support to queries so all the clauses are 
 
 \noindent In table \ref{table:queries} can be found a complete list of the supported JPQL clauses for both extensions.
 
-\begin{table}[p]
-\begin{center}
-\renewcommand{\arraystretch}{1.4}
-\begin{tabular}{lcc}
-\hline
-\textbf{JPA-QL Clause} & \textbf{Datastore support} & \textbf{Table support}\\ 
-\hline\hline
-\textit{Projections}   & \cmark 	& \cmark 	\\ \hline
-\textit{SELECT}        & \cmark 	& \cmark 	\\ \hline
-\textit{UPDATE}        & \cmark 	& \cmark 	\\ \hline
-\textit{DELETE}        & \cmark 	& \cmark 	\\ \hline
-\textit{ORDER BY}      & \cmark 	& \xmark 	\\ \hline
-\textit{AND}           & \cmark 	& \cmark 	\\ \hline
-\textit{OR}            & \cmark 	& \cmark 	\\ \hline
-\textit{BETWEEN}       & \cmark 	& \cmark 	\\ \hline
-\textit{LIKE}          & \xmark 	& \xmark  	\\ \hline
-\textit{IN}            & \cmark 	& \xmark  	\\ \hline
-\textit{=}             & \cmark 	& \cmark 	\\ \hline
-\textit{\textgreater}  & \cmark	& \cmark 	\\ \hline
-\textit{\textless}     & \cmark 	& \cmark 	\\ \hline
-\textit{\textgreater=} & \cmark 	& \cmark 	\\ \hline
-\textit{\textless=}    & \cmark 	& \cmark 	\\ \hline
-\end{tabular}
-\end{center}
-\caption{JPQL clauses support for the developed extension}
-\label{table:queries}
-\end{table}
-
 \subsubsection{Embedded entities}
 Embedded fields are supported by the JPA \cite{book:projpa2} annotating the field that needs to be embedded with the \texttt{@Embedded} annotation and annotating the corresponding POJO with the \texttt{@Embeddable} annotation.
 
@@ -282,6 +254,36 @@ As described for Datastore (\ref{sec:kundera-datastore}), Kundera provides a dat
 \end{itemize} 
 
 \newparagraph For a complete reference for Azure Table extension configuration see the appendix \ref{appendix:table-config}.
+
+\pagebreak
+\begin{table}[h!]
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lcc}
+\hline
+\textbf{JPA-QL Clause} & \textbf{Datastore support} & \textbf{Table support}\\ 
+\hline\hline
+\textit{Projections}   & \cmark 	& \cmark 	\\ \hline
+\textit{SELECT}        & \cmark 	& \cmark 	\\ \hline
+\textit{UPDATE}        & \cmark 	& \cmark 	\\ \hline
+\textit{DELETE}        & \cmark 	& \cmark 	\\ \hline
+\textit{ORDER BY}      & \cmark 	& \xmark 	\\ \hline
+\textit{AND}           & \cmark 	& \cmark 	\\ \hline
+\textit{OR}            & \cmark 	& \cmark 	\\ \hline
+\textit{BETWEEN}       & \cmark 	& \cmark 	\\ \hline
+\textit{LIKE}          & \xmark 	& \xmark  	\\ \hline
+\textit{IN}            & \cmark 	& \xmark  	\\ \hline
+\textit{=}             & \cmark 	& \cmark 	\\ \hline
+\textit{\textgreater}  & \cmark	& \cmark 	\\ \hline
+\textit{\textless}     & \cmark 	& \cmark 	\\ \hline
+\textit{\textgreater=} & \cmark 	& \cmark 	\\ \hline
+\textit{\textless=}    & \cmark 	& \cmark 	\\ \hline
+\end{tabular}
+\end{center}
+\caption{JPQL clauses support for the developed extension}
+\label{table:queries}
+\end{table}
+
 
 \section{Summary}
 In this chpater has been introduced in details how Kundera extension should been developed, the problem encountered during the development, how tey've been addressed and the detail of the implementation of the two extensions including the feature that are currently supported.

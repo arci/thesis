@@ -2,6 +2,7 @@
 \usepackage{algpseudocode}		% ambienti per la scrittura di algoritmi
 \usepackage{algorithm}			% 
 
+\usepackage{pifont}						% http://ctan.org/pkg/pifont
 \usepackage{epsfig}						% figure eps
 \usepackage{graphicx}					% figure qualsiasi
 \usepackage{amsmath,amsfonts,amsthm}		% package di scrittura matematica
@@ -75,7 +76,7 @@
 \renewcommand{\belowcaptionskip}{0pt}
 
 %--------------------------------------------------------------
-%impostazione headers
+% impostazione headers
 %--------------------------------------------------------------
 \pagestyle{fancy}
 %\addtolength{\headwidth}{\marginparsep}
@@ -103,8 +104,15 @@
   \end{center}}%
 {\par\vfil\null}
 
+%--------------------------------------------------------------------------------
+% custom commands %--------------------------------------------------------------------------------
 \newcommand{\newparagraph}{\noindent\\}
+\newcommand{\xmark}{\ding{55}}
+\newcommand{\cmark}{\ding{51}}
 
+%--------------------------------------------------------------------------------
+% document start
+%--------------------------------------------------------------------------------
 \begin{document}
 
 \pagenumbering{roman}

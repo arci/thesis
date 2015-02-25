@@ -137,32 +137,34 @@ Kundera supports all of the clauses of JPQL but with some restrictions, clauses 
 \end{itemize}
 
 \newparagraph The JPQL query is parsed and validated by Kundera and to the \texttt{Query Implementor} is provided a filled metamodel of the query which needs to be \textit{explored} in order to build a datastore compatible query.    
-Datastore have on its own a very good support to queries so all the clauses are supported except for the \textit{LIKE} operator.
+Datastore have on its own a very good support to queries so all the clauses are supported except for the \textit{LIKE} clause.
 
 \noindent In table \ref{table:queries} can be found a complete list of the supported JPQL clauses for both extensions.
 
 \begin{table}[p]
-\centering
-\begin{tabular}{|l|c|c|}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lcc}
 \hline
 \textbf{JPA-QL Clause} & \textbf{Datastore support} & \textbf{Table support}\\ 
 \hline\hline
-\textit{SELECT}        & yes 	& yes 	\\ \hline
-\textit{UPDATE}        & yes 	& yes 	\\ \hline
-\textit{DELETE}        & yes 	& yes 	\\ \hline
-\textit{ORDER BY}      & yes 	& no 	\\ \hline
-\textit{AND}           & yes 	& yes 	\\ \hline
-\textit{OR}            & yes 	& yes 	\\ \hline
-\textit{BETWEEN}       & yes 	& yes 	\\ \hline
-\textit{LIKE}          & no  	& no  	\\ \hline
-\textit{IN}            & yes  	& no  	\\ \hline
-\textit{=}             & yes 	& yes 	\\ \hline
-\textit{\textgreater}  & yes  	& yes 	\\ \hline
-\textit{\textless}     & yes 	& yes 	\\ \hline
-\textit{\textgreater=} & yes 	& yes 	\\ \hline
-\textit{\textless=}    & yes  	& yes 	\\ \hline
-\textit{Projections}   & yes  	& yes 	\\ \hline
+\textit{Projections}   & \cmark 	& \cmark 	\\ \hline
+\textit{SELECT}        & \cmark 	& \cmark 	\\ \hline
+\textit{UPDATE}        & \cmark 	& \cmark 	\\ \hline
+\textit{DELETE}        & \cmark 	& \cmark 	\\ \hline
+\textit{ORDER BY}      & \cmark 	& \xmark 	\\ \hline
+\textit{AND}           & \cmark 	& \cmark 	\\ \hline
+\textit{OR}            & \cmark 	& \cmark 	\\ \hline
+\textit{BETWEEN}       & \cmark 	& \cmark 	\\ \hline
+\textit{LIKE}          & \xmark 	& \xmark  	\\ \hline
+\textit{IN}            & \cmark 	& \xmark  	\\ \hline
+\textit{=}             & \cmark 	& \cmark 	\\ \hline
+\textit{\textgreater}  & \cmark	& \cmark 	\\ \hline
+\textit{\textless}     & \cmark 	& \cmark 	\\ \hline
+\textit{\textgreater=} & \cmark 	& \cmark 	\\ \hline
+\textit{\textless=}    & \cmark 	& \cmark 	\\ \hline
 \end{tabular}
+\end{center}
 \caption{JPQL clauses support for the developed extension}
 \label{table:queries}
 \end{table}
@@ -239,7 +241,7 @@ Also for Azure Table relationships are implemented similary to RDBMS as describe
 Even if the pair partition key and row key is not sufficient to identify an entity universally, it is sufficient for Kundera since the information of the table is available to the client just by looking at the metadata of the relationship. 
 
 \subsubsection{Queries}
-Supporting queries for Azure Tables was straightforward, the procedure was the same described in \ref{sec:kundera-datastore} but due to the different operator supported by Tables, beside the \textit{LIKE} operator also the \textit{IN} operator is not supported.
+Supporting queries for Azure Tables was straightforward, the procedure was the same described in \ref{sec:kundera-datastore} but due to the different operator supported by Tables, beside the \textit{LIKE} clause also the \textit{IN} and \textit{ORDER BY} clauses are not supported.
 
 \noindent In table \ref{table:queries} can be found a complete list of the supported JPQL clauses for both extensions.
 

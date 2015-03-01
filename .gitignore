@@ -5,6 +5,7 @@
 *.idx
 *.log
 *.toc
+*.loa
 *.ist
 *.acn
 *.acr
@@ -24,3 +25,5 @@
 *.out
 *.synctex.gz
 *.bak
+
+*-eps-converted-to.pdf

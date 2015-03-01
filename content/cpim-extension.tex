@@ -50,18 +50,27 @@ Another benefit of this architecture is that the choice of the NoSQL technology 
   \label{fig:cpim-kundera}
 \end{figure}
 
+\subsection{Problems encountered}
+The main problem encountered was due to the presence of multiple persistence provider in the classpath, expecially for the one provided within the \textit{jpa4azure} library.
+
+\noindent At runtime, even if Kundera was the provider defined in the \textit{persistence.xml} file, the instantiated provider was the one of \textit{jpa4azure}. Even if all the other specific JPA implementation were removed from the classpath, \textit{jpa4azure} cannot be removed since it was not providing only the necessary code for the JPA interface, but also utility code to ease the interaction with other Azure services such as Blob and Queues, code that is actually used inside the CPIM implemetation of those services for Azure thus removing \textit{jpa4azure} will cause the loss of those functionality.
+
 \section{Hegira integration}
 \label{sec:hegira}
+\subsection{Migration Manager}
+
+\section{Intercept user operation}
 \subsection{Intercepting CRUD operations}
 \subsection{Intercepting queries}
 
-\subsection{Build SQL statements}
-\subsubsection{Build statements from objects}
-\subsubsection{Build statements from JPQL queries}
-
-\subsection{Migration Manager}
+\section{Build statements from user operations}
+\subsection{Build statements from objects}
 \subsubsection{Contacting the synchronization service}
 \subsubsection{Handling the sequence numbers}
-\section{Sending statements to Hegira}
+\subsection{Build statements from JPQL queries}
+\subsection{Sending statements to Hegira}
+
+\section{Interoperability of stored data}
+
 
 \section{Summary}

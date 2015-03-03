@@ -73,19 +73,21 @@ One possible solution to this would be rewrite the CPIM Queue services for Azure
 \label{sec:hegira}
 To support data synchronization and migration, the NoSQL service was further modified to integrate with \textbf{Hegira} \cite{thesis:marco}.
 
+\newparagraph SCHEMA HIGH LEVEL FUNCTIONING
+
 \subsection{Migration Manager}
+
+FSA MIGRATION
 
 \section{Intercept user operation}
 The first operation that needs to be analyzed is where is possible to intercept user operation is a way that is completely transparent to the user.
 The operation that we want to intercept are the insert, update and delete operation cause those are the operation that alter the structure of the data and thus are the one that needs to be processed by the migration system.
 
 \subsection{Intercepting CRUD operations}
+
+
 \subsection{Intercepting queries}
-A first look at the JPQL specification \cite{book:projpa2} revealed that JPQL does not support \textit{INSERT} statements and so the only way user have to persist entities is through \texttt{EntityManager.persist(Object entity)} that is one of the case described in the previous section. The remaining case (\textit{UPDATE} and \textit{DELETE}) must be intercepted in two different situations:
-\begin{enumerate}
-\item queries generated through \texttt{EntityManager}
-\item named queries defined as named queries 
-\end{enumerate}
+A first look at the JPQL specification \cite{book:projpa2} revealed that JPQL does not support \textit{INSERT} statements and so the only way user have to persist entities is through \texttt{EntityManager.persist(Object entity)} that is one of the case described in the previous section, so only the remaining cases (\textit{UPDATE} and \textit{DELETE}) needs to be intercepted.
 
 \noindent JPA interface provides several ways to build and execute queries all available by calling the proper methods defined in the \texttt{EntityManager} interface: \texttt{createQuery}, \texttt{createNamedQuery} and \texttt{createNativeQuery}
 Native queries are clearly not supported by Kundera and thus from the migration system clearly because there not so many storage that provides a SQL-like language to specify queries.
@@ -103,7 +105,38 @@ The remaining two kind of methods to create queries are slightly different to ha
 \subsection{Sending statements to Hegira}
 
 \section{Interoperability of stored data}
-The Kundera client developed and described in chapter \ref{chap:kundera} was developed to be 
+The Kundera client developed and described in chapter \ref{chap:kundera} was developed to be as much as consistent to the other client developed for Kundera to be more likely accepted by the community and so are not built to be completely interoperable.
+In an optic of data migration what we want to achieve is that data stored within a database and migrated to another one are still readable to the application without changes besides the new database configuration. 
+
+\noindent The problem for Kundera clients are the relationships. Each database have its own ways to define identifier for the persisted entities, for Google Datastore there's the \texttt{Key} with \textit{Kind} and an \textit{identifier}, for Azure there are the \textit{partition-key} and the \textit{row-key}.Concepts are different but actually quite similar since both databases are key-value columnar database. 
+A solution to the problem would have been to modify the migration system in order to make it aware of the problem and let it translate the relational columns in the format of the target database, in this way the relational columns should have been identified in some way to let the system handle them. This can be done by adding a pre-defined prefix or a suffix to those columns.
+Since this solution require a good amount of changes in the migration system, other solution have been explored.
+ 
+\newparagraph Back to the concept of identifier, generally, in columnar databases, columns are grouped in a \textit{column family} and set of columns are identified by a \textit{key}, actually the \textit{key} can span among different \textit{column families} but that's not possible either in Datastore or Azure Table.
+The pair (\textit{column family}, \textit{key}) is sufficient to identify an entity (composed by one or more columns) is so needed a mapping between database-specific terminology to the more general one, this mapping is shown in table \ref{table:mapping}.
+
+\begin{table}[h]
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lcc}
+\hline
+\textbf{General concept} & \textbf{Datastore} & \textbf{Azure Table}\\ 
+\hline\hline
+Column Family & Kind & partition-key \\
+Key & key-identifier & row-key \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Column family and Key mapping among supported databases.}
+\label{table:mapping}
+\end{table}
+
+\noindent At this point is needed a common way of save relationships as column family and key in a way that is interoperable among both the client extension.
+The proposed solution is to persist \texttt{columnFamily\textunderscore key} an idea that came from the Azure Table extension which already save relationships similar to this. This solution has to be preferred w.r.t the one that require modification of the migration system since the interoperability is achieved transparently to it.
+
+\subsection{Kundera clients modification}
+Since lot of work has already been done on the Kundera clients, the modification to them has been made on a separate branch of the projects named \textit{migration}.
+
 
 \section{Summary}
 In this chapter has been rapidly described the CPIM structure and the architecture of the NoSQL service before this work. Then has been described how was possible to integrate Kundera as unique persistence provider in the NoSQL service and the problem encountered in the process.

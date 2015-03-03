@@ -76,15 +76,54 @@ To support data synchronization and migration, the NoSQL service was further mod
 \newparagraph SCHEMA HIGH LEVEL FUNCTIONING
 
 \subsection{Migration Manager}
+Interaction with the migration system is handled primarily by the \texttt{MigrationManager} class which follows a state pattern represented in the class diagram \ref{fig:migration-class-diagram}. 
+ 
+\begin{figure}[tbh]
+  \centering
+  \includegraphics[width=14cm]{images/migration_class_diagram}
+  \caption{\texttt{MigrationManager} class diagram}
+  \label{fig:migration-class-diagram}
+\end{figure} 
 
-FSA MIGRATION
+\noindent The pattern permits to the \texttt{MigrationManager} to delegates the method execution to the current state, the state diagram is the one represented in figure \ref{fig:migration-fsa} is and composed by two states \texttt{Migration} and \texttt{Normal} that encapsulate the required behavior.
+    
+\begin{figure}[tbh]
+  \centering
+  \includegraphics[width=6cm]{images/migration_fsa}
+  \caption{\texttt{MigrationManager} states}
+  \label{fig:migration-fsa}
+\end{figure} 
+
+\noindent This part of the design was actually made before knowing exactly how the interactions should have been exploited since the component to interact with were not finished yet so, in order to have a well-defined place in which behavior has to be encapsulated, the state pattern was the best solution even for future extensibility in case the interaction with the migration system will become more complex.  
 
 \section{Intercept user operation}
 The first operation that needs to be analyzed is where is possible to intercept user operation is a way that is completely transparent to the user.
 The operation that we want to intercept are the insert, update and delete operation cause those are the operation that alter the structure of the data and thus are the one that needs to be processed by the migration system.
 
 \subsection{Intercepting CRUD operations}
+CRUD operation are always handled in the \texttt{EntityManager}, three are the methods that needs to be intercepted:
+\begin{itemize}
+\item \texttt{EntityManager.persist(Object entity)} for the insert operation
+\item \texttt{EntityManager.merge(Object entity)} for the update operation
+\item \texttt{EntityManager.remove(Object entity)} for the delete operation
+\end{itemize}
+\noindent User is not directly invoking method on the provider entity manager but interacts with the persistence provider through the \texttt{CloudEntityManager} class which implements the JPA \texttt{EntityManager} interface. Without the support for the migration system the \texttt{CloudEntityManager} should delegate every method call to the provider entity manager.
+To integrate migration and synchronization logic, the method mentioned above should contains a little amount of logic shown in the snippet of code \ref{code:isMigrating} taking as example the persist operation.
 
+\begin{algorithm}[h]
+  \begin{algorithmic}[1]
+    \Procedure{EntityManager.persist}{$object$}
+	\If{MigrationManager.isMigrating()}
+		\State $statement \gets$ buildStatement($object$)
+		\State MigrationManager.propagate($statement$)
+   	\Else
+   		\State // delegate operation to the provider
+   	\EndIf
+	\EndProcedure
+\end{algorithmic}	
+  \caption{Integrate migration logic}
+  \label{code:isMigrating}
+\end{algorithm}
 
 \subsection{Intercepting queries}
 A first look at the JPQL specification \cite{book:projpa2} revealed that JPQL does not support \textit{INSERT} statements and so the only way user have to persist entities is through \texttt{EntityManager.persist(Object entity)} that is one of the case described in the previous section, so only the remaining cases (\textit{UPDATE} and \textit{DELETE}) needs to be intercepted.

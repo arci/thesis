@@ -137,6 +137,11 @@ The proposed solution is to persist \texttt{columnFamily\textunderscore key} an 
 \subsection{Kundera clients modification}
 Since lot of work has already been done on the Kundera clients, the modification to them has been made on a separate branch of the projects named \textit{migration}.
 
+\newparagraph The Datastore extension has been modified to persist relationships as \texttt{kind\textunderscore key-identifier} instead of the \texttt{Key} instance.
+Join tables require particular care. Kundera is not providing the class of the entities involved in the join table but just the column names and the identifier (the one with the \texttt{@Id} annotation). Queries are possible even if the \textit{Kind} is unknown since Kundera provides the entity class with the entity identifier in the find operation.
+To be more consistent and apply the identifier pattern (\texttt{kind\textunderscore key-identifier}) even for join tables, a map is maintained in the client and built inspecting Kundera metadata to keep track of which entity classes are involved in which many to many relationship.
+
+\newparagraph The Azure Table extension has been modified to
 
 \section{Summary}
 In this chapter has been rapidly described the CPIM structure and the architecture of the NoSQL service before this work. Then has been described how was possible to integrate Kundera as unique persistence provider in the NoSQL service and the problem encountered in the process.

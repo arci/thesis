@@ -46,9 +46,11 @@ Another benefit of this architecture is that the choice of the NoSQL technology 
 \begin{figure}[tbh]
   \centering
   \includegraphics[width=14cm]{images/cpim_nosql_kundera}
-  \caption{The modified NoSQL service architecture}
+  \caption{The modified NoSQL service architecture TODO add interfaces}
   \label{fig:cpim-kundera}
 \end{figure}
+
+TODO actully provider agnostic
 
 \subsection{Problems encountered}
 Kundera provides an uniform access through the JPA interface independently from the provider, which is somehow defined in the \textit{persistence.xml} through the Kundera client selection. For this reasons all the old libraries that provides a JPA implementation for a specific provider can be removed from the CPIM. 
@@ -71,9 +73,16 @@ One possible solution to this would be rewrite the CPIM Queue services for Azure
 
 \section{Hegira integration}
 \label{sec:hegira}
-To support data synchronization and migration, the NoSQL service was further modified to integrate with \textbf{Hegira} \cite{thesis:marco}.
+To support data synchronization and migration, the NoSQL service was further modified to integrate with \textbf{Hegira} \cite{thesis:marco}. An high level schema of the interaction we want to achieve is reported in figure \ref{fig:high-level-interaction}
 
-\newparagraph SCHEMA HIGH LEVEL FUNCTIONING
+\begin{figure}[tbh]
+  \centering
+  %\includegraphics[width=14cm]{}
+  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
+  \end{minipage}
+  \caption{High level schema of interaction TODO}
+  \label{fig:high-level-interaction}
+\end{figure} 
 
 \subsection{Migration Manager}
 Interaction with the migration system is handled primarily by the \texttt{MigrationManager} class which follows a state pattern represented in the class diagram \ref{fig:migration-class-diagram}. 
@@ -94,9 +103,9 @@ Interaction with the migration system is handled primarily by the \texttt{Migrat
   \label{fig:migration-fsa}
 \end{figure} 
 
-\noindent This part of the design was actually made before knowing exactly how the interactions should have been exploited since the component to interact with were not finished yet so, in order to have a well-defined place in which behavior has to be encapsulated, the state pattern was the best solution even for future extensibility in case the interaction with the migration system will become more complex.  
+\noindent This part of the design was actually made before knowing exactly how the interactions will exactly be since the component to interact with were not finished yet. Hence in order to have a well-defined place in which behavior has to be encapsulated, the state pattern was the best solution even for future extensibility in case the interaction with the migration system will become more complex.  
 
-\section{Intercept user operation}
+\section{Intercept user operations}
 The first operation that needs to be analyzed is where is possible to intercept user operation is a way that is completely transparent to the user.
 The operation that we want to intercept are the insert, update and delete operation cause those are the operation that alter the structure of the data and thus are the one that needs to be processed by the migration system.
 
@@ -107,23 +116,29 @@ CRUD operation are always handled in the \texttt{EntityManager}, three are the m
 \item \texttt{EntityManager.merge(Object entity)} for the update operation
 \item \texttt{EntityManager.remove(Object entity)} for the delete operation
 \end{itemize}
-\noindent User is not directly invoking method on the provider entity manager but interacts with the persistence provider through the \texttt{CloudEntityManager} class which implements the JPA \texttt{EntityManager} interface. Without the support for the migration system the \texttt{CloudEntityManager} should delegate every method call to the provider entity manager.
-To integrate migration and synchronization logic, the method mentioned above should contains a little amount of logic shown in the snippet of code \ref{code:isMigrating} taking as example the persist operation.
+\noindent User is not directly invoking method on the provider entity manager but interacts with the persistence provider through the \texttt{CloudEntityManager} class. Without the support for the migration system the \texttt{CloudEntityManager}, as stated previously, delegates every method call to the provider entity manager.
+To integrate migration and synchronization logic, the methods mentioned above should contain a little more amount of logic shown in the snippet of code \ref{code:isMigrating} taking as example the update operation.
 
 \begin{algorithm}[h]
   \begin{algorithmic}[1]
-    \Procedure{EntityManager.persist}{$object$}
-	\If{MigrationManager.isMigrating()}
-		\State $statement \gets$ buildStatement($object$)
-		\State MigrationManager.propagate($statement$)
-   	\Else
-   		\State // delegate operation to the provider
-   	\EndIf
-	\EndProcedure
-\end{algorithmic}	
+    \Procedure{EntityManager.merge}{$object$}   
+      \If{MigrationManager.isMigrating()}
+        \State MigrationManager.propagate($object$, OperationType.UPDATE)
+      \Else
+        \State // delegate operation to the provider
+      \EndIf
+    \EndProcedure
+  \end{algorithmic}	
   \caption{Integrate migration logic}
   \label{code:isMigrating}
 \end{algorithm}
+
+\noindent In case of migration is visible the call to the \texttt{propagate} method. It accept two arguments:
+\begin{itemize}
+\item the entity to be converted to a statement
+\item the operation that needs to be generated
+\end{itemize}
+TODO
 
 \subsection{Intercepting queries}
 A first look at the JPQL specification \cite{book:projpa2} revealed that JPQL does not support \textit{INSERT} statements and so the only way user have to persist entities is through \texttt{EntityManager.persist(Object entity)} that is one of the case described in the previous section, so only the remaining cases (\textit{UPDATE} and \textit{DELETE}) needs to be intercepted.
@@ -133,15 +148,54 @@ Native queries are clearly not supported by Kundera and thus from the migration 
 The remaining two kind of methods to create queries are slightly different to handle.
 
 \subsubsection{Queries through EntityManager}
+TODO
 
 \subsubsection{Named Queries}
+TODO
+
+\section{Synchronization}
+\label{sec:synch}
+In the previous section, an overview of the required logic that has been built to integrate \textit{Hegira} was described. Now let's face the problem of synchronization that allows the migration to be performed live.
+
+\noindent A special look needs to be reserved for the insert operation. When the user updates or delete an entity no matter if through the entity manager or through a query, he already knows the identifier of that entity since the insert operation have already persisted the entity into the underlying database and thus generated the identifier.
+Since we want to guarantee a synchronization with the migration system, user cannot define its own identifiers but them needs to be assigned from the migration system.
+The main caveats is that such assignment has to be made even if the migration is not running yet so the identifier assignment has to be made in two cases:
+\begin{enumerate}
+\item insert statements built from persist operation during a migration phase
+\item \textit{standard} insert operation through the entity manager during a normal state
+\end{enumerate}
+
+\noindent The solution is actually quite simple since everything can be checked inside the \texttt{EntityManager.persist} method as described in the snippet of code \ref{code:persist}.
+
+\begin{algorithm}[h]
+  \begin{algorithmic}[1]
+    \Procedure{EntityManager.persist}{$object$}   
+      \If{MigrationManager.isMigrating()}
+                \State MigrationManager.propagate($object$, OperationType.INSERT)
+      \Else
+        \State $id \gets$ SeqNumberProvider.getNextSequenceNumber($table$)
+        \State $object$.setId($id$)
+        \State // delegate operation to the provider
+      \EndIf
+    \EndProcedure
+  \end{algorithmic}	
+  \caption{Persist operation}
+  \label{code:isMigrating}
+\end{algorithm}
+
+\noindent In the code snippet is visible a call to the  \texttt{SeqNumberProvider} class which is the class responsible of actually interacts with the synchronization service of Hegira and handle the \textit{sequence numbers} i.e. the entities identifiers defined by Hegira to achieve synchronization. 
+
+\subsubsection{Handling the sequence numbers}
+TODO
 
 \section{Build statements from user operations}
+\label{sec:statements}
 \subsection{Build statements from objects}
-\subsubsection{Contacting the synchronization service}
-\subsubsection{Handling the sequence numbers}
+TODO
 \subsection{Build statements from JPQL queries}
+TODO
 \subsection{Sending statements to Hegira}
+TODO
 
 \section{Interoperability of stored data}
 The Kundera client developed and described in chapter \ref{chap:kundera} was developed to be as much as consistent to the other client developed for Kundera to be more likely accepted by the community and so are not built to be completely interoperable.
@@ -176,11 +230,15 @@ The proposed solution is to persist \texttt{columnFamily\textunderscore key} an 
 \subsection{Kundera clients modification}
 Since lot of work has already been done on the Kundera clients, the modification to them has been made on a separate branch of the projects named \textit{migration}.
 
-\newparagraph The Datastore extension has been modified to persist relationships as \texttt{kind\textunderscore key-identifier} instead of the \texttt{Key} instance.
+\paragraph{Google Datastore} The Datastore extension has been modified to persist relationships as \texttt{kind\textunderscore key-identifier} instead of the \texttt{Key} instance.
 Join tables require particular care. Kundera is not providing the class of the entities involved in the join table but just the column names and the identifier (the one with the \texttt{@Id} annotation). Queries are possible even if the \textit{Kind} is unknown since Kundera provides the entity class with the entity identifier in the find operation.
 To be more consistent and apply the identifier pattern (\texttt{kind\textunderscore key-identifier}) even for join tables, a map is maintained in the client and built inspecting Kundera metadata to keep track of which entity classes are involved in which many to many relationship.
 
-\newparagraph The Azure Table extension has been modified to
+\paragraph{Azure Table} The Azure Table extension has been modified too to reflect the newly defined standard for relationships. The actual problem here is that user can manually handle the partition-key but is not a possibility that can be guaranteed since if an entity is persisted with a partition-key, it will be read by the Datastore extension as of that \textit{Kind}.
+Since the \texttt{Kind} in Datastore extension is the entity table name, has been decided to lock the Azure Table partition-key to the table name so user cannot decide its own since this will break the interoperability of data.
+The thing to notice is that the decided pattern \texttt{partition-key\textunderscore row-key} has not been broken, the only limitation is the one that fix the partition-key to the table name.
+
+\noindent The same discussion for the join tables made previously for Datastore applies as is also for the Azure Table extension.
 
 \section{Summary}
 In this chapter has been rapidly described the CPIM structure and the architecture of the NoSQL service before this work. Then has been described how was possible to integrate Kundera as unique persistence provider in the NoSQL service and the problem encountered in the process.

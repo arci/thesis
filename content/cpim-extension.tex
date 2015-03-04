@@ -50,7 +50,11 @@ Another benefit of this architecture is that the choice of the NoSQL technology 
   \label{fig:cpim-kundera}
 \end{figure}
 
-TODO actully provider agnostic
+The actual implementation is completely provider agnostic in the sense that actually Kundera is not required as depencency and in fact is not listed as a dependency for CPIM. At runtime, when a Kundera client will be listed in the dependency of the user application, as well as CPIM, the persistence provider dependency will be satisfied.
+This is due to the fact that the \texttt{CloudEntityManagerFactory} and the \texttt{CloudEntityManager} implements respectively the JPA interfaces  \texttt{EntityManagerFactory}  and \texttt{EntityManager}.
+The actual call to the runtime provider is within the \texttt{CloudEntityManager} that on construction instantiate an instance of the provider \texttt{EntityManager} and uses that reference to delegate every method execution to it.
+
+\noindent This can seems a over-designed architecture but it tourns out to be extremely necessary in order to provides a transparent interaction with the migration system as it will explained later on in this chapter.
 
 \subsection{Problems encountered}
 Kundera provides an uniform access through the JPA interface independently from the provider, which is somehow defined in the \textit{persistence.xml} through the Kundera client selection. For this reasons all the old libraries that provides a JPA implementation for a specific provider can be removed from the CPIM. 
@@ -138,7 +142,7 @@ To integrate migration and synchronization logic, the methods mentioned above sh
 \item the entity to be converted to a statement
 \item the operation that needs to be generated
 \end{itemize}
-TODO
+The method is called on the \texttt{EntityManager} which then delegates the execution to the current state which should be the migration state at that point. The \texttt{propagate} method of the migration state is responsible of building the requested statements using the statement builders and then sending the generated statements to the commit log of \textit{Hegira}. Both action are described in detail later on.
 
 \subsection{Intercepting queries}
 A first look at the JPQL specification \cite{book:projpa2} revealed that JPQL does not support \textit{INSERT} statements and so the only way user have to persist entities is through \texttt{EntityManager.persist(Object entity)} that is one of the case described in the previous section, so only the remaining cases (\textit{UPDATE} and \textit{DELETE}) needs to be intercepted.

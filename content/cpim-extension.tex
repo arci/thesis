@@ -50,7 +50,7 @@ Another benefit of this architecture is that the choice of the NoSQL technology 
   \label{fig:cpim-kundera}
 \end{figure}
 
-The actual implementation is completely provider agnostic in the sense that actually Kundera is not required as depencency and in fact is not listed as a dependency for CPIM. At runtime, when a Kundera client will be listed in the dependency of the user application, as well as CPIM, the persistence provider dependency will be satisfied.
+\noindent The actual implementation is completely provider agnostic in the sense that actually Kundera is not required as depencency and in fact is not listed as a dependency for CPIM. At runtime, when a Kundera client will be listed in the dependency of the user application, as well as CPIM, the persistence provider dependency will be satisfied.
 This is due to the fact that the \texttt{CloudEntityManagerFactory} and the \texttt{CloudEntityManager} implements respectively the JPA interfaces  \texttt{EntityManagerFactory}  and \texttt{EntityManager}.
 The actual call to the runtime provider is within the \texttt{CloudEntityManager} that on construction instantiate an instance of the provider \texttt{EntityManager} and uses that reference to delegate every method execution to it.
 
@@ -87,6 +87,8 @@ To support data synchronization and migration, the NoSQL service was further mod
   \caption{High level schema of interaction TODO}
   \label{fig:high-level-interaction}
 \end{figure} 
+
+\noindent As can be stated from the schema, the CPIM library needs to connect to the migration system on order to understand when migration is in progress and in that case only bypass the interaction with Kundera by building a string representation of the user operation in a SQL format, then this string is sent to the commit log of \textit{Hegira} that then will pop the statements and translate the SQL statement into a datastore-specific operation.
 
 \subsection{Migration Manager}
 Interaction with the migration system is handled primarily by the \texttt{MigrationManager} class which follows a state pattern represented in the class diagram \ref{fig:migration-class-diagram}. 
@@ -157,6 +159,9 @@ TODO
 \subsubsection{Named Queries}
 TODO
 
+\noindent Named queries metadata are maintained inside the \texttt{PersistenceMetadata} class. This class, besides maintaining information about named queries, maintains principally a mapping between table names and their class canonical name (full package plus the class name). The content of this class is built the first time is queried (since is a singleton instance) and does not read directly the  configuration files but reads the \texttt{CloudMetadata} instance that has been modified to include all the required parameters that needs to be read from configuration files. 
+Information of table to class mapping is required for statements building and for sequence number handling both described later on.
+ 
 \section{Synchronization}
 \label{sec:synch}
 In the previous section, an overview of the required logic that has been built to integrate \textit{Hegira} was described. Now let's face the problem of synchronization that allows the migration to be performed live.
@@ -189,8 +194,46 @@ The main caveats is that such assignment has to be made even if the migration is
 
 \noindent In the code snippet is visible a call to the  \texttt{SeqNumberProvider} class which is the class responsible of actually interacts with the synchronization service of Hegira and handle the \textit{sequence numbers} i.e. the entities identifiers defined by Hegira to achieve synchronization. 
 
+\newparagraph TODO flow chart ??
+
 \subsubsection{Handling the sequence numbers}
-TODO
+The sequence numbers are handled by the class texttt{SeqNumberProvider}, a singleton instance that provides a simple way to get the assigned sequence numbers per table.
+\noindent The class diagram of this component and of the component it interacts with is shown in figure \ref{fig:seq-provider}
+
+\begin{figure}[tbh]
+  \centering
+  %\includegraphics[width=14cm]{}
+  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
+  \end{minipage}
+  \caption{Sequence numbers handling architecture TODO}
+  \label{fig:seq-provider}
+\end{figure} 
+
+\noindent The \texttt{SeqNumberProvider} keeps an instance of \texttt{SeqNumberDispenserImpl} for each table that needs to be persisted. The \texttt{SeqNumberDispenserImpl} is responsible of managing and maintaining the sequence numbers for a specific table by requesting when necessary more sequence number to the synchronization system.
+\texttt{SeqNumberDispenserImpl} is an implementation of the general interface \texttt{SeqNumberDispenser} made to be able, maybe in the future, to create more dispenser with different logics.
+
+More in detail the \texttt{SeqNumberProvider} is responsible of:
+\begin{enumerate}
+\item provide a unique access point where requesting the next assigned sequence number for a table
+\item initialize or restore the state of the dispenser for each of the persisted tables
+\end{enumerate}
+\noindent The first is performed through the method \texttt{getNextSequenceNumber(String tableName)} that delegates the operation to the correct \texttt{SeqNumberDispenser} associated to the requested table.
+The second functionality is achieved by requesting to the \texttt{SeqNumberDispenser}(s) their state representation and then saving it to a Blob storage or to file depending to the configuration file \textit{migration.xml} described in appendix \ref{app:migration}. The restoring phase is performed on construction, if a backup exists, either on file or on the Blob storage, the \texttt{SeqNumberDispenser}(s) are initialized giving them their state representation to restore.
+This mechanism in which the \texttt{SeqNumberProvider} is completely agnostic to the actual state representation of the \texttt{SeqNumberDispenser}(s) make future extensibility more easy and less constrained.
+
+\noindent The list of all the tables to be persisted is retrieved from the \texttt{PersistenceMetadata} mentioned previously for named queries.
+ 
+\subsection{Contacting the synchronization system}
+The interaction with the synchronization system as now was only described as a method call. Those calls are made on an external library (\texttt{zkWrapper}) that connects to a zookeeper instance to communicate with the synchronization system and receive the assigned sequence numbers.
+Since the zookeeper library issues threads to handle communication, was not possible to use this method for Google App Engine since the App Engine runtime does not permit to spawn thread.
+Two are the feature that requires to communicate with the synchronization system and so use the \texttt{zkWrapper}:
+\begin{itemize}
+\item the migration state listener that modify the \texttt{MigrationManager} state accordingly
+\item the \texttt{SeqNumberDispenser}(s) that needs to retrieve the sequence number assigned to tables
+\end{itemize} 
+\noindent The solution adopted was to modify the \texttt{zkWrapper} library to include an API version that handle the calls not by connecting directly to a zookeeper instance but contacting a remote server through some defined API that ultimately interacts with the migration system.
+
+\newparagraph A simple structure has been built to make both the \texttt{MigrationManager} and the \texttt{SeqNumberDispenser}(s) transparent to the type of client that is used to retrieve information from the synchronization system.
 
 \section{Build statements from user operations}
 \label{sec:statements}

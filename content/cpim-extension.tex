@@ -159,18 +159,31 @@ A first look at the JPQL specification \cite{book:projpa2} revealed that JPQL do
  
 \noindent Native queries are clearly not supported by Kundera and thus from the migration system clearly because there not so many storage that provides a SQL-like language to specify queries.
 Create queries through \texttt{CriteriaQuery} is currently not supported.
-The remaining two kind of methods to create queries are slightly different to handle.
+The remaining two kind of methods are the supported ones.
 
-\subsubsection{Queries through EntityManager}
-TODO
+\newparagraph JPA does not provide through the \texttt{Query} interface to get the JPQL representation of the query. Queries are supposed to be written as method argument when creating them through the \texttt{EntityManager} or called by name if they are defined as named queries upon some class.
+That was actually a problem since in order to be able to parse the query its JPQL representation is crucial.
 
-\subsubsection{Named Queries}
-TODO
+\noindent The easiest solution was to implement the interfaces for \texttt{Query} and \texttt{TypedQuery} respectively with the classes \texttt{CloudQuery} and \texttt{TypedCloudQuery}. This allows to transparently maintains the JPQL string representation of the query.
+The wrapping of the persistence provider queries is performed in the entity manager and is performed in the query creation method  in both the versions that return an instance of \texttt{Query} and \texttt{TypedQuery}. The actual JPA query generation is delegated to the persistence provider then, before returning to the user the result query is wrapped in a \texttt{CloudQuery} that contains the generated query and the string representation of it (used by the provider to build the query).
 
-\noindent Named queries metadata are maintained inside the \texttt{PersistenceMetadata} class. This class, besides maintaining information about named queries, maintains principally a mapping between table names and their class canonical name (full package plus the class name). The content of this class is built the first time is queried (since is a singleton instance) and does not read directly the  configuration files but reads the \texttt{CloudMetadata} instance that has been modified to include all the required parameters that needs to be read from configuration files. 
+\newparagraph For named queries things are little trickier since the user create instance of \texttt{Query} or \texttt{TypedQuery} just by giving the query name.
+\noindent As can be seen from the code snippet \ref{code:wrap-named-queries}, named queries metadata are maintained inside the \texttt{PersistenceMetadata} class. This class, besides maintaining information about named queries, maintains principally a mapping between table names and their class canonical name (full package plus the class name). The content of this class is built the first time is queried (since is a singleton instance) and does not read directly the  configuration files but reads the \texttt{CloudMetadata} instance that has been modified to include all the required parameters that needs to be read from configuration files. 
 Information of table to class mapping is required for statements building and for sequence number handling both described later on.
- 
-\section{Synchronization}
+
+\begin{algorithm}[h]
+  \begin{algorithmic}[1]
+    \Procedure{EntityManager.createNamedQuery}{$name$}   
+      \State $jpqlString \gets$ PersistenceMetagada.get($name$)
+      \State $providerQuery \gets$ $provider$.createNamedQuery($name$)
+      \State \Return CloudQuery($jpqlString$, $providerQuery$)
+    \EndProcedure
+  \end{algorithmic}	
+  \caption{Wrap named queries}
+  \label{code:wrap-named-queries}
+\end{algorithm}
+
+\section{Data synchronization}
 \label{sec:synch}
 In the previous section, an overview of the required logic that has been built to integrate \textit{Hegira} was described. Now let's face the problem of synchronization that allows the migration to be performed live.
 

@@ -46,15 +46,15 @@ Another benefit of this architecture is that the choice of the NoSQL technology 
 \begin{figure}[tbh]
   \centering
   \includegraphics[width=14cm]{images/cpim_nosql_kundera}
-  \caption{The modified NoSQL service architecture TODO add interfaces}
+  \caption{The modified NoSQL service architecture}
   \label{fig:cpim-kundera}
 \end{figure}
 
-\noindent The actual implementation is completely provider agnostic in the sense that actually Kundera is not required as depencency and in fact is not listed as a dependency for CPIM. At runtime, when a Kundera client will be listed in the dependency of the user application, as well as CPIM, the persistence provider dependency will be satisfied.
+\noindent The actual implementation is completely provider agnostic in the sense that actually Kundera is not required as dependency and in fact is not listed as a dependency for CPIM. At run-time, when a Kundera client will be listed in the dependency of the user application, as well as CPIM, the persistence provider dependency will be satisfied.
 This is due to the fact that the \texttt{CloudEntityManagerFactory} and the \texttt{CloudEntityManager} implements respectively the JPA interfaces  \texttt{EntityManagerFactory}  and \texttt{EntityManager}.
 The actual call to the runtime provider is within the \texttt{CloudEntityManager} that on construction instantiate an instance of the provider \texttt{EntityManager} and uses that reference to delegate every method execution to it.
 
-\noindent This can seems a over-designed architecture but it tourns out to be extremely necessary in order to provides a transparent interaction with the migration system as it will explained later on in this chapter.
+\noindent This can seems a over-designed architecture but it turns out to be extremely necessary in order to provides a transparent interaction with the migration system as it will explained later on in this chapter.
 
 \subsection{Problems encountered}
 Kundera provides an uniform access through the JPA interface independently from the provider, which is somehow defined in the \textit{persistence.xml} through the Kundera client selection. For this reasons all the old libraries that provides a JPA implementation for a specific provider can be removed from the CPIM. 
@@ -81,14 +81,12 @@ To support data synchronization and migration, the NoSQL service was further mod
 
 \begin{figure}[tbh]
   \centering
-  %\includegraphics[width=14cm]{}
-  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
-  \end{minipage}
-  \caption{High level schema of interaction TODO}
+  \includegraphics[width=12cm]{images/high_level_interaction}
+  \caption{High level schema of interaction}
   \label{fig:high-level-interaction}
 \end{figure} 
 
-\noindent As can be stated from the schema, the CPIM library needs to connect to the migration system on order to understand when migration is in progress and in that case only bypass the interaction with Kundera by building a string representation of the user operation in a SQL format, then this string is sent to the commit log of \textit{Hegira} that then will pop the statements and translate the SQL statement into a datastore-specific operation.
+\noindent In the above schema, \textit{dashed} lines represents the normal flow of data from the user application to the local database, the filled ones represents the behavior in case a migration is in process and so the local database is bypassed. CPIM library needs to connect to the migration system in order to understand when migration is in progress and in that case only bypass the interaction with Kundera by building a string representation of the user operation in a SQL format, then this string is sent to the commit log of \textit{Hegira} that then will pop the statements and translate those SQL statement into a datastore-specific operation.
 
 \subsection{Migration Manager}
 Interaction with the migration system is handled primarily by the \texttt{MigrationManager} class which follows a state pattern represented in the class diagram \ref{fig:migration-class-diagram}. 
@@ -205,8 +203,6 @@ public void persist(Object entity) {
 
 \noindent In the code snippet is visible a call to the  \texttt{SeqNumberProvider} class which is the class responsible of actually interacts with the synchronization service of Hegira and handle the \textit{sequence numbers} i.e. the entities identifiers defined by Hegira to achieve synchronization. 
 
-\newparagraph TODO flow chart ??
-
 \subsubsection{Handling the sequence numbers}
 The sequence numbers are handled by the class texttt{SeqNumberProvider}, a singleton instance that provides a simple way to get the assigned sequence numbers per table.
 \noindent The class diagram of this component and of the component it interacts with is shown in figure \ref{fig:seq-provider}
@@ -223,7 +219,7 @@ The sequence numbers are handled by the class texttt{SeqNumberProvider}, a singl
 \noindent The \texttt{SeqNumberProvider} keeps an instance of \texttt{SeqNumberDispenserImpl} for each table that needs to be persisted. The \texttt{SeqNumberDispenserImpl} is responsible of managing and maintaining the sequence numbers for a specific table by requesting when necessary more sequence number to the synchronization system.
 \texttt{SeqNumberDispenserImpl} is an implementation of the general interface \texttt{SeqNumberDispenser} made to be able, maybe in the future, to create more dispenser with different logics.
 
-More in detail the \texttt{SeqNumberProvider} is responsible of:
+\noindent More in detail the \texttt{SeqNumberProvider} is responsible of:
 \begin{enumerate}
 \item provide a unique access point where requesting the next assigned sequence number for a table
 \item initialize or restore the state of the dispenser for each of the persisted tables
@@ -269,7 +265,20 @@ Since no listener can be register and asynchronously notified of a change in the
 
 \section{Build statements from user operations}
 \label{sec:statements}
-To be able to create SQL-like statements from queries and operation upon entity objects, the first step has been to introduce the \textit{statement} concept in the library. This has been done through the abstract class \texttt{Statements} that encapsulate the structure needed for maintaining the necessary data for the statements and is  then extended by the three classes \texttt{InsertStatement}, \texttt{UpdateStatement} and \texttt{DeleteStatement} that basically implements the \texttt{toStirng()} method to acutally build the specific statement.
+Before focusing on the statements building, since migration system interaction are getting many, it may be usefull to visualize the interaction in the high-level flow chart presented in figure \ref{fig:flow-chart}.
+
+\begin{figure}[tbh]
+  \centering
+  %\includegraphics[width=14cm]{}
+  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
+  \end{minipage}
+  \caption{Interaction flow chart TODO}
+  \label{fig:flow-chart}
+\end{figure} 
+
+\noindent In the previous section we've focused on the sequence number retrival, in this section we'll focus on the generation of the statements to be sent to \textit{Hegira}.
+
+\newparagraph To be able to create SQL-like statements from queries and operation upon entity objects, the first step has been to introduce the \textit{statement} concept in the library. This has been done through the abstract class \texttt{Statements} that encapsulate the structure needed for maintaining the necessary data for the statements and is  then extended by the three classes \texttt{InsertStatement}, \texttt{UpdateStatement} and \texttt{DeleteStatement} that basically implements the \texttt{toStirng()} method to acutally build the specific statement.
 The class diagram of this statements structure is shown in figure \ref{fig:statements}
 
 \begin{figure}[tbh]
@@ -325,9 +334,7 @@ The translation we want to perform is shown in figure \ref{fig:query-translation
   \label{fig:query-translation}
 \end{figure} 
 
-\noindent To take inspiration, the Kundera code was inspected to understand how they parsed JPQL queries but turns out they used a custom quite-complex parser expecially for validation purposes. Even looking online no specific JPQL parser has been found so, since we are not interested in validating queries or build complex logic upon them, a simple and less time consuming solution was to write a lexer that through regular expressions tokenize the JPQL string. An instance of \texttt{Statement} is then build while iterating over the tokes.
-
-  
+\noindent To be inspired, the Kundera code was inspected to understand how they parsed JPQL queries but turns out they used a custom quite-complex parser expecially for validation purposes. Even looking online no specific JPQL parser has been found so, since we are not interested in validating queries or build complex logic upon them, a simple and less time consuming solution was to write a lexer that through regular expressions tokenize the JPQL string. An instance of \texttt{Statement} is then build while iterating over the tokes
 
 \subsection{Sending statements to Hegira}
 TODO

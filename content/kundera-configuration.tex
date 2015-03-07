@@ -1,8 +1,135 @@
 \section{Introduction}
-Introduzione agli argomenti trattati nell'appendice, dalle 4 alle 10 righe.
+In this appendix are described in detail the configurations that are available for the two developed Kundera extensions.
+Are described the required properties that needs to be configured in the \textit{tersistence.xml} file and the available datastore specific properties that can be defined in the external datastore specific property file.
+
+\section{Common configuration}
+All the configuration is performed in the \textit{persistence.xml} file and so it follows the JPA standard.
+The skeleton of the file is as follow:
+
+\begin{verbatim}
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<persistence ... >
+    <persistence-unit name="...">
+    <provider>com.impetus.kundera.KunderaPersistence</provider>
+        <class> ... </class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <!-- kundera properties -->
+        </properties>
+    </persistence-unit>
+</persistence>
+\end{verbatim}
+
+\noindent A name for the persistence unit is needed as it will be referenced inside the classes of the model.
+In the \texttt{<calss>} tag must be listed, one per tag, the full name of the classes that needs to be handled through this persistence unit.
+The only differences for the extensions are the kundera properties that needs to be specified inside the \texttt{<properties>} tag.
 
 \section{GAE Datastore}
 \label{appendix:datastore-config}
+The configuration is done in the \textit{persistence.xml} file, two configuration are possible:
+\begin{enumerate}
+\item use the datastore instance within the appengine application
+\item use a remote datastore instance through remote API
+\end{enumerate}
+
+\newparagraph The properties to be specified inside the \texttt{<properties>} tag for the first case are:
+\begin{itemize}
+\item \texttt{kundera.client.lookup.class} \textit{required}, must be set to \\ \texttt{it.polimi.kundera.client.datastore.DatastoreClientFactory}
+\item \texttt{kundera.ddl.auto.prepare} \textit{optional}, possible values are:
+\begin{itemize}
+\item \texttt{create} which creates the schema (if not already exists)
+\item \texttt{create-drop} which drop the schema (if exists) and creates it
+\end{itemize}
+\item \texttt{kundera.client.property} \textit{optional}, the name of the xml file containing the datastore specific properties.
+\end{itemize}
+
+\noindent In addition to the previous properties and in case of remote API, those properties are also necessary:
+\begin{itemize}
+\item \texttt{kundera.nodes} \textit{required}, url of the appengine application on which the datastore is located
+\item \texttt{kundera.port} \textit{optional} default: 443, port used to connect to datastore
+\item \texttt{kundera.username} \textit{required}, username of an admin on the remote server
+\item \texttt{kundera.password} \textit{required}, password of an admin on the remote server
+\end{itemize}
+
+\noindent To test against local appengine runtime emulator the configuration is as follow:
+
+\begin{verbatim}
+<property name="kundera.nodes" value="localhost"/>
+<property name="kundera.port" value="8888"/>
+<property name="kundera.username" value="username"/>
+<property name="kundera.password""/>
+\end{verbatim}
+
+\noindent the value for \texttt{kundera.password} does not matter.
+
+\subsubsection{Datastore specific properties file}
+A file with client specific properties can be created and placed inside the classpath, you need to specify its name in the persistence.xml file.
+The skeleton of the file is the following:
+
+\begin{verbatim}
+<?xml version="1.0" encoding="UTF-8"?>
+<clientProperties>
+    <datastores>
+        <dataStore>
+            <name>datastore</name>
+            <connection>
+                <properties>
+                    <property name="..." value="..."></property>
+                </properties>
+            </connection>
+        </dataStore>
+    </datastores>
+</clientProperties>
+\end{verbatim}
+
+\noindent The available properties are:
+\begin{itemize}
+\item \texttt{datastore.policy.read} [eventual|strong] \textbf{default: strong}, set the read policy.
+\item \texttt{datastore.deadline optional}, RPCs deadline in seconds.
+\item \texttt{datastore.policy.transaction} [auto|none] \textbf{default: none}, define if use implicit transaction.
+
+\end{itemize}
 
 \section{Azure Table}
 \label{appendix:table-config}
+The configuration is done in the persistence.xml file, the properties to be specified inside the <properties> tag are:
+\begin{itemize}
+\item \texttt{kundera.username} \textit{required}, the storage account name (from azure portal)
+\item \texttt{kundera.password} \textit{required}, the storage account key (from azure portal)
+\item \texttt{kundera.client.lookup.class} \textit{required}, and set to\\\texttt{it.polimi.kundera.client.azuretable.AzureTableClientFactory}
+\item \texttt{kundera.ddl.auto.prepare} \textit{optional}, possible values are:
+\begin{itemize}
+\item \texttt{create} which creates the schema (if not already exists)
+\item \texttt{create-drop} which drop the schema (if exists) and creates it
+\end{itemize}
+\item \texttt{kundera.client.property} \textit{optional}, the name of the xml file containing the datastore specific properties.
+\end{itemize}
+
+\subsubsection{Datastore specific properties file}
+A file with client specific properties can be created and placed inside the classpath, you need to specify its name in the persistence.xml file.
+The skeleton of the file is the following:
+
+\begin{verbatim}
+<?xml version="1.0" encoding="UTF-8"?>
+<clientProperties>
+    <datastores>
+        <dataStore>
+            <name>azure-table</name>
+            <connection>
+                <properties>
+                    <property name="..." value="..."></property>
+                </properties>
+            </connection>
+        </dataStore>
+    </datastores>
+</clientProperties>
+\end{verbatim}
+
+\noindent The available properties are:
+\begin{itemize}
+\item \texttt{table.emulator} [true|false] \textbf{default: false}. If present (and set to true) storage emulator is used. When using dev server kundera.username and kundera.password in persistence xml are ignored.
+\item \texttt{table.emulator.proxy} \textbf{default: localhost}. If storage emulator is used set the value for the emulator proxy.
+\item \texttt{table.protocol} [http|https] \textbf{default: https}. Define the protocol to be used within requests.
+\item \texttt{table.partition.default} \textbf{default: DEFAULT}.
+The value for the default partition key, used when no one is specified by the user.
+\end{itemize}

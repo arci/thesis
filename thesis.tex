@@ -43,7 +43,7 @@
 \clubpenalty=2500
 
 %--------------------------------------------------------
-% pages size settings
+% pages size setup
 %--------------------------------------------------------
 \renewcommand{\headrulewidth}{0.5pt}
 \hoffset=-15mm
@@ -60,7 +60,7 @@
 %\marginparwidth=0mm
 
 %--------------------------------------------------------------
-% impostazione headers
+% page headers setup
 %--------------------------------------------------------------
 \pagestyle{fancy}
 \renewcommand{\chaptermark}[1]{\markboth{#1}{}}
@@ -90,10 +90,15 @@
 \setcounter{page}{1}
 \pagestyle{empty}
 
+%--------------------------------------------------------------------------------
+% listings configiuration
+%--------------------------------------------------------------------------------
 \lstset{
 	frame=tb,
+	captionpos=b,
+	basicstyle=\footnotesize,
 	numbers=left,
-	numbersep=5pt
+	aboveskip=1em
 }
 
 %--------------------------------------------------------------------------------
@@ -123,8 +128,8 @@
 \cleardoublepage
 \listoffigures
 \listoftables
-\listofalgorithms
-\lstlistoflistings
+%\listofalgorithms
+%\lstlistoflistings
 
 \pagenumbering{arabic}
 

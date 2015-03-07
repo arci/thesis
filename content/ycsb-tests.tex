@@ -25,12 +25,12 @@ this will create a directory called \texttt{dependency} in the target directory 
 \label{appendix:ycsb-low-level}
 To run the benchmarks, after having built the project, the two phases of the YCSB tests can be executed through the command:
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash, caption=Run low-level API benchmarks, numbers=none]
 java -cp KUNDERA-BENCHMARK-JAR-LOCATION:PATH-TO-DEPENDENCY-FOLDER/*
 com.yahoo.ycsb.Client -t -db DATABASE-ADAPTER-CLASS-TO-USE
 -P PATH-TO-WORKLOAD -P PATH-TO-PROPERTY-FILE 
 -s -threads THREAD-TO-USE -PHASE > OUTPUT_FILE
-\end{verbatim}
+\end{lstlisting}
 
 \noindent where PHASE should be \texttt{load} for \textbf{load} phase or \texttt{t} for \textbf{transaction} phase.
 
@@ -78,11 +78,11 @@ The properties must be configured inside the file because, to be more accurate w
 \label{appendix:ycsb-kundera}
 To run the benchmarks, after having built the project, the two phases of the YCSB tests can be executed through the command:
 
-\begin{verbatim}
+\begin{lstlisting}[language=bash, caption=Run Kundera clients benchmarks, numbers=none]
 java -cp KUNDERA-BENCHMARK-JAR-LOCATION:PATH-TO-DEPENDENCY-FOLDER/*
 com.yahoo.ycsb.Client -t -db DATABASE-ADAPTER-CLASS-TO-USE
 -P PATH-TO-WORKLOAD -s -threads THREAD-TO-USE -PHASE > OUTPUT_FILE
-\end{verbatim}
+\end{lstlisting}
 
 \noindent where PHASE should be \texttt{load} for \textbf{load} phase or \texttt{t} for \textbf{transaction} phase.
 

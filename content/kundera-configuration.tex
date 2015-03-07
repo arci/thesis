@@ -4,9 +4,9 @@ Are described the required properties that needs to be configured in the \textit
 
 \section{Common configuration}
 All the configuration is performed in the \textit{persistence.xml} file and so it follows the JPA standard.
-The skeleton of the file is as follow:
+The template of the file is as follow:
 
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=persistence.xml template]
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <persistence ... >
     <persistence-unit name="...">
@@ -18,7 +18,7 @@ The skeleton of the file is as follow:
         </properties>
     </persistence-unit>
 </persistence>
-\end{verbatim}
+\end{lstlisting}
 
 \noindent A name for the persistence unit is needed as it will be referenced inside the classes of the model.
 In the \texttt{<calss>} tag must be listed, one per tag, the full name of the classes that needs to be handled through this persistence unit.
@@ -55,20 +55,20 @@ The GAE Datastore extension is available on github at \url{https://github.com/Ar
 
 \noindent To test against local appengine runtime emulator the configuration is as follow:
 
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=GAE Datastore emulator configuration]
 <property name="kundera.nodes" value="localhost"/>
 <property name="kundera.port" value="8888"/>
 <property name="kundera.username" value="username"/>
-<property name="kundera.password""/>
-\end{verbatim}
+<property name="kundera.password" value=""/>
+\end{lstlisting}
 
 \noindent the value for \texttt{kundera.password} does not matter.
 
 \subsubsection{Datastore specific properties file}
 A file with client specific properties can be created and placed inside the classpath, you need to specify its name in the persistence.xml file.
-The skeleton of the file is the following:
+The template of the file is the following:
 
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=GAE Datastore - datastore specific configuration]
 <?xml version="1.0" encoding="UTF-8"?>
 <clientProperties>
     <datastores>
@@ -82,7 +82,7 @@ The skeleton of the file is the following:
         </dataStore>
     </datastores>
 </clientProperties>
-\end{verbatim}
+\end{lstlisting}
 
 \noindent The available properties are:
 \begin{itemize}
@@ -111,9 +111,9 @@ The Azure Table extension is available on github at \url{https://github.com/Arci
 
 \subsubsection{Datastore specific properties file}
 A file with client specific properties can be created and placed inside the classpath, you need to specify its name in the persistence.xml file.
-The skeleton of the file is the following:
+The template of the file is the following:
 
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=Azure Tables - datastore specific configuration]
 <?xml version="1.0" encoding="UTF-8"?>
 <clientProperties>
     <datastores>
@@ -127,7 +127,7 @@ The skeleton of the file is the following:
         </dataStore>
     </datastores>
 </clientProperties>
-\end{verbatim}
+\end{lstlisting}
 
 \noindent The available properties are:
 \begin{itemize}

@@ -2,9 +2,9 @@
 In this appendix is presented the new configuration file added to CPIM to support the configuration of the migration system.
 
 \section{\textit{migration.xml}}
-The skeleton of the \textit{migration.xml} file is the following:
+The template of the \textit{migration.xml} file is the following:
 
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=migration.xml template]
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <migration>
     <zooKeeper>
@@ -20,9 +20,9 @@ The skeleton of the \textit{migration.xml} file is the following:
     </backup>
     <followCascades>...</followCascades>
 </migration>
-\end{verbatim}
+\end{lstlisting}
 
-\noindent Three are the main section that can be configured:
+\newparagraph Three are the main section that can be configured:
 \begin{enumerate}
 \item \textbf{zooKeeper client}
 \item \textbf{sequence number backup}
@@ -36,26 +36,26 @@ In case the value is set to \textit{true}, the statement builders, when builds t
 ZooKeeper client must be configured in the \textit{thread} of \textit{http} version as desbribed in \ref{sec:synch}.
 
 \paragraph{Thread version} An example configuration would be the following one:
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=ZooKeeper - thread type configuration]
 <zooKeeper>
     <type>thread</type>
     <connection>localhost:2181</connection>
     <range>50</range>
 </zooKeeper>
-\end{verbatim}
+\end{lstlisting}
 
 \noindent The \texttt{<connection>} tag is \textbf{required} and should contains an address in the form \texttt{host:port} which should be the host address and the port on which the ZooKeeper service is running.
 
 \noindent The \texttt{<range>} is \textit{optional} since the default is \textbf{10} and is the default dimension of the range that \texttt{SeqNumberDispenser}(s) use to ask more sequence numbers to the synchronization system.
 
 \paragraph{Http version} An example configuration would be the following one:
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=ZooKeeper - http type configuration]
 <zooKeeper>
     <type>http</type>
     <connection>http://server.com/hegira-api/zkService</connection>
     <range>50</range>
 </zooKeeper>
-\end{verbatim}
+\end{lstlisting}
 
 \noindent In this case the \texttt{<connection>} tag should contains the API base path of the server in which the service is running.
 
@@ -66,33 +66,33 @@ A sequence number backup can be configured either on a blob storage (when runnin
 
 \newparagraph  The \texttt{<execute>} tag define if backup should or should not be performed, the possible values are \textit{yes} or \textit{no}. The tag is \textit{optional} since its default is \textbf{yes}.
 It's supposed to be used for turning off the backup, in this case the configuration should be simply:
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=Turning off sequence numbers backup]
 <backup>
     <execute>no</execute>
 </backup>
-\end{verbatim}
+\end{lstlisting}
 
 \newparagraph For the other configuration options, two cases must be distinguished:
 
 \paragraph{Backup to Blob} An example configuration would be the following one:
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=Backup to blob]
 <backup>
     <type>blob</type>
     <prefix>SeqNumber_</prefix>
 </backup>
-\end{verbatim}
+\end{lstlisting}
 
 \noindent The text in the \texttt{<prefix>} tag will be prefixed to each blob created to avoid file name conflicts.
 This prefix is an \textit{optional} field since as default is set to \textbf{SeqNumber\textunderscore}.
 
 \paragraph{Backup to file} An example configuration would be the following one:
-\begin{verbatim}
+\begin{lstlisting}[language=XML, caption=Backup to file]
 <backup>
     <type>file</type>
     <directory>/backups</directory>
     <prefix>SeqNumber_</prefix>
 </backup>
-\end{verbatim}
+\end{lstlisting}
 
 \noindent The \texttt{<directory>} tag is mandatory and must contain the path to the directory in which the backup file will be placed and retrieved in case they needs to be restored.
 

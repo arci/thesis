@@ -313,7 +313,7 @@ To do this in an agile way a builder class has been implemented.
   \label{fig:builders}
 \end{figure} 
 
-\noindent The main abstract class \texttt{StatementBuilder} proivdes the facilities to build a generic statements both from object and from a query string.
+\noindent The main abstract class \texttt{StatementBuilder} provides the facilities to build a generic statements both from object and from a query string.
 Since many operations are the same for all the three types of statements to be built, the \texttt{StatementBuilder} class provides an implementation of those common behaviors, and define some \textit{abstract} methods that are statement-specific and handled in different ways in the three statement builder classes: \texttt{InsertBuilder}, \texttt{UpdateBuilder} and \texttt{DeleteBuilder}.
 This degree of abstraction has been possible due to the abstract definition of the \texttt{Statement} class, this allow to the \texttt{StatemetnBuilder} to acts indipendently from the specific statement type and then delegate to the specific builder in the cases in which such abstraction is not sufficient anymore.
 
@@ -321,20 +321,23 @@ This degree of abstraction has been possible due to the abstract definition of t
 TODO
 
 \subsection{Build statements from JPQL queries}
-For query there's not the problem of cascading since there is only the statement the user specify to be sent to \textit{Hegira}.
-The main problem for JPQL queries was parsing. Since JPQL is a  object query language it make use of an object identifier on which use the dot notation to specify the object properties.
-The translation we want to perform is shown in figure \ref{fig:query-translation}.
+Cascade modification for \textit{UPDATE} and \textit{DELETE} statements should raise if the statement, beside modifying the entity directly stated in the query, modify another related entity. Fortunately this is not a possible case for JPQL, for the object case this is possible since objects keeps reference to the related entity and if that has been modified, a cascade operation should be performed.
+ 
+\newparagraph The main problem for JPQL queries is parsing. Since JPQL is a  object query language it make use of an object identifier on which use the dot notation to specify the object properties, furthermore JPQL allows the user to define parameter placeholders (the ones starting with ":") that are filled later through the method \texttt{setParameter(String name, Object value)} of the \texttt{Query} class.
 
-\begin{figure}[tbh]
-  \centering
-  %\includegraphics[width=14cm]{}
-  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
-  \end{minipage}
-  \caption{JPQL to SQL translation TODO in alto JPQL freccia verso il basso SQL}
-  \label{fig:query-translation}
-\end{figure} 
+\noindent The translation that should be performed is shown in the following snippet:
 
-\noindent To be inspired, the Kundera code was inspected to understand how they parsed JPQL queries but turns out they used a custom quite-complex parser expecially for validation purposes. Even looking online no specific JPQL parser has been found so, since we are not interested in validating queries or build complex logic upon them, a simple and less time consuming solution was to write a lexer that through regular expressions tokenize the JPQL string. An instance of \texttt{Statement} is then build while iterating over the tokes
+\begin{lstlisting}[language=SQL, caption=JPQL to SQL translation, label=code:query-translation, numbers=none]
+# JPQL query string
+UPDATE Test t SET t.name = :name WHERE t.salary >= :salary
+
+# SQL version
+UPDATE Test SET name = 'Fabio' WHERE salary >= '42'
+\end{lstlisting} 
+
+\noindent The parameter mapping can be done easily since \texttt{CloudQuery} and \texttt{TypedCloudQuery} by implementing the required JPA interfaces can intercept the \texttt{setParameter} method and so maintain the name-value mapping.
+
+\newparagraph To solve the parsing problem, the Kundera code was inspected to understand how JPQL queries are parsed but turns out they used a custom quite-complex parser especially for validation purposes. Even looking online no specific JPQL parser has been found so, since we are not interested in validating queries or build complex logic upon them, a simple and less time consuming solution was to write a lexer that through regular expressions tokenize the JPQL string. An instance of \texttt{Statement} is then build while iterating over the tokes.
 
 \subsection{Sending statements to Hegira}
 TODO

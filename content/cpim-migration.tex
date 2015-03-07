@@ -1,4 +1,71 @@
 \section{Introduction}
-Introduzione agli argomenti trattati nell'appendice, dalle 4 alle 10 righe.
+In this appendix is presented the new configuration file added to CPIM to support the configuration of the migration system.
 
 \section{\textit{migration.xml}}
+The skeleton of the \textit{migration.xml} file is the following:
+
+\begin{verbatim}
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<migration>
+    <zooKeeper>
+        <type>...</type>
+        <connection>...</connection>
+        <range>...</range>
+    </zooKeeper>
+    <backup>
+        <execute>...</execute>
+        <type>...</type>
+        <directory>...</directory>
+        <prefix>...</prefix>
+    </backup>
+    <followCascades>...</followCascades>
+</migration>
+\end{verbatim}
+
+\noindent Three are the main section that can be configured:
+\begin{enumerate}
+\item \textbf{zooKeeper client}
+\item \textbf{sequence number backup}
+\item \textbf{follow cascades while build statements}
+\end{enumerate}
+
+The first two options are the most complex and are described in the following sections, the third option can assume the values of \textit{true} or \textit{false} but is \textit{optional} since is set to \textbf{false} by default.
+In case the value is set to \textit{true}, the statement builders, when builds the statements from objects, will read the values for the \texttt{@CascadeType} annotation and, if necessary, builds the cascade statements and sends them to \textit{Hegira} in the correct execution order as described in \ref{sec:statements} 
+
+\subsection{Configure the zooKeeper client}
+
+\subsection{Configure a sequence number backup}
+A sequence number backup can be configured either on a blob storage (when running on PaaS) or to file (when running to IaaS).
+
+\noindent The \texttt{<execute>} tag define if backup should or should not be performed, the possible values are \textit{yes} or \textit{no}. This tag is \textit{optional} since is set as default to \textbf{yes}.
+
+\newparagraph For the other configuration options, two cases must be distinguished:
+
+\paragraph{Backup to Blob} An example configuration would be the following one:
+\begin{verbatim}
+<backup>
+    <type>blob</type>
+    <prefix>SeqNumber_</prefix>
+</backup>
+\end{verbatim}
+
+\noindent The text in the \texttt{<prefix>} tag will be prefixed to each blob created to avoid file name conflicts.
+This prefix is an \textit{optional} field since as default is set to \textbf{SeqNumber\textunderscore}.
+
+\paragraph{Backup to file} An example configuration would be the following one:
+\begin{verbatim}
+<backup>
+    <type>file</type>
+    <directory>/backups</directory>
+    <prefix>SeqNumber_</prefix>
+</backup>
+\end{verbatim}
+
+\noindent The \texttt{<directory>} tag is mandatory and must contain the path to the directory in which the backup file will be placed and retrieved in case they needs to be restored.
+
+\noindent For the \texttt{<prefix>} tag, the same considerations made for backup to blob applies.
+
+\section{Use CPIM without migration system}
+The \textit{migration.xml} file is not necessary if the user won't use the migration system. If the file is not present inside the \texttt{META-INF} folder, the NoSQL service will interact only with the underlying persistence provider without instantiating any of the required classes.
+
+\noindent This is possible due to the lazy initialization of those components that are initialized only the first time are actually used since are built with a singleton pattern.

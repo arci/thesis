@@ -27,7 +27,7 @@ The interoperability with the supported clouds is made possible thanks to the pr
 Each provider-specific \texttt{EntityManagerFactory} is responsible of instantiating an \texttt{EntityManager} which is the gateway to the underlying database. All the vendor-specific \texttt{EntityManager}(s) implement the common \texttt{CloudEntityManager} interface to achieve uniformity in methods and behavior.
 The various implementation of the \texttt{CloudEntityManager} delegates every method call to the vendor-specific persistence provider. 
 
-\newparagraph JPA is not a default language for NoSQL (as described in chapter \ref{chapter:sota}) but, due to its wide usage among Java developers, several JPA implementation has been build upon various NoSQL databases both developed by the vendor of the NoSQL storage or by the community.
+\newparagraph JPA is not a default language for NoSQL (as described in chapter \ref{chap:sota}) but, due to its wide usage among Java developers, several JPA implementation has been build upon various NoSQL databases both developed by the vendor of the NoSQL storage or by the community.
 This means that to support the NoSQL service through the JPA interface, an implementation of the JPA interface must be found. There are so three different persistence providers, one for each cloud provider:
 \begin{itemize}
 \item for \textit{Google Datastore} its used an official JPA implementation, available inside the SDK
@@ -210,7 +210,7 @@ The main caveats is that such assignment has to be made even if the migration is
     \EndProcedure
   \end{algorithmic}	
   \caption{Persist operation}
-  \label{code:isMigrating}
+  \label{code:persist}
 \end{algorithm}
 
 \noindent In the code snippet is visible a call to the  \texttt{SeqNumberProvider} class which is the class responsible of actually interacts with the synchronization service of Hegira and handle the \textit{sequence numbers} i.e. the entities identifiers defined by Hegira to achieve synchronization. 
@@ -243,6 +243,8 @@ The second functionality is achieved by requesting to the \texttt{SeqNumberDispe
 This mechanism in which the \texttt{SeqNumberProvider} is completely agnostic to the actual state representation of the \texttt{SeqNumberDispenser}(s) make future extensibility more easy and less constrained.
 
 \noindent The list of all the tables to be persisted is retrieved from the \texttt{PersistenceMetadata} mentioned previously for named queries.
+
+\newparagraph TODO spiegare come ès tato implementato \texttt{SeqNumberDispenserImpl }e che si può modificare a runtime
  
 \subsection{Contacting the synchronization system}
 The interaction with the synchronization system as now was only described as a method call. Those calls are made on an external library (\texttt{zkWrapper}) that connects to a zookeeper instance to communicate with the synchronization system and receive the assigned sequence numbers.
@@ -277,10 +279,66 @@ Since no listener can be register and asynchronously notified of a change in the
 
 \section{Build statements from user operations}
 \label{sec:statements}
+To be able to create SQL-like statements from queries and operation upon entity objects, the first step has been to introduce the \textit{statement} concept in the library. This has been done through the abstract class \texttt{Statements} that encapsulate the structure needed for maintaining the necessary data for the statements and is  then extended by the three classes \texttt{InsertStatement}, \texttt{UpdateStatement} and \texttt{DeleteStatement} that basically implements the \texttt{toStirng()} method to acutally build the specific statement.
+The class diagram of this statements structure is shown in figure \ref{fig:statements}
+
+\begin{figure}[tbh]
+  \centering
+  %\includegraphics[width=14cm]{}
+  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
+  \end{minipage}
+  \caption{Statements structure TODO}
+  \label{fig:statements}
+\end{figure} 
+
+The \texttt{Statement} class maintains three main fields:
+\begin{itemize}
+\item \texttt{table}, that contains the table which the statements refer to
+\item \texttt{fields}, a list of element of class \texttt{Filter} that contains the elements presents in the \textit{SET} clause in case of \textit{UPDATE} statements or the inserted values in case of \textit{INSERT} statements
+\item \texttt{conditions}, a linked list of \texttt{Filter} elements and \texttt{CompareOperator} elements, to represents the \textit{WHERE} clause 
+\end{itemize} 
+
+\noindent Since not all those elements are needed in all the statements type, specific statements implementations overrides the method that \texttt{Statements} provide for handling those fields to deny their usage. For example since the \textit{INSERT} statements does not permit a \textit{WHERE} clause, trying to add a condition to the statement will result in an \texttt{UnsupportedOperationException}. Another case is the \textit{DELETE} statements that requires only the \textit{WHERE} clause so the exception is thrown trying to add to it a \textit{field}.
+
+\newparagraph Defined the statements structure is then necessary to provide a way to build the correct instance of statement starting by the query or the operation on an object.
+To do this in an agile way a builder class has been implemented.
+
+\noindent The class diagram of the builders, shown in figure \ref{fig:builders}, shows that the same pattern used for statements has been adopted.
+
+\begin{figure}[tbh]
+  \centering
+  %\includegraphics[width=14cm]{}
+  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
+  \end{minipage}
+  \caption{Statement builders TODO}
+  \label{fig:builders}
+\end{figure} 
+
+\noindent The main abstract class \texttt{StatementBuilder} proivdes the facilities to build a generic statements both from object and from a query string.
+Since many operations are the same for all the three types of statements to be built, the \texttt{StatementBuilder} class provides an implementation of those common behaviors, and define some \textit{abstract} methods that are statement-specific and handled in different ways in the three statement builder classes: \texttt{InsertBuilder}, \texttt{UpdateBuilder} and \texttt{DeleteBuilder}.
+This degree of abstraction has been possible due to the abstract definition of the \texttt{Statement} class, this allow to the \texttt{StatemetnBuilder} to acts indipendently from the specific statement type and then delegate to the specific builder in the cases in which such abstraction is not sufficient anymore.
+
 \subsection{Build statements from objects}
 TODO
+
 \subsection{Build statements from JPQL queries}
-TODO
+For query there's not the problem of cascading since there is only the statement the user specify to be sent to \textit{Hegira}.
+The main problem for JPQL queries was parsing. Since JPQL is a  object query language it make use of an object identifier on which use the dot notation to specify the object properties.
+The translation we want to perform is shown in figure \ref{fig:query-translation}.
+
+\begin{figure}[tbh]
+  \centering
+  %\includegraphics[width=14cm]{}
+  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
+  \end{minipage}
+  \caption{JPQL to SQL translation TODO in alto JPQL freccia verso il basso SQL}
+  \label{fig:query-translation}
+\end{figure} 
+
+\noindent To take inspiration, the Kundera code was inspected to understand how they parsed JPQL queries but turns out they used a custom quite-complex parser expecially for validation purposes. Even looking online no specific JPQL parser has been found so, since we are not interested in validating queries or build complex logic upon them, a simple and less time consuming solution was to write a lexer that through regular expressions tokenize the JPQL string. An instance of \texttt{Statement} is then build while iterating over the tokes.
+
+  
+
 \subsection{Sending statements to Hegira}
 TODO
 

@@ -125,19 +125,16 @@ CRUD operation are always handled in the \texttt{EntityManager}, three are the m
 \noindent User is not directly invoking method on the provider entity manager but interacts with the persistence provider through the \texttt{CloudEntityManager} class. Without the support for the migration system the \texttt{CloudEntityManager}, as stated previously, delegates every method call to the provider entity manager.
 To integrate migration and synchronization logic, the methods mentioned above should contain a little more amount of logic shown in the snippet of code \ref{code:isMigrating} taking as example the update operation.
 
-\begin{algorithm}[h]
-  \begin{algorithmic}[1]
-    \Procedure{EntityManager.merge}{$object$}   
-      \If{MigrationManager.isMigrating()}
-        \State MigrationManager.propagate($object$, OperationType.UPDATE)
-      \Else
-        \State // delegate operation to the provider
-      \EndIf
-    \EndProcedure
-  \end{algorithmic}	
-  \caption{Integrate migration logic}
-  \label{code:isMigrating}
-\end{algorithm}
+\begin{lstlisting}[language=Java, caption=Integrate migration logic, label=code:isMigrating]
+public <T> T merge(T entity) {
+    if (MigrationManager.isMigrating()) {
+        MigrationManager.propagate(entity, OperationType.UPDATE);
+        return entity;
+    } else {
+        return delegate.merge(entity);
+    }
+}
+\end{lstlisting}
 
 \noindent In case of migration is visible the call to the \texttt{propagate} method. It accept two arguments:
 \begin{itemize}
@@ -171,17 +168,13 @@ The wrapping of the persistence provider queries is performed in the entity mana
 \noindent As can be seen from the code snippet \ref{code:wrap-named-queries}, named queries metadata are maintained inside the \texttt{PersistenceMetadata} class. This class, besides maintaining information about named queries, maintains principally a mapping between table names and their class canonical name (full package plus the class name). The content of this class is built the first time is queried (since is a singleton instance) and does not read directly the  configuration files but reads the \texttt{CloudMetadata} instance that has been modified to include all the required parameters that needs to be read from configuration files. 
 Information of table to class mapping is required for statements building and for sequence number handling both described later on.
 
-\begin{algorithm}[h]
-  \begin{algorithmic}[1]
-    \Procedure{EntityManager.createNamedQuery}{$name$}   
-      \State $jpqlString \gets$ PersistenceMetagada.get($name$)
-      \State $providerQuery \gets$ $provider$.createNamedQuery($name$)
-      \State \Return CloudQuery($jpqlString$, $providerQuery$)
-    \EndProcedure
-  \end{algorithmic}	
-  \caption{Wrap named queries}
-  \label{code:wrap-named-queries}
-\end{algorithm}
+\begin{lstlisting}[language=Java, caption=Wrap named queries, label=code:wrap-named-queries]
+public Query createNamedQuery(String name) {
+    String queryString = PersistenceMetadata.getNamedQuery(name);
+    Query queryInstance = delegate.createNamedQuery(name)
+    return new CloudQuery(queryString, queryInstance);
+}
+\end{lstlisting}
 
 \section{Data synchronization}
 \label{sec:synch}
@@ -197,21 +190,18 @@ The main caveats is that such assignment has to be made even if the migration is
 
 \noindent The solution is actually quite simple since everything can be checked inside the \texttt{EntityManager.persist} method as described in the snippet of code \ref{code:persist}.
 
-\begin{algorithm}[h]
-  \begin{algorithmic}[1]
-    \Procedure{EntityManager.persist}{$object$}   
-      \If{MigrationManager.isMigrating()}
-                \State MigrationManager.propagate($object$, OperationType.INSERT)
-      \Else
-        \State $id \gets$ SeqNumberProvider.getNextSequenceNumber($table$)
-        \State $object$.setId($id$)
-        \State // delegate operation to the provider
-      \EndIf
-    \EndProcedure
-  \end{algorithmic}	
-  \caption{Persist operation}
-  \label{code:persist}
-\end{algorithm}
+\begin{lstlisting}[language=Java, caption=Persist operation, label=code:persist]
+public void persist(Object entity) {
+    if (MigrationManager.isMigrating()) {
+        MigrationManager.propagate(entity, OperationType.INSERT);
+    } else {
+        String tableName = ReflectionUtils.getJPATableName(entity);
+        int id = SeqNumberProvider.getNextSequenceNumber(tableName);
+        ReflectionUtils.setEntityId(entity, id);
+        delegate.persist(entity);
+    }
+}
+\end{lstlisting}
 
 \noindent In the code snippet is visible a call to the  \texttt{SeqNumberProvider} class which is the class responsible of actually interacts with the synchronization service of Hegira and handle the \textit{sequence numbers} i.e. the entities identifiers defined by Hegira to achieve synchronization. 
 

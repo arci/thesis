@@ -39,8 +39,8 @@ The GAE Datastore extension is available on github at \url{https://github.com/Ar
 \item \texttt{kundera.client.lookup.class} \textit{required}, must be set to \\ \texttt{it.polimi.kundera.client.datastore.DatastoreClientFactory}
 \item \texttt{kundera.ddl.auto.prepare} \textit{optional}, possible values are:
 \begin{itemize}
-\item \texttt{create} which creates the schema (if not already exists)
-\item \texttt{create-drop} which drop the schema (if exists) and creates it
+\item \texttt{create}, which creates the schema (if not already exists)
+\item \texttt{create-drop}, which drop the schema (if exists) and creates it
 \end{itemize}
 \item \texttt{kundera.client.property} \textit{optional}, the name of the xml file containing the datastore specific properties.
 \end{itemize}
@@ -48,7 +48,7 @@ The GAE Datastore extension is available on github at \url{https://github.com/Ar
 \noindent In addition to the previous properties and in case of remote API, those properties are also necessary:
 \begin{itemize}
 \item \texttt{kundera.nodes} \textit{required}, url of the appengine application on which the datastore is located
-\item \texttt{kundera.port} \textit{optional} default: 443, port used to connect to datastore
+\item \texttt{kundera.port} \textit{optional} default is \textbf{443}, port used to connect to datastore
 \item \texttt{kundera.username} \textit{required}, username of an admin on the remote server
 \item \texttt{kundera.password} \textit{required}, password of an admin on the remote server
 \end{itemize}
@@ -86,9 +86,9 @@ The skeleton of the file is the following:
 
 \noindent The available properties are:
 \begin{itemize}
-\item \texttt{datastore.policy.read} [eventual|strong] \textbf{default: strong}, set the read policy.
+\item \texttt{datastore.policy.read} [eventual$\vert$strong] default is \textbf{strong}, set the read policy.
 \item \texttt{datastore.deadline optional}, RPCs deadline in seconds.
-\item \texttt{datastore.policy.transaction} [auto|none] \textbf{default: none}, define if use implicit transaction.
+\item \texttt{datastore.policy.transaction} [auto$\vert$none] default is \textbf{none}, define if use implicit transaction.
 
 \end{itemize}
 
@@ -103,8 +103,8 @@ The Azure Table extension is available on github at \url{https://github.com/Arci
 \item \texttt{kundera.client.lookup.class} \textit{required}, and set to\\\texttt{it.polimi.kundera.client.azuretable.AzureTableClientFactory}
 \item \texttt{kundera.ddl.auto.prepare} \textit{optional}, possible values are:
 \begin{itemize}
-\item \texttt{create} which creates the schema (if not already exists)
-\item \texttt{create-drop} which drop the schema (if exists) and creates it
+\item \texttt{create}, which creates the schema (if not already exists)
+\item \texttt{create-drop}, which drop the schema (if exists) and creates it
 \end{itemize}
 \item \texttt{kundera.client.property} \textit{optional}, the name of the xml file containing the datastore specific properties.
 \end{itemize}
@@ -131,9 +131,9 @@ The skeleton of the file is the following:
 
 \noindent The available properties are:
 \begin{itemize}
-\item \texttt{table.emulator} [true|false] \textbf{default: false}. If present (and set to true) storage emulator is used. When using dev server kundera.username and kundera.password in persistence xml are ignored.
-\item \texttt{table.emulator.proxy} \textbf{default: localhost}. If storage emulator is used set the value for the emulator proxy.
-\item \texttt{table.protocol} [http|https] \textbf{default: https}. Define the protocol to be used within requests.
-\item \texttt{table.partition.default} \textbf{default: DEFAULT}.
+\item \texttt{table.emulator} [true$\vert$false] dafault is \textbf{false}. If present (and set to true) storage emulator is used. When using development server \texttt{kundera.username} and \texttt{kundera.password }in \textit{persistence.xml} are ignored.
+\item \texttt{table.emulator.proxy} default is \textbf{localhost}. If storage emulator is used set the value for the emulator proxy.
+\item \texttt{table.protocol} [http$\vert$https] default is \textbf{https}. Define the protocol to be used within requests.
+\item \texttt{table.partition.default} default is \textbf{DEFAULT}.
 The value for the default partition key, used when no one is specified by the user.
 \end{itemize}

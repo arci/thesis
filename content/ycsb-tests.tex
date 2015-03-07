@@ -29,7 +29,7 @@ To run the benchmarks, after having built the project, the two phases of the YCS
 java -cp KUNDERA-BENCHMARK-JAR-LOCATION:PATH-TO-DEPENDENCY-FOLDER/*
 com.yahoo.ycsb.Client -t -db DATABASE-ADAPTER-CLASS-TO-USE
 -P PATH-TO-WORKLOAD -P PATH-TO-PROPERTY-FILE 
--s -threads NUMBER-OF-THREAD-TO-USE -PHASE > OUTPUT_FILE
+-s -threads THREAD-TO-USE -PHASE > OUTPUT_FILE
 \end{verbatim}
 
 \noindent where PHASE should be \texttt{load} for \textbf{load} phase or \texttt{t} for \textbf{transaction} phase.
@@ -81,7 +81,7 @@ To run the benchmarks, after having built the project, the two phases of the YCS
 \begin{verbatim}
 java -cp KUNDERA-BENCHMARK-JAR-LOCATION:PATH-TO-DEPENDENCY-FOLDER/*
 com.yahoo.ycsb.Client -t -db DATABASE-ADAPTER-CLASS-TO-USE
--P PATH-TO-WORKLOAD -s -threads NUMBER-OF-THREAD-TO-USE -PHASE > OUTPUT_FILE
+-P PATH-TO-WORKLOAD -s -threads THREAD-TO-USE -PHASE > OUTPUT_FILE
 \end{verbatim}
 
 \noindent where PHASE should be \texttt{load} for \textbf{load} phase or \texttt{t} for \textbf{transaction} phase.

@@ -29,15 +29,48 @@ The skeleton of the \textit{migration.xml} file is the following:
 \item \textbf{follow cascades while build statements}
 \end{enumerate}
 
-The first two options are the most complex and are described in the following sections, the third option can assume the values of \textit{true} or \textit{false} but is \textit{optional} since is set to \textbf{false} by default.
-In case the value is set to \textit{true}, the statement builders, when builds the statements from objects, will read the values for the \texttt{@CascadeType} annotation and, if necessary, builds the cascade statements and sends them to \textit{Hegira} in the correct execution order as described in \ref{sec:statements} 
+\noindent The first two options are the most complex and are described in the following sections, the third option can assume the values of \textit{true} or \textit{false} but is \textit{optional} since is set to \textbf{false} by default.
+In case the value is set to \textit{true}, the statement builders, when builds the statements from objects, will read the values for the \texttt{@CascadeType} annotation and, if necessary, builds the cascade statements and sends them to \textit{Hegira} in the correct execution order as described in \ref{sec:statements}.
 
-\subsection{Configure the zooKeeper client}
+\subsection{Configure the ZooKeeper client}
+ZooKeeper client must be configured in the \textit{thread} of \textit{http} version as desbribed in \ref{sec:synch}.
 
+\paragraph{Thread version} An example configuration would be the following one:
+\begin{verbatim}
+<zooKeeper>
+    <type>thread</type>
+    <connection>localhost:2181</connection>
+    <range>50</range>
+</zooKeeper>
+\end{verbatim}
+
+\noindent The \texttt{<connection>} tag is \textbf{required} and should contains an address in the form \texttt{host:port} which should be the host address and the port on which the ZooKeeper service is running.
+
+\noindent The \texttt{<range>} is \textit{optional} since the default is \textbf{10} and is the default dimension of the range that \texttt{SeqNumberDispenser}(s) use to ask more sequence numbers to the synchronization system.
+
+\paragraph{Http version} An example configuration would be the following one:
+\begin{verbatim}
+<zooKeeper>
+    <type>http</type>
+    <connection>http://server.com/hegira-api/zkService</connection>
+    <range>50</range>
+</zooKeeper>
+\end{verbatim}
+
+\noindent In this case the \texttt{<connection>} tag should contains the API base path of the server in which the service is running.
+
+\noindent For the \texttt{<range>} tag applies the same consideration made for the thread case.
+ 
 \subsection{Configure a sequence number backup}
 A sequence number backup can be configured either on a blob storage (when running on PaaS) or to file (when running to IaaS).
 
-\noindent The \texttt{<execute>} tag define if backup should or should not be performed, the possible values are \textit{yes} or \textit{no}. This tag is \textit{optional} since is set as default to \textbf{yes}.
+\newparagraph  The \texttt{<execute>} tag define if backup should or should not be performed, the possible values are \textit{yes} or \textit{no}. The tag is \textit{optional} since its default is \textbf{yes}.
+It's supposed to be used for turning off the backup, in this case the configuration should be simply:
+\begin{verbatim}
+<backup>
+    <execute>no</execute>
+</backup>
+\end{verbatim}
 
 \newparagraph For the other configuration options, two cases must be distinguished:
 

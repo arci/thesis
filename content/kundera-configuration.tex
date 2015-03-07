@@ -26,7 +26,9 @@ The only differences for the extensions are the kundera properties that needs to
 
 \section{GAE Datastore}
 \label{appendix:datastore-config}
-The configuration is done in the \textit{persistence.xml} file, two configuration are possible:
+The GAE Datastore extension is available on github at \url{https://github.com/Arci/kundera-gae-datastore}.
+
+\newparagraph The configuration is done in the \textit{persistence.xml} file, two configuration are possible:
 \begin{enumerate}
 \item use the datastore instance within the appengine application
 \item use a remote datastore instance through remote API
@@ -92,7 +94,9 @@ The skeleton of the file is the following:
 
 \section{Azure Table}
 \label{appendix:table-config}
-The configuration is done in the persistence.xml file, the properties to be specified inside the <properties> tag are:
+The Azure Table extension is available on github at \url{https://github.com/Arci/kundera-azure-table}.
+
+\newparagraph The configuration is done in the persistence.xml file, the properties to be specified inside the <properties> tag are:
 \begin{itemize}
 \item \texttt{kundera.username} \textit{required}, the storage account name (from azure portal)
 \item \texttt{kundera.password} \textit{required}, the storage account key (from azure portal)

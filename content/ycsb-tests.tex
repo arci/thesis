@@ -1,8 +1,101 @@
 \section{Introduction}
-Introduzione agli argomenti trattati nell'appendice, dalle 4 alle 10 righe.
+In this appendix is descried the required procedure to build the benchmark project that contains the YCSB adapters.
+Are then shown the required commands to be executed in order to execute the benchmarks and the available values to be configured for each of the supported YCSB adapter.
+
+\section{Preliminary operations}
+In order to build the benchmark project, available at \url{https://github.com/Arci/kundera-benchmark}, some libraries needs to be downloaded since are not available in any maven repository:
+\begin{itemize}
+\item Azure Table extension\\ \url{https://github.com/Arci/kundera-azure-table}
+\item GAE Datastore extension \\\url{https://github.com/Arci/kundera-gae-datastore}
+\end{itemize}
+
+\noindent The Azure Table extension tests requires to run a reachable storage emulator on Windows so if you do not want to execute test while build run \texttt{mvn clean install -DskipTests}.
+ 
+\noindent Test for the Datastore extension can be executed without any configuration as they're executed thought google in-memory Datastore stub.
+
+\noindent Since also YCSB is not available in any maven repository, it must be downloaded (\url{https://github.com/brianfrankcooper/YCSB/}) and installed locally, always through \texttt{mvn install}.
+
+\newparagraph Now all the required dependency for kundera-benchmark should be resolved so is possible to install it with maven:
+\texttt{mvn clean install}
+then lunch the command:
+\texttt{mvn dependency:copy-dependencies}
+this will create a directory called \texttt{dependency} in the target directory containing all the jars of the dependencies.
 
 \section{Run tests for low-level API version}
 \label{appendix:ycsb-low-level}
+To run the benchmarks, after having built the project, the two phases of the YCSB tests can be executed through the command:
+
+\begin{verbatim}
+java -cp KUNDERA-BENCHMARK-JAR-LOCATION:PATH-TO-DEPENDENCY-FOLDER/*
+com.yahoo.ycsb.Client -t -db DATABASE-ADAPTER-CLASS-TO-USE
+-P PATH-TO-WORKLOAD -P PATH-TO-PROPERTY-FILE 
+-s -threads NUMBER-OF-THREAD-TO-USE -PHASE > OUTPUT_FILE
+\end{verbatim}
+
+\noindent where PHASE should be \texttt{load} for \textbf{load} phase or \texttt{t} for \textbf{transaction} phase.
+
+\newparagraph  Available adapter classes are:
+\begin{itemize}
+\item \texttt{it.polimi.ycsb.database.AzureTableClient} for Azure Table
+\item \texttt{it.polimi.ycsb.database.DatastoreClient} for GAE Datastore
+\item \texttt{it.polimi.ycsb.database.KunderaHBaseClient} for Hbase
+\end{itemize}
+
+\subsection{Property files}
+As can be seen from the command, a property file must be specified. Property files must provide information to locate the database to test when running the benchmarks on the low-level API versions.
+
+\paragraph{Google Datastore} The available properties are:
+\begin{itemize}
+\item \texttt{url} \textit{required}
+\item \texttt{port} \textit{optional}, default is 443
+\item \texttt{username} \textit{required}, the username of an admin on the remote application
+\item \texttt{password} \textit{required}, can be omitted if tests are against localhost
+\end{itemize}
+
+\paragraph{Azure Table} The available properties are:
+\begin{itemize}
+\item \texttt{emulator} [true|false]
+\item \texttt{account.name} \textit{required} if not using emulator, available from azure portal
+\item \texttt{account.key} \textit{required} if not using emulator, available from azure portal
+\item \texttt{protocol} [http|https] \textit{optional}, default is https
+\end{itemize}
+\noindent If \texttt{emulator} is set to textit{true} the remaining properties are ignored.
+
+\paragraph{Hbase}
+The properties must be configured inside the file because, to be more accurate w.r.t. the Kundera client, connection cannot be done in the \texttt{init()} method. 
+
+\noindent The properties can be set modifying the following constants:
+\begin{itemize}
+\item \texttt{node}, the master node location
+\item \texttt{port}, the master node port
+\item \texttt{zookeeper.node}, the node location for \texttt{hbase.zookeeper.quorum}
+\item \texttt{zookeeper.port}, the node port for \texttt{hbase.zookeeper.property.clientPort}
+\end{itemize}
+
+\noindent Since property file is not needed for Hbase, it does not need to be specified while running the benchmarks.
 
 \section{Run tests for Kundera version}
 \label{appendix:ycsb-kundera}
+To run the benchmarks, after having built the project, the two phases of the YCSB tests can be executed through the command:
+
+\begin{verbatim}
+java -cp KUNDERA-BENCHMARK-JAR-LOCATION:PATH-TO-DEPENDENCY-FOLDER/*
+com.yahoo.ycsb.Client -t -db DATABASE-ADAPTER-CLASS-TO-USE
+-P PATH-TO-WORKLOAD -s -threads NUMBER-OF-THREAD-TO-USE -PHASE > OUTPUT_FILE
+\end{verbatim}
+
+\noindent where PHASE should be \texttt{load} for \textbf{load} phase or \texttt{t} for \textbf{transaction} phase.
+
+\newparagraph Available adapter classes are:
+\begin{itemize}
+\item \texttt{it.polimi.ycsb.database.KunderaAzureTableClient} for kundera-azure-table extension
+\item \texttt{it.polimi.ycsb.database.KunderaDatastoreClient} for kundera-gae-datastore extension
+ \item\texttt{it.polimi.ycsb.database.KunderaHBaseClient} for kundera-hbase extension
+\end{itemize}
+
+\subsection{\textit{persistence.xml} configuration}
+In the \textit{persistence.xml} file, each persistence unit must be configured to locate the database to test.
+
+\noindent Configuration possibilities are described in the appendix \ref{app:kconfig}.
+
+\noindent Hbase configuration make use also of a datastore specific property file \texttt{hbase-properties.xml} in which can be configured the value for \texttt{hbase.zookeeper.quorum} and \texttt{hbase.zookeeper.property.clientPort}. If those values needs to be changed can be configured in the \texttt{hbase-properties.xml} file.

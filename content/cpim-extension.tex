@@ -204,37 +204,36 @@ public void persist(Object entity) {
 \noindent In the code snippet is visible a call to the  \texttt{SeqNumberProvider} class which is the class responsible of actually interacts with the synchronization service of Hegira and handle the \textit{sequence numbers} i.e. the entities identifiers defined by Hegira to achieve synchronization. 
 
 \subsubsection{Handling the sequence numbers}
-The sequence numbers are handled by the class texttt{SeqNumberProvider}, a singleton instance that provides a simple way to get the assigned sequence numbers per table.
+The sequence numbers are handled by the class \texttt{SeqNumberProvider}, a singleton instance that provides a simple way to get the assigned sequence numbers per table.
 \noindent The class diagram of this component and of the component it interacts with is shown in figure \ref{fig:seq-provider}
 
 \begin{figure}[tbh]
   \centering
-  %\includegraphics[width=14cm]{}
-  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
-  \end{minipage}
-  \caption{Sequence numbers handling architecture TODO}
+  \includegraphics[width=12cm]{images/seq_provider}
+  \caption{Sequence numbers handling architecture}
   \label{fig:seq-provider}
 \end{figure} 
 
-\noindent The \texttt{SeqNumberProvider} keeps an instance of \texttt{SeqNumberDispenserImpl} for each table that needs to be persisted. The \texttt{SeqNumberDispenserImpl} is responsible of managing and maintaining the sequence numbers for a specific table by requesting when necessary more sequence number to the synchronization system.
-\texttt{SeqNumberDispenserImpl} is an implementation of the general interface \texttt{SeqNumberDispenser} made to be able, maybe in the future, to create more dispenser with different logics.
-
-\noindent More in detail the \texttt{SeqNumberProvider} is responsible of:
+\noindent The \texttt{SeqNumberProvider} keeps an instance of \texttt{SeqNumberDispenser} for each table that needs to be persisted and is responsible of:
 \begin{enumerate}
 \item provide a unique access point where requesting the next assigned sequence number for a table
 \item initialize or restore the state of the dispenser for each of the persisted tables
 \end{enumerate}
 \noindent The first is performed through the method \texttt{getNextSequenceNumber(String tableName)} that delegates the operation to the correct \texttt{SeqNumberDispenser} associated to the requested table.
-The second functionality is achieved by requesting to the \texttt{SeqNumberDispenser}(s) their state representation and then saving it to a Blob storage or to file depending to the configuration file \textit{migration.xml} described in appendix \ref{app:migration}. The restoring phase is performed on construction, if a backup exists, either on file or on the Blob storage, the \texttt{SeqNumberDispenser}(s) are initialized giving them their state representation to restore.
-This mechanism in which the \texttt{SeqNumberProvider} is completely agnostic to the actual state representation of the \texttt{SeqNumberDispenser}(s) make future extensibility more easy and less constrained.
+Since \texttt{SeqNumberDispenser} is an interface, the actual implementation is delegated to the \texttt{SeqNumberDispenserImpl} class, this mechanism has been used to be able, maybe in the future, to create more dispensers with different logic.
+\noindent The \texttt{SeqNumberDispenserImpl} class maintains internally the assigned range of identifiers provided by the synchronization system by specifying the first and the last element of the range. The class consumes one by one the identifiers in the range and when the range has been completed requests the next range. This mechanism is internally handled, in fact the \texttt{SeqNumberProvider} is only required to call the \texttt{getNextSequenceNumber()} method on the dispenser.
+In case the user wants to have control over the sequence number range for a particular table, it has been made configurable at run-time. At construction time each \texttt{SeqNumberDispenserImpl}  class reads the default range from \texttt{CloudMetadata} but by calling the method \texttt{setOffset(String tableName, int offset)} on the \texttt{SeqNumberProvider}, it will set the specified offset to the \texttt{SeqNumberDispenser} responsible of the given table.
+
+\newparagraph The second functionality is achieved by requesting to the \texttt{SeqNumberDispenser}(s) their state representation (as a \texttt{byte} array) by calling the method \texttt{save()} on the dispensers and then saving it to a Blob storage or to file depending to the configuration specified inside \textit{migration.xml}, described in appendix \ref{app:migration}. 
+\noindent The restoring phase is performed just after construction, if a backup exists, either on file or on the Blob storage, the method \texttt{restore(byte[] state)} is called on the dispensers giving them their state representation to restore.
+This mechanism in which the \texttt{SeqNumberProvider} is completely agnostic to the actual state representation of the \texttt{SeqNumberDispenser}(s) to make future extensibility more easy and less constrained.
+The \texttt{SeqNumberProvider} requests to \texttt{SeqNumberDispenser}(s) their sta
 
 \noindent The list of all the tables to be persisted is retrieved from the \texttt{PersistenceMetadata} mentioned previously for named queries.
-
-\newparagraph TODO spiegare come ès tato implementato \texttt{SeqNumberDispenserImpl }e che si può modificare a runtime
  
 \subsection{Contacting the synchronization system}
 The interaction with the synchronization system as now was only described as a method call. Those calls are made on an external library (\texttt{zkWrapper}) that connects to a zookeeper instance to communicate with the synchronization system and receive the assigned sequence numbers.
-Since the zookeeper library issues threads to handle communication, was not possible to use this method for Google App Engine since the App Engine runtime does not permit to spawn thread.
+Since the zookeeper library issues threads to handle communication, was not possible to use this method for Google App Engine since the App Engine run-time does not permit to spawn thread.
 Two are the feature that requires to communicate with the synchronization system and so use the \texttt{zkWrapper}:
 \begin{itemize}
 \item the migration state listener that modify the \texttt{MigrationManager} state accordingly
@@ -246,10 +245,8 @@ Two are the feature that requires to communicate with the synchronization system
 
 \begin{figure}[tbh]
   \centering
-  %\includegraphics[width=14cm]{}
-  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
-  \end{minipage}
-  \caption{Interaction with the synchronization system TODO}
+  \includegraphics[width=14cm]{images/zk_adapter}
+  \caption{Contacting the synchronization system}
   \label{fig:zk-adapter}
 \end{figure} 
 
@@ -257,7 +254,7 @@ Two are the feature that requires to communicate with the synchronization system
 The two available clients implements the interface \texttt{ZKAdapter}, built to uniform the methods of the two implementations.
 
 \paragraph{Thread-based client} If the user deploy the application on a thread-capable client and configure the \textit{migration.xml} accordingly, an instance of \texttt{ZKThread} is built. This version of the client uses directly the implementation of the library \texttt{zkWrapper} since there should not be any problem in thread spawning.
-The \texttt{isSynchronizing()} methods returns a value which is keept inside the \texttt{ZKThread} instance and is queried by the \texttt{MigrationManager}.
+The \texttt{isSynchronizing()} methods returns a value which is kept inside the \texttt{ZKThread} instance and is queried by the \texttt{MigrationManager}.
 Both the state of the \texttt{MigrationManager} and the value inside \texttt{ZKThread} are modified by the \texttt{SynchronizationListener} which is asynchronously notified by the \texttt{zkWrapper} library when the migration state change.
 
 \paragraph{HTTP-based client} In case that threads are not supported by the cloud provider the client version that is instantiated (by looking at the configuration) is \texttt{ZKHttp} which uses the API-caller added to the \texttt{zkWrapper} library.
@@ -265,7 +262,7 @@ Since no listener can be register and asynchronously notified of a change in the
 
 \section{Build statements from user operations}
 \label{sec:statements}
-Before focusing on the statements building, since migration system interaction are getting many, it may be usefull to visualize the interaction in the high-level flow chart presented in figure \ref{fig:flow-chart}.
+Before focusing on the statements building, since migration system interaction are getting many, it may be useful to visualize the interaction in the high-level flow chart presented in figure \ref{fig:flow-chart}.
 
 \begin{figure}[tbh]
   \centering
@@ -276,9 +273,9 @@ Before focusing on the statements building, since migration system interaction a
   \label{fig:flow-chart}
 \end{figure} 
 
-\noindent In the previous section we've focused on the sequence number retrival, in this section we'll focus on the generation of the statements to be sent to \textit{Hegira}.
+\noindent In the previous section we've focused on the sequence number retrieval, in this section we'll focus on the generation of the statements to be sent to \textit{Hegira}.
 
-\newparagraph To be able to create SQL-like statements from queries and operation upon entity objects, the first step has been to introduce the \textit{statement} concept in the library. This has been done through the abstract class \texttt{Statements} that encapsulate the structure needed for maintaining the necessary data for the statements and is  then extended by the three classes \texttt{InsertStatement}, \texttt{UpdateStatement} and \texttt{DeleteStatement} that basically implements the \texttt{toStirng()} method to acutally build the specific statement.
+\newparagraph To be able to create SQL-like statements from queries and operation upon entity objects, the first step has been to introduce the \textit{statement} concept in the library. This has been done through the abstract class \texttt{Statements} that encapsulate the structure needed for maintaining the necessary data for the statements and is  then extended by the three classes \texttt{InsertStatement}, \texttt{UpdateStatement} and \texttt{DeleteStatement} that basically implements the \texttt{toStirng()} method to actually build the specific statement.
 The class diagram of this statements structure is shown in figure \ref{fig:statements}
 
 \begin{figure}[tbh]
@@ -290,7 +287,7 @@ The class diagram of this statements structure is shown in figure \ref{fig:state
   \label{fig:statements}
 \end{figure} 
 
-The \texttt{Statement} class maintains three main fields:
+\noindent The \texttt{Statement} class maintains three main fields:
 \begin{itemize}
 \item \texttt{table}, that contains the table which the statements refer to
 \item \texttt{fields}, a list of element of class \texttt{Filter} that contains the elements presents in the \textit{SET} clause in case of \textit{UPDATE} statements or the inserted values in case of \textit{INSERT} statements
@@ -337,10 +334,16 @@ UPDATE Test SET name = 'Fabio' WHERE salary >= '42'
 
 \noindent The parameter mapping can be done easily since \texttt{CloudQuery} and \texttt{TypedCloudQuery} by implementing the required JPA interfaces can intercept the \texttt{setParameter} method and so maintain the name-value mapping.
 
-\newparagraph To solve the parsing problem, the Kundera code was inspected to understand how JPQL queries are parsed but turns out they used a custom quite-complex parser especially for validation purposes. Even looking online no specific JPQL parser has been found so, since we are not interested in validating queries or build complex logic upon them, a simple and less time consuming solution was to write a lexer that through regular expressions tokenize the JPQL string. An instance of \texttt{Statement} is then build while iterating over the tokes.
+\newparagraph To solve the parsing problem, the Kundera code was inspected to understand how JPQL queries are parsed but turns out they used a custom quite-complex parser especially for validation purposes. Even looking online no specific JPQL parser has been found so, since we are not interested in validating queries or build complex logic on them, a simple and less time consuming solution was to write a lexer that through regular expressions tokenize the JPQL string.
+
+\noindent The \texttt{StatementBuilder} through the method \texttt{build(Query query, String queryString)} tokenize the query using the lexer and then call the abstract method \texttt{handleQuery(query, tokens)} that is implemented in \texttt{DeleteBuilder} and in \texttt{UpdateBuilder} which are responsible of iterate over the tokes to build the correct \texttt{Statement} instance.
 
 \subsection{Sending statements to Hegira}
-TODO
+Both the method \texttt{propagate(Query query)} and \texttt{propagate(Object entity, OperationType operation)} fill a statement stack which contains the generated statements in the execution order.
+
+\noindent The statement stack is iterated and each time a statement is removed from the head of the stack (LIFO order). Each one of the extracted statement is then sent to \texttt{Hegira}.
+
+\newparagraph \textbf{TODO update when this part will be done}
 
 \section{Interoperability of stored data}
 The Kundera client developed and described in chapter \ref{chap:kundera} was developed to be as much as consistent to the other client developed for Kundera to be more likely accepted by the community and so are not built to be completely interoperable.

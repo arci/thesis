@@ -266,10 +266,8 @@ Before focusing on the statements building, since migration system interaction a
 
 \begin{figure}[tbh]
   \centering
-  %\includegraphics[width=14cm]{}
-  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
-  \end{minipage}
-  \caption{Interaction flow chart TODO}
+  \includegraphics[width=13.5cm]{images/flow_chart}
+  \caption{Interaction flow chart}
   \label{fig:flow-chart}
 \end{figure} 
 
@@ -280,10 +278,8 @@ The class diagram of this statements structure is shown in figure \ref{fig:state
 
 \begin{figure}[tbh]
   \centering
-  %\includegraphics[width=14cm]{}
-  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
-  \end{minipage}
-  \caption{Statements structure TODO}
+  \includegraphics[width=13cm]{images/statements}
+  \caption{Statements structure}
   \label{fig:statements}
 \end{figure} 
 
@@ -299,16 +295,13 @@ The class diagram of this statements structure is shown in figure \ref{fig:state
 \newparagraph Defined the statements structure is then necessary to provide a way to build the correct instance of statement starting by the query or the operation on an object.
 To do this in an agile way a builder class has been implemented.
 
-\noindent The class diagram of the builders, shown in figure \ref{fig:builders}, shows that the same pattern used for statements has been adopted.
-
 \begin{figure}[tbh]
-  \centering
-  %\includegraphics[width=14cm]{}
-  \begin{minipage}[c][0.33\textheight][c]{0.5\textwidth}
-  \end{minipage}
-  \caption{Statement builders TODO}
+  \includegraphics[width=16cm]{images/builders}
+  \caption{Statement builders}
   \label{fig:builders}
 \end{figure} 
+
+\noindent The class diagram of the builders, shown in figure \ref{fig:builders}, shows that the same pattern used for statements has been adopted.
 
 \noindent The main abstract class \texttt{StatementBuilder} provides the facilities to build a generic statements both from object and from a query string.
 Since many operations are the same for all the three types of statements to be built, the \texttt{StatementBuilder} class provides an implementation of those common behaviors, and define some \textit{abstract} methods that are statement-specific and handled in different ways in the three statement builder classes: \texttt{InsertBuilder}, \texttt{UpdateBuilder} and \texttt{DeleteBuilder}.
@@ -316,6 +309,11 @@ This degree of abstraction has been possible due to the abstract definition of t
 
 \subsection{Build statements from objects}
 TODO
+\begin{itemize}
+\item cascade problem
+\item builders configuration
+\item common algorithm
+\end{itemize}
 
 \subsection{Build statements from JPQL queries}
 Cascade modification for \textit{UPDATE} and \textit{DELETE} statements should raise if the statement, beside modifying the entity directly stated in the query, modify another related entity. Fortunately this is not a possible case for JPQL, for the object case this is possible since objects keeps reference to the related entity and if that has been modified, a cascade operation should be performed.

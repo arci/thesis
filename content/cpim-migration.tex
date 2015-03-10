@@ -1,5 +1,5 @@
 \section{Introduction}
-In this appendix is presented the new configuration file added to CPIM to support the configuration of the migration system.
+In this appendix is presented the new configuration file added to CPIM to support the various configurations available for the interaction with the migration system.
 
 \section{\textit{migration.xml}}
 The template of the \textit{migration.xml} file is the following:
@@ -24,16 +24,16 @@ The template of the \textit{migration.xml} file is the following:
 
 \newparagraph Three are the main section that can be configured:
 \begin{enumerate}
-\item \textbf{zooKeeper client}
-\item \textbf{sequence number backup}
-\item \textbf{follow cascades while build statements}
+\item ZooKeeper client;
+\item sequence number backup;
+\item follow cascades while build statements.
 \end{enumerate}
 
-\noindent The first two options are the most complex and are described in the following sections, the third option can assume the values of \textit{true} or \textit{false} but is \textit{optional} since is set to \textbf{false} by default.
-In case the value is set to \textit{true}, the statement builders, when builds the statements from objects, will read the values for the \texttt{@CascadeType} annotation and, if necessary, builds the cascade statements and sends them to \textit{Hegira} in the correct execution order as described in \ref{sec:statements}.
+\noindent The first two options are the most complex and are described in the following sections, the third option can assume be \textit{true} or \textit{false} but is \textit{optional} since is set to \textbf{false} by default.
+In case the value is set to \textit{true}, the statement builders when builds the statements from objects will read the values specified for the \texttt{@CascadeType} annotation and, if necessary, builds the cascade statements and sends them to \textit{Hegira} in the correct execution order as described in \ref{sec:statements}.
 
 \subsection{Configure the ZooKeeper client}
-ZooKeeper client must be configured in the \textit{thread} of \textit{http} version as desbribed in \ref{sec:synch}.
+For ZooKeeper client, must be chosen the \textit{thread} or the \textit{http} version as described in \ref{sec:sync}.
 
 \paragraph{Thread version} An example configuration would be the following one:
 \begin{lstlisting}[language=XML, caption=ZooKeeper - thread type configuration]
@@ -46,9 +46,9 @@ ZooKeeper client must be configured in the \textit{thread} of \textit{http} vers
 
 \noindent The \texttt{<connection>} tag is \textbf{required} and should contains an address in the form \texttt{host:port} which should be the host address and the port on which the ZooKeeper service is running.
 
-\noindent The \texttt{<range>} is \textit{optional} since the default is \textbf{10} and is the default dimension of the range that \texttt{SeqNumberDispenser}(s) use to ask more sequence numbers to the synchronization system.
+\noindent The \texttt{<range>} is \textit{optional} since the default is \textbf{10} and is the default dimension of the range that \texttt{SeqNumberDispenser}(s) use to ask sequence numbers to the synchronization system.
 
-\paragraph{Http version} An example configuration would be the following one:
+\paragraph{HTTP version} An example configuration would be the following one:
 \begin{lstlisting}[language=XML, caption=ZooKeeper - http type configuration]
 <zooKeeper>
     <type>http</type>
@@ -59,13 +59,13 @@ ZooKeeper client must be configured in the \textit{thread} of \textit{http} vers
 
 \noindent In this case the \texttt{<connection>} tag should contains the API base path of the server in which the service is running.
 
-\noindent For the \texttt{<range>} tag applies the same consideration made for the thread case.
+\noindent For the \texttt{<range>} tag the same consideration made for the thread case applies.
  
 \subsection{Configure a sequence number backup}
-A sequence number backup can be configured either on a blob storage (when running on PaaS) or to file (when running to IaaS).
+A sequence number backup can be configured either on a blob storage (when running on PaaS) or to file (when running on IaaS).
 
-\newparagraph  The \texttt{<execute>} tag define if backup should or should not be performed, the possible values are \textit{yes} or \textit{no}. The tag is \textit{optional} since its default is \textbf{yes}.
-It's supposed to be used for turning off the backup, in this case the configuration should be simply:
+\newparagraph  The \texttt{<execute>} tag define if backup should or should not be performed, the possible values are \textit{yes} or \textit{no}. This tag is \textit{optional} since its default is \textbf{yes}.
+In case backups must be turned off, the configuration should be the following:
 \begin{lstlisting}[language=XML, caption=Turning off sequence numbers backup]
 <backup>
     <execute>no</execute>
@@ -83,7 +83,7 @@ It's supposed to be used for turning off the backup, in this case the configurat
 \end{lstlisting}
 
 \noindent The text in the \texttt{<prefix>} tag will be prefixed to each blob created to avoid file name conflicts.
-This prefix is an \textit{optional} field since as default is set to \textbf{SeqNumber\textunderscore}.
+This prefix is  \textit{optional} field as default is set to \textbf{SeqNumber\textunderscore}.
 
 \paragraph{Backup to file} An example configuration would be the following one:
 \begin{lstlisting}[language=XML, caption=Backup to file]
@@ -94,11 +94,11 @@ This prefix is an \textit{optional} field since as default is set to \textbf{Seq
 </backup>
 \end{lstlisting}
 
-\noindent The \texttt{<directory>} tag is mandatory and must contain the path to the directory in which the backup file will be placed and retrieved in case they needs to be restored.
+\noindent The \texttt{<directory>} tag is \textbf{mandatory} and must contain the path to the directory in which the backup files should be stored.
 
-\noindent For the \texttt{<prefix>} tag, the same considerations made for backup to blob applies.
+\noindent For the \texttt{<prefix>} tag the same considerations made for backup to blob applies.
 
 \section{Use CPIM without migration system}
-The \textit{migration.xml} file is not necessary if the user won't use the migration system. If the file is not present inside the \texttt{META-INF} folder, the NoSQL service will interact only with the underlying persistence provider without instantiating any of the required classes.
+The \textit{migration.xml} file is not necessary if the user would not use the migration system. If the file is not present inside the \texttt{META-INF} folder, the NoSQL service will interact only with the underlying persistence provider without instantiating any of the classes required for the interaction with the migration system\textbf{•}.
 
 \noindent This is possible due to the lazy initialization of those components that are initialized only the first time are actually used since are built with a singleton pattern.

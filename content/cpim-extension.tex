@@ -173,7 +173,7 @@ public Query createNamedQuery(String name) {
 \end{lstlisting}
 
 \section{Data synchronization}
-\label{sec:synch}
+\label{sec:sync}
 In this section is faced the problem of synchronization that allows the migration to be performed live.
 
 \noindent A special look needs to be reserved to the insert operation. When the user updates or delete an entity no matter if through the entity manager or through a query, he already knows the identifier of that entity since the insert operation have already persisted the entity into the underlying database and thus generated the identifier.

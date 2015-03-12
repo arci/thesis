@@ -27,9 +27,17 @@ A good use case advocating use of ORM tools is migration of applications (built 
 The lack of a common language and of a standardization as SQL-99 is for SQL has bring developers to build many different solutions with slightly different approaches.
 Many of the solutions that will be discussed are open source projects developed and maintained by a community, some others are approaches that came from academic researches and some other are commercial solution.
 
-\subsection{Kundera}
-Welcome to Kundera wiki!
+Apache Phoenix is a SQL query engine for accessing NoSQL datastores such as Apache HBase. It is accessed as a JDBC driver and enables querying, updating, and managing NoSQL tables through standard SQL. Instead of using map-reduce, Apache Phoenix compiles your SQL query into a series of HBase scans and orchestrates the running of those scans to produce regular JDBC result sets. Direct use of the HBase API, along with coprocessors and custom filters, results in performance on the order of milliseconds for small queries, or seconds for tens of millions of rows.
 
+Apache Phoenix is a relational database layer over HBase delivered as a client-embedded JDBC driver targeting low latency queries over HBase data. Apache Phoenix takes your SQL query, compiles it into a series of HBase scans, and orchestrates the running of those scans to produce regular JDBC result sets. The table metadata is stored in an HBase table and versioned, such that snapshot queries over prior versions will automatically use the correct schema. Direct use of the HBase API, along with coprocessors and custom filters, results in performance on the order of milliseconds for small queries, or seconds for tens of millions of rows.
+
+CQL: Cassandra Query Language (CQL) is a query language for the Cassandra database.
+
+GQL: GQL is a SQL-like language for retrieving entities or keys from Datastore. While GQL's features are different from those of a query language for a traditional relational database, the GQL grammar is similar to that of SQL.
+
+---> tendenza ad usare SQL come linguaggio comune
+
+\subsection{Kundera}
 Kundera is a JPA 2.1 compliant object-datastore mapping library for NoSQL datastores. Kundera makes working with NoSQL databases simple and fun. Kundera does not reinvent the wheel by making another client library; rather it leverages the existing libraries, and builds – on top of them – a wrap-around API to developers do away with the unnecessary boiler plate codes, and program a neater, cleaner code that reduces code-complexity and improves quality. And above all, improves productivity.
 
 Kundera supports cross-datastore persistence. This means you can store and fetch related entities in different datastores using a single method call.
@@ -57,15 +65,6 @@ Playorm  CITE is an open-source library developed by buffalo software built to s
 supports Cassandra, MongoDB and HBase.
 similar concepts as for JPA but custom implementation -> custom annotations
 
-\subsection{Espresso Logic}
-Espresso is designed to save you time.  It creates a fully-defined REST/JSON service by just connecting to your database, after which you can use the Live Browser (UI) and the default RESTful API.   Watch it on the right.
-
-Espresso consists of a Logic consists of a Espresso Designer, used via your Browser to specify your database location, your API, your logic (rules), and your security settings. 
-
-The Espresso Server stores these settings, and enforces them in the course of responding to REST retrieval / update requests for your data. 
-
-Espresso is a service, so there's nothing to install or configure. 
-
 \subsection{Couchbase UnQL}
 UNQL started with quite some hype last year. However, after some burst of activity the project came to a hold. So it seems, that – at least as a project – UNQL has been a failure. IMHO one of the major issues with the current UNQL is, that it tries to cover everything in NoSQL, from key-value stores to document-stores to graph-database.
 
@@ -73,10 +72,10 @@ And here I think is where UNQL is totally right. We need something similar for t
 
 July 29, 2011 –Couchbase, the leading NoSQL database company, and SQLite, maker of the world’s most widely deployed SQL database engine, today announced the release into the public domain of a jointly developed NoSQL query language. Unstructured Data Query Language, or UnQL (pronounced “Uncle”), is a collaborative effort to bring a familiar and standardized data definition and manipulation language to the NoSQL domain. Both Couchbase and SQLite have committed to delivering products that embody the language.
 
-\subsection{? Apache Phoenix}
-Apache Phoenix is a SQL query engine for accessing NoSQL datastores such as Apache HBase. It is accessed as a JDBC driver and enables querying, updating, and managing NoSQL tables through standard SQL. Instead of using map-reduce, Apache Phoenix compiles your SQL query into a series of HBase scans and orchestrates the running of those scans to produce regular JDBC result sets. Direct use of the HBase API, along with coprocessors and custom filters, results in performance on the order of milliseconds for small queries, or seconds for tens of millions of rows.
+Created by CouchDB creator Damien Katz and SQLite creator Richard Hipp, UnQL extends aspects of SQL to NoSQL databases. According to Phillips, it’s an expressive language that, like SQL, lets the database do “heavy lifting” instead of putting the burden on application developers to write certain functionalities into the application.
 
-\subsection{? SOS Platform}
+
+\subsection{SOS Platform}
 
 \section{Cloud Platform Independent Model}
 

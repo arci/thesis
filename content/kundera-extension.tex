@@ -202,12 +202,11 @@ Kundera supports all of the clauses of JPQL, but with some restrictions since cl
 \label{table:queries}
 \end{table}
 
-\subsubsection{Embedded fields}
-\newparagraph TODO spiegare magari con due snippet di codice
+\subsubsection{Embeddable Classes}
+Embeddable classes are user defined persistable classes that function as value types. As with other non entity types, instances of an embeddable class can only be stored in the database as embedded objects, i.e. as part of a containing entity object.
+A class is declared embeddable by annotating it with the \texttt{@Embeddable} annotation and can then be used in an entity, as a value type, annotating the field as embedded with the \texttt{@Embedded} annotation. 
 
-\noindent Embedded fields are supported by the JPA \cite{book:projpa2} by annotating the field that needs to be embedded with the \texttt{@Embedded} annotation and annotating the corresponding class with the \texttt{@Embeddable} annotation.
-
-\newparagraph Implementation of those kind of entities is straightforward for Datastore because it supports them natively as an \textit{Embedded Entity}.
+\noindent Implementation of those kind of entities is straightforward for Datastore because the embeddable classes can be mapped to the natively supported \textit{Embedded Entity}.
 \noindent The implementation makes use of such feature by translating the embeddable entity into a Datastore embeddable entity and then persisting it within the parent entity.
 
 \subsubsection{Collection fields}
@@ -276,16 +275,16 @@ An entity is then uniquely identified inside a table by a \textit{partition-key}
 \subsubsection{JPA relationships}
 Also for Azure Tables extension, relationships are implemented similarly to relational systems as described previously for Google Datastore in section \ref{sec:kundera-datastore}.
 
-\noindent (TODO rifrasare) The only difference is that when is needed to keep a \textit{reference} to another entity, is persisted within the entity the partition key and the row key of the related entity.
-Even if the pair (partition-key, row-key) is not sufficient to universally identify an entity, it is sufficient in Kundera since the information of the table is always available to the client just by looking at the meta-data of the relationship. 
+\noindent In Azure Tables to identity an entity the partition-key, the row-key and the table name are required. Since the table name is always provided by Kundera (and is available in the entity meta-data), the only required information to identify an entity are the partition-key and the row-key.
+When two entities are related, the partition-key and the row-key of the related entity are persisted within the entity that owns the relationship.
 
 \subsubsection{Queries}
 Supporting queries for Azure Tables was straightforward, the procedure was the same described in \ref{sec:kundera-datastore} but due to the different operator supported by Tables, beside the \textit{LIKE} clause also the \textit{IN} and \textit{ORDER BY} clauses are not supported.
 
 \noindent Table \ref{table:queries} reports a complete list of the supported JPQL clauses for both extensions.
 
-\subsubsection{Embedded entities}
-Embedded fields (described in \ref{sec:kundera-datastore}) are not supported natively by Azure Tables hence the solution adopted is to serialize the field annotated with \texttt{@Embedded}, in order to be able to persist it to the storage like a \texttt{byte} array and de-serializing it when the entity is read back.
+\subsubsection{Embeddable Classes}
+Embeddable classes (described in \ref{sec:kundera-datastore}) are not supported natively by Azure Tables hence the solution adopted is to serialize the field annotated with \texttt{@Embedded}, in order to be able to persist it to the storage like a \texttt{byte} array and de-serializing it when the entity is read back.
 
 \subsubsection{Collection fields}
 As described for Datastore in section \ref{sec:kundera-datastore}, JPA supports collections, but these are not supported in Azure Tables even if composed of supported data types.

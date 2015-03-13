@@ -45,28 +45,14 @@ The \textit{Client Extension Framework}, described in the Kundera documentation,
 \end{itemize}
 
 \subsection{Approaching the extension}
-While trying to extend Kundera we faced several problems that were not covered by the documentation.
-
-\newparagraph TODO riscrivere
-
-\newparagraph It all seems well structured but the problem is that the documentation is actually outdated. 
-\noindent Two were the main problem in understating what to do and how:
+While trying to extend Kundera we faced several problems that were not covered by the documentation, two were the main problem in understating what to do and how:
 \begin{itemize}
-\item when actually defined the classes and implemented the interfaces, it turns out that there are actually little differences both on interfaces and the required methods 
-\item the documentation skip completely to describe what kind of information are carried by the argument of the methods that needs to be implemented
+\item when actually defined the classes and implemented the interfaces, it turns out that there are actually little differences both on interfaces and the required methods; 
+\item the documentation lacks completely in describing what kind of information are carried by the argument of the methods that needs to be implemented.
 \end{itemize} 
 
-\noindent Due to those problems, the solution was to write on the Kundera Google group page to ask the community for more updated information about Kundera extension.
-Briefly an answer has come and I've started a conversation with one of the developers of Kundera who helped me giving the updated information for the Kundera's \textit{Client Extension Framework} and tell me to look forward to the other client implementation for some examples. 
-Thanks to the updated information it turns out that the \texttt{Entity Reader} was unnecessary and all the translation from JPA queries to datastore specific queries and their executions should be done in the \texttt{Query Implementor}.  
-
-\newparagraph At this point since no answer were given about the information carried by the methods arguments, the most valid solution was to approach the extension in a test driven way trying so to reverse engineer the arguments.
-
-\noindent Looking at the tests code of the other clients, I've written a set of unit tests one for each feature I was planning to support (tests are analyzed in chapter \ref{chap:eval}).
-By doing this and by looking at the other client implementation I was finally able to understand the structure of the method arguments, they carry information about the operation to be performed and about the entity on which the entity needs to be performed.
-Entity information are structured in a data structure filled by Kundera by parsing the annotation that the user define on the entity class, those meta-data includes for example the table name, the column names and the relationships in which the entity is involved.
-
-\noindent With the client structure defined, the tests written, the knowledge of the responsibilities of each method and of the Kundera meta-model, was then possible to begin the actual extension developing.
+\noindent After getting the updated information from the community it turns out that the \texttt{Entity Reader} was unnecessary and all the translation from JPA queries to datastore specific queries and their executions should be done in the \texttt{Query Implementor}.  
+Unfortunately no help was given by the community about the issue on methods arguments. Hence the most valid solution to approach the extension development was in a test driven way trying so to reverse engineer those arguments.
 
 \section{Developing client extensions}
 \label{sec:develop}
@@ -211,7 +197,7 @@ public class Phone {
 	\hline
 	\textbf{PHONE\textunderscore ID} & \textbf{NUMBER}\\ 
 	\hline\hline
-	\textbf{TODO} & 123456789 \\ \hline
+	\textbf{3cb26744} & 123456789 \\ \hline
 	\end{tabular}
 	\hspace{0.5cm}
 }
@@ -221,7 +207,7 @@ public class Phone {
 	\hline
 	\textbf{EMPLOYEE\textunderscore ID} & \textbf{NAME} & \textbf{SALARY} & \textbf{PHONE\textunderscore ID}\\ 
 	\hline\hline
-	\textbf{TODO} & Fabio & 123  & \textbf{TODO} \\ \hline
+	\textbf{112b18e7} & Fabio & 123  & \textbf{3cb26744} \\ \hline
 	\end{tabular}
 	\hspace{0.5cm}
 }
@@ -357,7 +343,7 @@ When two entities are related, the partition-key and the row-key of the related 
 	\hline
 	\textbf{PHONE\textunderscore ID} & \textbf{NUMBER}\\ 
 	\hline\hline
-	\textbf{DEFAULT\textunderscore TODO} & 123456789 \\ \hline
+	\textbf{DEFAULT\textunderscore 3cb26744} & 123456789 \\ \hline
 	\end{tabular}
 	\hspace{0.5cm}
 }
@@ -367,7 +353,7 @@ When two entities are related, the partition-key and the row-key of the related 
 	\hline
 	\textbf{EMPLOYEE\textunderscore ID} & \textbf{NAME} & \textbf{SALARY} & \textbf{PHONE\textunderscore ID}\\ 
 	\hline\hline
-	\textbf{DEFAULT\textunderscore TODO} & Fabio & 123  & \textbf{DEFAULT\textunderscore TODO} \\ \hline
+	\textbf{DEFAULT\textunderscore 112b18e7} & Fabio & 123  & \textbf{DEFAULT\textunderscore 3cb26744} \\ \hline
 	\end{tabular}
 	\hspace{0.5cm}
 }

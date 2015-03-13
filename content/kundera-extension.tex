@@ -132,7 +132,7 @@ In Datastore entities are organized in \textit{Entity Groups} based on their \te
 \begin{itemize}
 \item for \textbf{One to Many} and \textbf{One to One} relationships, since there is an owning side of the relationship, the owning entity can be used as parent for every related entity. 
 \item \textbf{Many to One} relationships can be considered as \textbf{One to Many} relationships. 
-\item as regards \textbf{Many to Many} relationships, since the each one is typically used by performing a join operation on a join table \dots TODO spiegare perchè non ha senso
+\item as regards \textbf{Many to Many} relationships, a solution can be to persist the elements of the join table as child of the entity in the owning side of the relationship but the specular solution (persist elements as child of the entity on the non-owning side) can be adopted too. The only solution that is not acceptable in this case is to persist both the entity, the one on the owning side and the one on the non-owning side, as parent to an element of the join table. This is principally due to the fact that this will require, as pointed out later, the Key of the join table element to be able to retrieve from Datastore the entities.
 \end{itemize}
 
 \noindent Even though it could have been possible to infer such relationships we choose not to implement it inside the Kundera extension for two main reasons: 
@@ -158,7 +158,76 @@ The second solution has been adopted since it is more consistent with other Kund
 
 \noindent The so far called \textit{reference} for Datastore is exploited by persisting within the entity the Key (Kind and identifier) of the related entity.
 
-\newparagraph TODO esempi di come le entity sono salvate su datastore
+\newparagraph Can be useful at this point to show how an entity, annotated with the JPA standard, is then mapped to a datastore entity. 
+Let's take as example the case described in the code \ref{code:entity-mapping}, the \texttt{Employee} class is annotated with many JPA annotations.
+\begin{itemize}
+\item the \texttt{@Entity} annotation specify to the JPA provider that this will be mapped to an entity in the underlying database and the \texttt{@Table} annotation specify the name that the table should have and the persistence unit to which the entity refer;
+\item the \texttt{id} field will handle the identifier for this entity as it is annotated with the \texttt{@Id} annotation and furthermore this id will be auto-generated due to the presence of the \texttt{@GeneratedValue} annotation;
+\item the \texttt{@Column} annotations specify to the JPA provider under which name the fields should be persisted on the underlying database.
+\end{itemize}
+The same is for the \texttt{Phone} entity which is related to \texttt{Employee} with a one to one relationships and thus a \textit{reference} of the related phone entity will be persisted within the employee one.
+
+\noindent The resulting entities on Datastore will be persisted as shown in table \ref{table:gae-mapping}.
+
+\begin{lstlisting}[language=Java, caption=Example entities, label=code:entity-mapping]
+@Entity
+@Table(name = "EMPLOYEE", schema = "keyspace@pu")
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "EMPLOYEE_ID")
+    private String id;
+
+    @Column(name = "NAME")
+    private String name;
+
+    @Column(name = "SALARY")
+    private Long salary;
+
+    /* an employee have one and only one phone */
+    @OneToOne
+    @JoinColumn(name = "PHONE_ID")
+    private Phone phone;
+}
+
+@Entity
+@Table(name = "Phone", schema = "keyspace@pu")
+public class Phone {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "PHONE_ID")
+    private String id;
+
+    @Column(name = "NUMBER")
+    private Long number;
+}
+\end{lstlisting}
+
+\begin{table}[ht]
+\small
+\centering
+\subfloat[PHONE]{
+	\begin{tabular}{|cc|}
+	\hline
+	\textbf{PHONE\textunderscore ID} & \textbf{NUMBER}\\ 
+	\hline\hline
+	\textbf{TODO} & 123456789 \\ \hline
+	\end{tabular}
+	\hspace{0.5cm}
+}
+\\
+\subfloat[EMPLOYEE]{
+	\begin{tabular}{|cccc|}
+	\hline
+	\textbf{EMPLOYEE\textunderscore ID} & \textbf{NAME} & \textbf{SALARY} & \textbf{PHONE\textunderscore ID}\\ 
+	\hline\hline
+	\textbf{TODO} & Fabio & 123  & \textbf{TODO} \\ \hline
+	\end{tabular}
+	\hspace{0.5cm}
+}
+\caption{Mapping of entity fields on Google Datastore}
+\label{table:gae-mapping}
+\end{table}
 
 \subsubsection{Queries}
 Kundera queries are to be expressed in JPQL; the standard JPA query language, which is a  object oriented query language based on SQL \cite{book:projpa2}.
@@ -172,10 +241,10 @@ Kundera supports all of the clauses of JPQL, but with some restrictions since cl
 
 \noindent Since a discriminator is needed to choose between the two methods, other wrappers around Google Datastore low-level API /such Objectify \cite{online:objectify}) provide the user with an \texttt{@Index} annotation to be placed upon the field that needs to be indexed, but as previously explained, it is not convenient to add other annotation to the JPA standard since this will break interoperability. For those reasons, and in order to be able to actually execute queries, all properties are set as indexed. This choice make queries able to be executed upon every property of an entity but this, as stated before, requires App Engine to maintains secondary indexes, consuming application quota.
 
-\newparagraph Table \ref{table:queries} shows complete list of the supported JPQL clauses for both extensions.
+\newparagraph Table \ref{table:queries} shows a complete list of the Kunedra supported JPQL clauses and their support for both the developed extensions.
 
 \begin{table}[ht]
-\begin{center}
+\centering
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{lcc}
 \hline
@@ -197,7 +266,6 @@ Kundera supports all of the clauses of JPQL, but with some restrictions since cl
 \textit{\textgreater=} & \cmark 	& \cmark 	\\ \hline
 \textit{\textless=}    & \cmark 	& \cmark 	\\ \hline
 \end{tabular}
-\end{center}
 \caption{JPQL clauses support for the developed extension}
 \label{table:queries}
 \end{table}
@@ -278,10 +346,39 @@ Also for Azure Tables extension, relationships are implemented similarly to rela
 \noindent In Azure Tables to identity an entity the partition-key, the row-key and the table name are required. Since the table name is always provided by Kundera (and is available in the entity meta-data), the only required information to identify an entity are the partition-key and the row-key.
 When two entities are related, the partition-key and the row-key of the related entity are persisted within the entity that owns the relationship.
 
+
+\newparagraph Taking the same example described for Google Datastore in section \ref{sec:kundera-datastore} and reported in the code \ref{code:entity-mapping}, the resulting mapping of the entities fields for Azure Tables is the one reported in table \ref{table:azure-mapping}.
+
+\begin{table}[ht]
+\small
+\centering
+\subfloat[PHONE]{
+	\begin{tabular}{|cc|}
+	\hline
+	\textbf{PHONE\textunderscore ID} & \textbf{NUMBER}\\ 
+	\hline\hline
+	\textbf{DEFAULT\textunderscore TODO} & 123456789 \\ \hline
+	\end{tabular}
+	\hspace{0.5cm}
+}
+\\
+\subfloat[EMPLOYEE]{
+	\begin{tabular}{|cccc|}
+	\hline
+	\textbf{EMPLOYEE\textunderscore ID} & \textbf{NAME} & \textbf{SALARY} & \textbf{PHONE\textunderscore ID}\\ 
+	\hline\hline
+	\textbf{DEFAULT\textunderscore TODO} & Fabio & 123  & \textbf{DEFAULT\textunderscore TODO} \\ \hline
+	\end{tabular}
+	\hspace{0.5cm}
+}
+\caption{Mapping of entity fields on Azure Tables}
+\label{table:azure-mapping}
+\end{table}
+
 \subsubsection{Queries}
 Supporting queries for Azure Tables was straightforward, the procedure was the same described in \ref{sec:kundera-datastore} but due to the different operator supported by Tables, beside the \textit{LIKE} clause also the \textit{IN} and \textit{ORDER BY} clauses are not supported.
 
-\noindent Table \ref{table:queries} reports a complete list of the supported JPQL clauses for both extensions.
+\newparagraph Table \ref{table:queries} shows a complete list of the Kunedra supported JPQL clauses and their support for both the developed extensions.
 
 \subsubsection{Embeddable Classes}
 Embeddable classes (described in \ref{sec:kundera-datastore}) are not supported natively by Azure Tables hence the solution adopted is to serialize the field annotated with \texttt{@Embedded}, in order to be able to persist it to the storage like a \texttt{byte} array and de-serializing it when the entity is read back.

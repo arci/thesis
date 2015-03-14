@@ -228,8 +228,10 @@ Kundera supports all of the clauses of JPQL, but with some restrictions since cl
 \newparagraph Table \ref{table:queries} shows a complete list of the Kunedra supported JPQL clauses and their support for both the developed extensions.
 
 \begin{table}[ht]
+\vspace{1em}
+\small
 \centering
-\renewcommand{\arraystretch}{1.1}
+\renewcommand{\arraystretch}{1.2}
 \begin{tabular}{lcc}
 \hline
 \textbf{JPA-QL Clause} & \textbf{Datastore support} & \textbf{Tables support}\\ 
@@ -334,6 +336,7 @@ When two entities are related, the partition-key and the row-key of the related 
 \newparagraph Taking the same example described for Google Datastore in section \ref{sec:kundera-datastore} and reported in the code \ref{code:entity-mapping}, the resulting mapping of the entities fields for Azure Tables is the one reported in table \ref{table:azure-mapping}.
 
 \begin{table}[ht]
+\vspace{1em}
 \small
 \centering
 \subfloat[PHONE]{
@@ -399,7 +402,7 @@ As described for Datastore in section \ref{sec:kundera-datastore}, Kundera provi
 \item \texttt{table.partition.default}, to let the user specify the value for the default partition key.
 \end{itemize} 
 
-\newparagraph For a complete reference to Azure Tables extension configuration see the appendix \ref{appendix:table-config}.
+\noindent For a complete reference to Azure Tables extension configuration see the appendix \ref{appendix:table-config}.
 
 \section{Summary}
 In this chapter has been introduced in details how Google Datastore and Azure Tables Kundera extensions have been developed, the problems encountered during the development, how they have been addressed and the details of the implementation of the two extensions, including the currently supported features.

@@ -330,7 +330,7 @@ The relevant cascade types has been defined as follow:
 \newparagraph The builder abstract class \texttt{StatementBuilder} provides a single entry point for statements building which is the method \texttt{build(Object entity)}. This method is designed following a template pattern, the designed general algorithm (reported in algorithm \ref{code:statements-building}) perform all the operations needed to   build the statement and calls several methods defined as abstract, which are implemented in the specific builders since they require specific logic, and several hook methods that can be overrided by the specific builders to change the algorithm behavior.
 
 \begin{algorithm}[h]
-  %{\footnotesize\selectfont
+  \scriptsize
   \begin{algorithmic}[1]
   \Function{build}{$object$} 
     \State $stack \gets$ empty queue
@@ -364,7 +364,6 @@ The relevant cascade types has been defined as follow:
     \EndIf
   \EndFunction
   \end{algorithmic}
-  %}	
   \caption{Template algorithm for statements building}
   \label{code:statements-building}
 \end{algorithm}
@@ -413,17 +412,18 @@ The pair \textless\textit{column family}, \textit{key}\textgreater
 is sufficient to identify an entity (composed by one or more columns), so is needed a mapping between database-specific terminology to the more general one, this mapping is shown in table \ref{table:mapping}.
 
 \begin{table}[h]
-\begin{center}
+\centering
+\vspace{1em}
 \renewcommand{\arraystretch}{1.4}
 \begin{tabular}{lcc}
 \hline
 \textbf{General concept} & \textbf{Datastore} & \textbf{Azure Table}\\ 
 \hline\hline
 Column Family & Kind & partition-key \\
+\hline
 Key & key-identifier & row-key \\
 \hline
 \end{tabular}
-\end{center}
 \caption{Column family and Key mapping among supported databases.}
 \label{table:mapping}
 \end{table}

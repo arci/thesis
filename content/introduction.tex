@@ -5,19 +5,19 @@ Introduzione al lavoro. Inizia direttamente, senza nessuna sezione.
 \section*{Original Contributions}
 This work include the following original contributions:
 \begin{itemize}
-\item \dots riassunto sintetico dei diversi contributi
-\item \dots
-\item \dots
+\item two brand new Kundera clients, one for Google Datastore and one for Azure Tables;
+\item a completely rewritten CPIM library NoSQL service, capable of interacting with a migration system for data synchronization and migration; 
+\item new database adapters for the YCSB benchmark.
 \end{itemize}
 
 \section*{Outline of the Thesis}
 This thesis is organized as follows: 
 \begin{itemize}
-\item In Chapter \ref{chap:sota} is described the current evolution of NoSQL databases . As a first introduction is discussed why in this years this technology have emerged over SQL solutions and what are the main differences among those technology, the second part aims to underline the lack of a common language for NoSQLs in contrast to SQL-99 for SQL databases.
-\item In Chapter \ref{chap:ps} \dots
-\item In Chapter \ref{chap:kundera} is dedicated to the develop of the two Kundera client extension that have been developed in order to support Google Datastore and Azure Tables that will be then used in CPIM as adapters for the relative database.
+\item In Chapter \ref{chap:sota} is described the evolution of NoSQL. As a first introduction is discussed why in this years this technology have emerged over SQL solutions and what are the main differences among those technology, the second part aims to underline the lack of a common language for NoSQLs in contrast to DBMS in which SQL exists.
+\item In Chapter \ref{chap:ps} we analyze the current available technologies for NoSQL databases and propose a work for extending the CPIM library to make its interaction with NoSQL world even easier and much more extensible. Furthermore we analyze the requirements of modern web application motivating the choice of integrating in the CPIM NoSQL service a mechanism of data migration.
+\item Chapter \ref{chap:kundera} is dedicated to the develop of the two Kundera client extension that have been developed in order to support Google Datastore and Azure Tables that will be then used in CPIM as adapters for the relative database.
 \item In Chapter \ref{chap:cpim} is presented the work made on CPIM. As a first step is described a modification in the CPIM NoSQL service aimed to integrate Kundera as unique persistence layer for NoSQL access using the standard JPA interface, the library was previously using several different JPA implementation one for each of the supported databases. Furthermore is discussed the extension of CPIM to include an interaction with the migration system \textit{Hegira}.
-\item In Chapter \ref{chap:eval} \dots
+\item In Chapter \ref{chap:eval} are described the various tests that have been performed on the developed Kundera extensions, to guarantee the correctness of the operation and to provide a measurement of performance. Moreover is presented a test application developed to be able to test the migration of the data generated through the CPIM library through the NoSQL service.
 \item In Chapter \ref{chap:conclusions} draws the conclusions on the entire work and proposes some possible future works.
 \end{itemize}
 

@@ -23,7 +23,7 @@ Kundera provides all the code necessary to implement the JPA 2.1 standard interf
 \begin{figure}[tbh]
   \centering
   \includegraphics[scale=0.5]{images/kundera_architecture}
-  \caption{Kundera architecture}
+  \caption{Kundera architecture \cite{online:kundera}}
   \label{fig:kundera_architecture}
 \end{figure}
 
@@ -108,7 +108,7 @@ The \texttt{@Id} annotation, in fact, is the annotation (available in the JPA sp
 \subsubsection{Consistency}
 In Datastore entities are organized in \textit{Entity Groups} based on their \textit{Ancestor Path}. The Ancestor Path is a hierarchy of entities whose keys have relation among themselves.
 
-\noindent Consistency is managed through entity groups and so by defining the ancestor paths. Entities within the same entity group are managed in a strong consistency. Entities which are not in an entity group are treated with eventual consistent policy.
+\noindent Consistency is managed through entity groups and so by defining the ancestor paths. Entities within the same entity group are managed in a strongly consistent means. Entities which are not in an entity group are treated with eventual consistent policy.
 
 \noindent Datastore allows to create ancestor paths by defining entities parental relationships between entities and is it a task left to the user. Datastore low-level API also leave this task to the user, for example in Objectify \cite{online:objectify}, a wrapper for these API, the developer makes use of a \texttt{@Parent} annotation to make the user able to specify the parent relationships and hence to be able to organize entities through the ancestor path.
 

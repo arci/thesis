@@ -8,48 +8,40 @@ We would give to the user the ability to persist data in the database that best 
 In our vision the user can should be able to persist different entities in different datastore based on his needs and without the limitation to a specific NoSQL technology.
 
 \noindent Moreover the current JPA implementation of the NoSQL service of CPIM is not perfectly transparent to the underlying database. The problem reside in the fact that for each of the currently supported database has been found, and integrated into CPIM, a specific implementation of the JPA interface. Even through JPA is a well defined standard, not every JPA provider follows strictly the specification and thus different provider can behave differently while persisting the same entities since they interpret differently the semantic of some JPA annotation.
+An example of this problem is how Collection fields are handled. In the Google JPA implementation for Datastore and in the JPA implementation for Amazon SimpleDB, Collection fields are handled correctly, with respect to the JPA specification, thought the \texttt{@ElementCollection} annotation, while, in the JPA implementation for Azure Tables, Collection fields needs to be annotated with \texttt{@Embedded}. This require a modification of the code and thus eliminates the effort of CPIM in achieving code portability among PaaS.
 
 \newparagraph Given all the current problem by which the current NoSQL implementation of CPIM suffer, we want to go further and extends the number of NoSQL databases that the CPIM can interacts with.
 
 \noindent The proposed solution is to user Kundera as unique persistence layer for the NoSQL service . This integration will produce several benefits to the NoSQL service o CPIM resolving the previously stated problems:
 \begin{itemize}
-\item since Kundera will be the unique persistence provider for the library we will relay only on one implementation of the JPA interface overtaking the problems related to different interpretation of the JPA annotation and thus achieving complete transparency of the specific NoSQL technology;
+\item since Kundera will be the unique persistence provider for the library we will relay only on one implementation of the JPA interface overtaking the problems related to different interpretation of the JPA annotation and thus achieving complete transparency of the specific NoSQL technology and portability of the code of the model since no modifications are required to the classes;
 \item the integration of Kundera permits a redesign of the NoSQL service aimed to decouple the chosen PaaS provider and the NoSQL technology let the user able to decide which technology is more suitable for its needs. Furthermore exploiting the polyglot-persistence provided by Kundera, the user will be able to persist entities within different NoSQL databases at the same time, simply by defined accordingly the persistence unit in the \textit{persistence.xml} file;
 \item choosing Kundera as persistence layer we can actually take advantage of the already developed extension for many different NoSQL databases adding as a result the support of those database to CPIM;
+\item user can use more NoSQL technologies at one by exploiting the Kundera polyglot persistence that allows the user to specify, inside the \textit{persistence.xml} file which entities belong to which persistence unit and configure each persistence unit to persist data on a different NoSQL database.
 \end{itemize}
 
-\noindent One can argue on why we choose to use Kundera as persistence provider for the NoSQL service of CPIM. 
+\noindent One can argue on why we choose to use Kundera as persistence provider for the NoSQL service of CPIM. The main reason is that Kundera, through the use of the JPA interface will permit to the user to handle the completely of NoSQL databases with expertise he already uses for SQL systems.
+Furthermore Kundera is in the field from 2010 so have a great  and active community and has been used successfully in some production environment.
+The only drawback is that Kundera does not support any of the NoSQL datastore currently supported by CPIM.
+Here comes one more reason by which we choose Kundera, in fact Kundera have as its primary goal to make the library as much extensible as possible to let developers build their own client around new NoSQL technology. The solution will thus be develop the needed extensions to Kundera.
 
-
-
+\newparagraph In this ambit the work roadmap is the following:
 \begin{itemize}
-\item why use kundera among others
-\begin{itemize}	
-\item open source
-\item JPA standard interface
-\item community
-\item many supported databases
-\item polyglot persistence
-\item client extension framework
-\item used in production
+\item refactor the NoSQL architecture of CPIM to integrate Kundera as the unique persistence provider
+\item develop two brand new Kundera extensions, one for Google Datastore and one for Azure Tables.
 \end{itemize}
-\item why include it into CPIM
-\end{itemize}
-
-A good use case advocating use of ORM tools is migration of applications (built using ORM tool) from RDBMS to NoSQL database (or even from one NoSQL database to another). This requires (at least in theory) little or no programming effort in business domain.
-
 
 \section{Hegira integration}
+NoSQL technologies do not offer a common language for interaction as SQL is for DBMS, furthermore they offer a simpler interface with respect to DBMS. This require user to interact with NoSQL databases at a lower level of interaction, moreover no effort is made by NoSQL database in hiding to the user the physical data representation of the data. This move a good amount of developing effort toward the user,.
+This approach, and the many different NoSQL solution available nowadays, causes a lock-in on the technology chosen since re-engineer an application is often an operation with huge costs for companies.
 
-\begin{itemize}
-\item why extend CPIM to include migration
-\begin{itemize}	
-\item vendor lock-in and thus costs
-\item cost of offline migration (shutdown, migration, restart)
-\item live data synchronization and migration
-\item functionality (for map reduce job better persist over hbase)
-\end{itemize}
-\end{itemize}
+\newparagraph To mitigate this lock-in problem we want to extend CPIM to make it able to interact with \textit{Hegira} a migration system able to perform interoperable data migration and synchronization across column-based NoSQL databases \cite{paper:modaclouds-deliverable}.
+
+\noindent \textit{Hegira} is already able to migrate data offline but in many cases this situation is not acceptable since this reauire to turn off the application  for a period of time that depends on how many data needs to be migrated to the new database. 
+Downtime cost and risk of data loss can be problematic so \textit{Hegira} was extended to be able to perform a live-migration of the data by keeping synchronized the data on the source and the destination database.
+This feature needs to be exploited at application level and thus we decide to embed it inside the CPIM NoSQL service in order to make it as transparent as possible to the user.
+
+\newparagraph CPIM needs to be aware of the state of both the synchronization and migration systems and acts accordingly intercepting user operation and sending data manipulation queries (DMQ) to the migration system wile keeping the data synchronized interacting with the synchronization system when required.
 
 
 

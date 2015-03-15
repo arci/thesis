@@ -5,77 +5,71 @@ In this chapter, in section \ref{sec:nosql}, NoSQL databases are firstly introdu
 
 \section{NoSQL databases}
 \label{sec:nosql}
- some concerns have recently emerged towards RDBMSs. First, it has been argued that there are cases where their performances are not adequate, while dedicated engines, tailored for specific requirements (for example decision support or stream processing) behave much better [12] and provide scalabil- ity [11]. Second, the structure of the relational model, while being effective for many traditional applications, is considered to be too rigid or not useful in other cases, with arguments that call for semistructured data 
- 
- At the same time, the full power of relational databases, with complex transactions and complex queries, is not needed in some contexts, where “simple operations” (reads and writes that involve small amount of data) are enough [11]. Also, in some cases, ACID consistency, the complete form of consistency guaranteed by RDBMSs, is not essential, and can be sacrificed for the sake of efficiency. It is worth observing that many Internet application domains, for example, the social networking domain, require both scalability (indeed, Web-size scalability) and flexibility in structure, while being satisfied with simple operations and weak forms of consistency.
+The relational model and SQL were invented at a time when data management targeted primarily administrative applications. However, the data management landscape has evolved, and today’s landscape of data management applications is much more diverse than it was when the relational model and SQL were born.
+There are cases where RDBMSs performances are not adequate and the structure of the relational model, while being effective for many traditional applications, is considered to be too rigid or not useful in other cases.
+At the same time, the full power of relational databases, with complex transactions and complex queries, is not needed in some contexts. Also ACID consistency, the complete form of consistency guaranteed by RDBMSs, is not essential, and can be sacrificed for the sake of efficiency. 
+Many Internet application domains, for example, the social networking domain, require both scalability and flexibility in structure, while being satisfied with simple operations and weak forms of consistency.
 
-With these motivations, a number of new systems, not following the RDBMS paradigm (neither in the interface nor in the implementation), have recently been developed. Their common features are scalability and support to simple operations only (and so, limited support to complex ones), with some flexibility in the structure of data. Most of them also relax consistency requirements. They are often indicated as NoSQL systems, because they can be accessed by APIs that offer much simpler operations than those that can be expressed in SQL. Probably, it would be more appropriate to call them non-relational, but we will stick to common usage and adopt the term NoSQL.
+\newparagraph With these motivations, a number of new systems, not following the RDBMS paradigm, have recently been developed. Their common features are scalability and support to simple operations only, with some flexibility in the structure of data. Most of them also relax consistency requirements. They are often indicated as NoSQL systems, because they can be accessed by APIs that offer much simpler operations than those that can be expressed in SQL. 
+Other thinks that it would be more appropriate to call them non-relational, 
 
-Relational database management systems have been around for more than thirty years. During this time, several revolutions (such as the Object Oriented database movement) have erupted, many of which threatened to doom SQL and relational databases. These revolutions eventually fizzled out, and none made even a small dent in the domi- nance of relational databases. The latest revolu- tion appears to be from NoSQL databases that are touted to be non-relational, horizontally scalable, distributed and, for the most part, open source
-
-The debate on SQL vs. NoSQL is as much a debate on SQL, the language, as on the relational model and its various implementations.
-
-There is a variety of systems in the NoSQL arena [6, 11], more than fifty, and each of them exposes a different interface (different model and different API).
-
-
-The relational model and SQL were invented at a time when data management targeted primarily administrative applications. However, the data management landscape has evolved, and today’s landscape of data management applications is much more diverse than it was when the relational model and SQL were born
-
-Thus, while relational database systems were first proposed as a way to store and manage struc- tured data, burgeoning NoSQL databases have emerged as a way to store unstructured data and other complex objects such as documents, data streams, and graphs. With the rise of the real-time web, NoSQL databases were designed to deal with very large volumes of data.
-
-in spite of the research and develop- ment, the relational model and SQL may not be the best foundation for managing every new kind of data and workload.
-The current standard, SQL:2011, is very complex With each addition, its body grows, and it becomes less stable.
+\noindent Thus, while relational database systems were first proposed as a way to store and manage structured data, burgeoning NoSQL databases have emerged as a way to store unstructured data and other complex objects such as documents, data streams, and graphs. With the rise of the real-time web, NoSQL databases were designed to deal with very large volumes of data.
 
 \subsection{NoSQL characteristics}
-While preserving ACID properties may not be as important for databases that typically contain append only data, they are absolutely essential for most operational systems and online transaction processing systems, including retail, banking, and finance.
+While DBMS systems tends to \textit{scale up} and thus adding resources to a single node (such as CPUs or memory) in the system to increase its computational capabilities, NoSQL systems, to afford the great amount of data to deal with, are designed to \textit{scale out} and thus add more nodes in the system.
 
-NoSQL databases must cope with the CAP or Brewer’s Theorem which states that given the properties of consistency, availability and partition tolerance, a distributed computer system can satisfy up to two of those at the same time.
-Consistency: a distributed system is said to be consistent if every node sees the same data at the same time.
-Availability: means that the system is designed to keep working even if a failure to some nodes happens.
-Partition tolerance: implies the ability of the system (divided in two or more partitions) to continue its work even if these partitions cannot communicate with each other.
+\noindent While \textit{scaling up} is a good solution for certain type of application with well structured data, in today's technical landscape, especially in the web, is increasing the desire to \textit{scale out} due to the fact that this approach is much cheaper, since singular nodes does not require high computational capabilities, and especially due to the ability to run fault tolerant.
+In this scenario Eric Brewer’s CAP theorem comes into play, it states that, in a distributed system, we can only have two out of three of the following guarantees:
+\begin{itemize}
+\item \textbf{Consistency}, a read is guaranteed to return the most recent write for a given client;
+\item \textbf{Availability}, a non-failing node will return a reasonable response within a reasonable amount of time (no error or timeout);
+\item \textbf{Partition Tolerance}, the system will continue to function when network partitions occur.
+\end{itemize}
 
-
-All datastores marked as NoSQL are characterized by these particular features:
-Horizontal Scalability: it is the ability of a system (a database) to handle a growing (or decreasing) amount of work in a capable and user-transparent way. This property is achieved thanks to the possibility of "sharding" the data, or better to split horizontally the data in a database. This function allows to access smaller pieces of data in a faster and easily managed way and allows the system to add or delete nodes from the datastore, without changing its structure and without a loss of performances in reads or writes. The main problem that this feature break out is that Join operations become very complex and inefficient.
-Fault tolerance: when the amount of data increases, the datastore is able to recover after single or multiple failures. To do that, all NoSQL datastores provide data replication, storing different copies of the same piece of data; when a single replica is lost, the datastore can use its copies and it does not lose any information.
-High availability: each data stored in a NoSQL database has to be reachable in a very limited time; like fault tolerance, this features is provided thanks to data replication. When the client asks the datastore for some data, the system answers with the nearest copy of the data requested, reducing time needed to answer and allowing multiple simultaneous answers to different clients, also when their number increases in a small time period.
-Distributed and cloud oriented: NoSQL databases are based on a distributed infrastructure, distributing data on different nodes that can be managed in a very elastic way.
-This kind of configuration permits to be more efficient and have better performances, distributing the workload on each node and not collect it on a single central node.
-Flexible data schema (or schema-free): in contrast with traditional
-RDBMS, the new NoSQL datastores have not a fixed data schema.
-Unlike RDBMS fixed table structures, in this kind of systems different types of data can be stored. Due to this property, they are defined free-schema databases.
+\noindent Given that networks aren't completely reliable, partitions must be tolerated. According to the CAP theorem, this means that essentially two are the valid options: Consistency and Availability.
+\begin{itemize}
+\item \textbf{Consistency/Partition Tolerance}, wait for a response from the partitioned node which could result in a timeout error. This solution is adopted when business requirements dictate atomic reads and writes;
+\item \textbf{Availability/Partition Tolerance}, return the most recent version of the data in the system even if it could be stale. This solution is adopted when business requirements allow for some flexibility around when the data in the system synchronizes;
+\end{itemize}
 
 \subsection{NoSQL classification}
-In the last few years CITE NOSQL.ORG a lot of new NoSQL databases have been devel- oped. Each of them tries to fit several requirements differently. 
+NoSQL databases born to handle various type of unstructured data, each NoSQL database tries to solve the problem with different approaches due to different requirements on the data but all of them share the general objective of offering simple operations in a scalable way, with possibly massive throughput.
+Beside the great diversity of the data and thus of the solution that have been adopted, four main category can be pointed out.
 
-Key/Value stores Key/Value stores are similar to data-structures like Maps or Hashtables, since they permit to retrieve information (values) given their key.
+\subsubsection{Key/Value stores} 
+In Key/Value stores, data is stored within fields composed of a name and a value which are then grouped and assigned to a key. This way, given a key, is possible to retrieve the associated value which in turn is composed of various fields. This kind of databases are thus very similar to data structures as Map or Hashtables.
+Examples of this kind of databases are Redis and Voldemort.
 
-Column-oriented databases  Data are stored inside structures named Columns, which in turn are contained inside Column Families, and are indexed by Key. Typically, data inside the same Column (for every Key) are persisted together.
+\subsubsection{Column-oriented databases}
+In Column-oriented databases, entity properties are stored inside Columns, data structures that can are generally grouped inside Column Families.
+Set of columns are identified by a key.
+Examples of this kind of databases are Google Big Table, Cassandra and HBase.
 
-Document-oriented databases Document databases are mainly used to store semi-structured data which are called Documents. Each document may contain several unique ID fields, used to index other fields that can be of any type, simple or nested, including other documents. Typical documents formats are: JSON, BSON, YAML or XML.
-This kind of databases allows to express queries over fields contained in the document.
+\subsubsection{Document-oriented databases}
+Document-oriented databases are designed for storing, retrieving, and managing document-oriented information, also known as semi-structured data. 
+These systems are designed around an abstract notion of a Document identified in the database via a unique key. 
+Document database typically offer a query language that allows the user to retrieve documents based on their content. because they extract and index all kinds of meta-data, and usually also the entire data content of the documents. 
+Documents can stored  in many different ways such as JSON, YAML or XML.
+An example of this kind of database is MongoDB and Couchbase.
 
-Graph databases Graph databases are based on graphs theory and are typically used to represent highly interconnected data. Information are stored inside graphs; a node is the entity under consideration and its information is stored inside the so called properties (key/value pairs). It is possible to express relationships between nodes by means of edges.
+\subsubsection{Graph databases} 
+Graph databases are databases that uses graph structures with nodes, edges, and properties to represent and store data.
+The node are the entity persisted into the database and edges can represents relationships among them. Nodes maintains the information about the entity they represents by storing them into properties.
+An example of this kind of database is Neo4j.
 
-Dire che esistono soluzioni ibride come OrientDB che è sia graph che document.
-
-\subsection{Lack of a standard language}
-it has been recently pointed out, the lack of standard is a great concern for organizations interested in adopting any of these systems [10]: applications and data are not portable and skills and expertise acquired on a specific system are not reusable with another one. Also, most of the interfaces support a lower level than SQL, with record-at-a-time approaches, which appear to be a step back with respect to relational systems.
-
-the lack of a standard is a great concern for companies interested in adopting any of these systems [7]: applications and data are ex- pensive to convert and competencies and expertise acquired on a specific system get wasted in case of migration. Efforts that support interoperability and translation are definitely needed
-
+\noindent As we write there are more than 150 \cite{online:nosql-database.org} different NoSQL databases and no all of them can be strictly categorized in one of the presented classification. Hybrid solutions came to be more versatile and appetible to the industry. An example is OrientDB which is a hybrid solution which data model span across graph and document databases. 
 
 \section{Approaches for a common language}
 \label{sec:common-language}
-The lack of a common standardized language for NoSQL databases, as SQL is for DBMS, has bring industry and developers to build many different solutions with slightly different approaches.
+The variety of NoSQL systems is huge and the lack of a a common standardized language for NoSQL databases is a great concern for companies interested in adopting any of these systems, applications and data are expensive to convert and competencies and expertise acquired on a specific system get wasted in case of migration. 
+Also, most of the NoSQL interfaces support a lower level of interaction than SQL, which appear to be a step back with respect to DBMS.
 
 \subsection{SQLifying NoSQL}
 A fist approach that is emerging is the \textit{SQLfication} of NoSQL databases.
-The main problem here is the inability of industry to switch from DBMS to NoSQL solutions because of the great investments that has been made in the last 30 years both on technologies and skills.
-NoSQL vendors started so to create SQL-like wrapper around their NoSQL solutions which offer different features from those of a query language for a traditional relational database, but with a grammar similar to that of SQL.
+NoSQL vendors, to overcome the problem of the industry of wasting the expertise maturated over SQL systems, started so to create SQL-like wrapper around their NoSQL solutions which typically offer different features from those of a query language for a traditional relational database, but maintains a grammar similar to that of SQL.
 
 \noindent For example Google, for Datastore, provides GQL, a SQL-like language for retrieving entities or keys from Datastore.
 Other NoSQL database such as Cassandra (with CQL) or OrientDB provides natively such type of SQL-like language support.
-There exists some project that has started with this aim.
 
 \subsubsection{Apache Phoenix} 
 Apache Phoenix \cite{online:apache-phoenix} aims to become the standard means of accessing HBase data through a well-defined, industry standard API.
@@ -87,19 +81,10 @@ Unstructured Data Query Language \cite{online:unql}, or UnQL (pronounced “Uncl
 \noindent The project was stsrted with quite some hype in 2011, but, after some burst of activity, the project came to a hold. So it seems, that at least as a project UNQL has been a failure. 
 
 \subsection{ORM approaches}
-ORM (Object Relational Mapping) solutions came into existence to solve OO-impedance mismatching problem. Most popular among them are Hibernate, Toplink, EclipseLink etc. They worked beautifully with relational databases like Oracle and MySQL, among others.
+Object Relational Mapping (ORM) solutions came into existence to solve OO-impedance mismatching problem. Each ORM solution had its own API and object query language (like HQL for Hibernate) which made it difficult for programmers to switch from one framework to another. As a result, efforts were made to make standards and specifications. 
 
-Each ORM solution had its own API and object query language (like HQL for hibernate) which made it difficult for programmers to switch from one framework to another. As a result, efforts were made to make standards and specifications. 
-
-Problem with NoSQL databases is that there is NOT EVEN ONE existing industry standard (like SQL) for them. The very basic idea of “something opposed to SQL”…and as a result – deviation from standards and rules, is going to be suicidal, if not corrected at right time. Learning to work with a new NoSQL database is always cumbersome as a result.
-
-Apart from that, people lack in-depth knowledge of NoSQL. Even if they do, they are confined to one or two. In relational world, people depend upon their knowledge of SQL and JDBC to work on basic and intermediate database things. Switching to another database requires little or almost no effort, which otherwise is painful in NoSQL  world.
-
-ORM for NoSQL is a bit mis-leading term. People prefer to call it “OM tool for NoSQL” or maybe “ODM – Object data-store Mapping tool”. ORM frameworks have already been there for 30+ years and it’s a de-facto industry standard. People are very clear about what ORM tools are supposed to do. There are no surprises.
-
-Key here is to let people forget worrying about complexities inherent in NoSQLs. Let them do things in a way they already know and are comfortable with. Why not use an approach that is there for this problem domain for decades and has proven its usefulness.
-
-A good use case advocating use of ORM tools is migration of applications (built using ORM tool) from RDBMS to NoSQL database. (or even from one NoSQL database to another). This requires (at least in theory) little or no programming effort in business domain.
+\noindent Problem with NoSQL databases is that people lack in-depth knowledge of NoSQL and even if they do, their knowledge is limited to a couple of them. People depend upon their knowledge of SQL and JDBC to work on databases, switching to another database requires little or almost no effort, which otherwise is painful for NoSQL.
+The idea is to give to developers a way to interact with NoSQL with which they are comfortable, leaving the complexity of NoSQLs to the ORM.
 
 \subsubsection{Kundera}
 Kundera is an opensource project starded by \textbf{Impetus Inc.} an India based tech company active in BigData and Cloud engineering.

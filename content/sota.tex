@@ -171,6 +171,18 @@ public class Employee {
 }
 \end{lstlisting}
 
+\subsubsection{Apache Gora}
+Apache Gora \cite{online:apache-gora} born by notice that while excellent ORM frameworks (such as JPA, Apache OpenJPA or Hibernate) exists for relational databases, data modeling in NoSQL data stores, which differ profoundly from their relational cousins, lacks of a similar tool. The aim of the project is to extend the concept of Object Relational Mapping tools (ORM), to introduce Object-to-Datastore Mapping where the underlying technological implementations rely mostly on non-relational data modeling. In essence Gora provides storage abstraction for NoSQL technologies. 
+Gora thus gives the user an easy-to-use in-memory data model and persistence for big data framework with data store specific mappings and built in Apache Hadoop support.
+
+\newparagraph The objectives of Gora can be grouped as follows:
+\begin{itemize}
+\item \textbf{Data Persistence}: persisting objects to Column stores such as Apache HBase, Apache Cassandra, Hypertable; key-value stores such as Voldermort, Redis, etc; SQL databases, such as MySQL, HSQLDB, flat files in local file system of Hadoop HDFS; 
+\item \textbf{Data Access}: an easy to use Java-friendly common API for accessing the data regardless of its location; 
+\item \textbf{Analysis}: accessing the data and making analysis through adapters for Apache Pig, Apache Hive and Cascading;
+\item \textbf{MapReduce support}: out-of-the-box and extensive MapReduce (Apache Hadoop) support for data in the data store.
+\end{itemize}
+
 \subsubsection{SOS Platform}
 The SOS (Save Our Systems) Platform \cite{paper:sos-platform} is a academic project developed by Unversita' Roma Tre.
 
@@ -184,17 +196,11 @@ The architecture is shown in figure \ref{fig:sos-architecture}.
   \label{fig:sos-architecture}
 \end{figure}
 
-\subsubsection{Apache Gora}
-Apache Gora \cite{online:apache-gora} born by notice that while excellent ORM frameworks (such as JPA, Apache OpenJPA or Hibernate) exists for relational databases, data modeling in NoSQL data stores, which differ profoundly from their relational cousins, lacks of a similar tool. The aim of the project is to extend the concept of Object Relational Mapping tools (ORM), to introduce Object-to-Datastore Mapping where the underlying technological implementations rely mostly on non-relational data modeling. In essence Gora provides storage abstraction for NoSQL technologies. 
-Gora thus gives the user an easy-to-use in-memory data model and persistence for big data framework with data store specific mappings and built in Apache Hadoop support.
+\noindent The particularity of this approach is that meta-model has been defined spotting common concepts in the model of the supported database. The meta-layer thus span among different types of NoSQL databases, in fact, three database has been chosen by the authors: Hbase to represent Column-based databases, MongoDB to represent Document-oriented databases and Redis for Key/Value stores. 
 
-\newparagraph The objectives of Gora can be grouped as follows:
-\begin{itemize}
-\item \textbf{Data Persistence}: persisting objects to Column stores such as Apache HBase, Apache Cassandra, Hypertable; key-value stores such as Voldermort, Redis, etc; SQL databases, such as MySQL, HSQLDB, flat files in local file system of Hadoop HDFS; 
-\item \textbf{Data Access}: an easy to use Java-friendly common API for accessing the data regardless of its location; 
-\item \textbf{Analysis}: accessing the data and making analysis through adapters for Apache Pig, Apache Hive and Cascading;
-\item \textbf{MapReduce support}: out-of-the-box and extensive MapReduce (Apache Hadoop) support for data in the data store.
-\end{itemize}
+\noindent The resulting meta-layer, exploiting the models similarities, is actually very simple. It is composed by three main constructs: Struct, Set and Attribute.
+Attributes contains simple values, such as Strings or Integers; Structs and Sets are instead complex elements whose values may contains both Attributes and Sets or Structs as well.
+Each database is represented as a Set of collections whose is a Set itself, containing an arbitrary number of objects. Each object is identified by a key that is unique in the collections it belongs to.
 
 \section{The JPA interface}
 \label{sec:jpa}

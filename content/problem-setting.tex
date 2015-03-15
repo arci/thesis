@@ -1,3 +1,27 @@
+\section{Introduction}
+In this chapter we analyze the motivations that leaded to this work, in particular we analyze the current problems in the NoSQL service implementation of CPIM and propose a solution to address them and at the same time extends the number of NoSQL database supported by the library.
+\noindent Furthermore we will analyze why we decided to include the possibility for the user of the CPIM library to be able to migrate and synchronize data with the \textit{Hegira} migration system.
+
+\section{CPIM NoSQL service}
+CPIM is using JPA interface to ease the communication to different NoSQL databases. There exists some limitation in this approach, a first limitation of the approach is that as the NoSQL service is implemented, is not possible to choose a different NoSQL service with respect to the chosen cloud provider so for example, if Google App Engine is the PaaS on which the application will deployed, the only possible NoSQL solution available is Datastore, the NoSQL solution available in the App Engine environment.
+We would give to the user the ability to persist data in the database that best fit the user requirements. For example if the user application will generate data that will be used with Hadoop, the best solution is to store those data in an HBase instance since its integrate easily in Hadoop.
+In our vision the user can should be able to persist different entities in different datastore based on his needs and without the limitation to a specific NoSQL technology.
+
+\noindent Moreover the current JPA implementation of the NoSQL service of CPIM is not perfectly transparent to the underlying database. The problem reside in the fact that for each of the currently supported database has been found, and integrated into CPIM, a specific implementation of the JPA interface. Even through JPA is a well defined standard, not every JPA provider follows strictly the specification and thus different provider can behave differently while persisting the same entities since they interpret differently the semantic of some JPA annotation.
+
+\newparagraph Given all the current problem by which the current NoSQL implementation of CPIM suffer, we want to go further and extends the number of NoSQL databases that the CPIM can interacts with.
+
+\noindent The proposed solution is to user Kundera as unique persistence layer for the NoSQL service . This integration will produce several benefits to the NoSQL service o CPIM resolving the previously stated problems:
+\begin{itemize}
+\item since Kundera will be the unique persistence provider for the library we will relay only on one implementation of the JPA interface overtaking the problems related to different interpretation of the JPA annotation and thus achieving complete transparency of the specific NoSQL technology;
+\item the integration of Kundera permits a redesign of the NoSQL service aimed to decouple the chosen PaaS provider and the NoSQL technology let the user able to decide which technology is more suitable for its needs. Furthermore exploiting the polyglot-persistence provided by Kundera, the user will be able to persist entities within different NoSQL databases at the same time, simply by defined accordingly the persistence unit in the \textit{persistence.xml} file;
+\item choosing Kundera as persistence layer we can actually take advantage of the already developed extension for many different NoSQL databases adding as a result the support of those database to CPIM;
+\end{itemize}
+
+\noindent One can argue on why we choose to use Kundera as persistence provider for the NoSQL service of CPIM. 
+
+
+
 \begin{itemize}
 \item why use kundera among others
 \begin{itemize}	
@@ -10,6 +34,14 @@
 \item used in production
 \end{itemize}
 \item why include it into CPIM
+\end{itemize}
+
+A good use case advocating use of ORM tools is migration of applications (built using ORM tool) from RDBMS to NoSQL database (or even from one NoSQL database to another). This requires (at least in theory) little or no programming effort in business domain.
+
+
+\section{Hegira integration}
+
+\begin{itemize}
 \item why extend CPIM to include migration
 \begin{itemize}	
 \item vendor lock-in and thus costs
@@ -19,4 +51,5 @@
 \end{itemize}
 \end{itemize}
 
-A good use case advocating use of ORM tools is migration of applications (built using ORM tool) from RDBMS to NoSQL database (or even from one NoSQL database to another). This requires (at least in theory) little or no programming effort in business domain.
+
+

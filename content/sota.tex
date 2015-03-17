@@ -1,63 +1,66 @@
 \section{Introduction}
-In this chapter, in section \ref{sec:nosql}, NoSQL databases are firstly introduced and compared with SQL solutions. In section \ref{sec:common-language} are listed some of the solution that has been developed in defining a common language or interface to interact with different NoSQL databases.
+In this chapter, NoSQL databases are firstly introduced and are described their main characteristics and a general classification. In section \ref{sec:common-language} are listed some of the solution that has been developed trying to define a common language (or interface) to interact with different NoSQL databases.
 
-\noindent In section \ref{sec:jpa} is described the JPA interface and JPQL the query language used for JPA queries. In section \ref{sec:cpim} the CPIM library is introduced as a tentative in defining a common interface to interacts with different vendors in a PaaS environment, which include accessing their NoSQL solution.
+\noindent In section \ref{sec:jpa} is described the JPA interface and JPQL, the query language used for JPA queries. In section \ref{sec:cpim} the CPIM library is introduced as a tentative of defining a common interface to interacts with different vendors in a PaaS environment, which include accessing their NoSQL solution.
 
 \section{NoSQL databases}
 \label{sec:nosql}
-The relational model and SQL were invented at a time when data management targeted primarily administrative applications. However, the data management landscape has evolved, and today’s landscape of data management applications is much more diverse than it was when the relational model and SQL were born.
+The relational model and SQL were invented at a time when data management targeted primarily administrative applications. However, the data management landscape has evolved, and today's landscape of data management applications is much more diverse than it was when the relational model and SQL were born.
 There are cases where RDBMSs performances are not adequate and the structure of the relational model, while being effective for many traditional applications, is considered to be too rigid or not useful in other cases.
 At the same time, the full power of relational databases, with complex transactions and complex queries, is not needed in some contexts. Also ACID consistency, the complete form of consistency guaranteed by RDBMSs, is not essential, and can be sacrificed for the sake of efficiency. 
-Many Internet application domains, for example, the social networking domain, require both scalability and flexibility in structure, while being satisfied with simple operations and weak forms of consistency.
+Many Internet application domains,for example the social networking domain, require both scalability and flexibility in structure, that can be satisfied with simple operations and weak forms of consistency.
 
-\newparagraph With these motivations, a number of new systems, not following the RDBMS paradigm, have recently been developed. Their common features are scalability and support to simple operations only, with some flexibility in the structure of data. Most of them also relax consistency requirements. They are often indicated as NoSQL systems, because they can be accessed by APIs that offer much simpler operations than those that can be expressed in SQL. 
-Other thinks that it would be more appropriate to call them non-relational, 
+\newparagraph With these motivations, a number of new systems, not following the RDBMS paradigm, have been developed. Their common features are scalability and support to simple operations only, with some flexibility in the structure of data. Most of them also relax consistency requirements. They are often indicated as NoSQL systems, which stands for \textit{Not only SQL}, even if other thinks that it would be more appropriate to call them non-relational,  because they can be accessed by APIs that offer much simpler operations than those that can be expressed in SQL. 
 
-\noindent Thus, while relational database systems were first proposed as a way to store and manage structured data, burgeoning NoSQL databases have emerged as a way to store unstructured data and other complex objects such as documents, data streams, and graphs. With the rise of the real-time web, NoSQL databases were designed to deal with very large volumes of data.
+\noindent Thus, while relational database systems were first proposed as a way to store and manage structured data, NoSQL databases have emerged as a way to store unstructured data and other complex objects such as documents, data streams, and graphs. With the rise of the real-time web, NoSQL databases were designed to deal with very large volumes of data.
 
 \subsection{NoSQL characteristics}
-While DBMS systems tends to \textit{scale up} and thus adding resources to a single node (such as CPUs or memory) in the system to increase its computational capabilities, NoSQL systems, to afford the great amount of data to deal with, are designed to \textit{scale out} and thus add more nodes in the system.
+While DBMS systems tends to \textit{scale up} and thus adding resources to a single node (such as CPUs or memory) in the system to increase its computational capabilities, NoSQL systems, to afford the great amount of data they have to deal with, are designed to \textit{scale out} and thus by adding more nodes in the system.
 
-\noindent While \textit{scaling up} is a good solution for certain type of application with well structured data, in today's technical landscape, especially in the web, is increasing the desire to \textit{scale out} due to the fact that this approach is much cheaper, since singular nodes does not require high computational capabilities, and especially due to the ability to run fault tolerant.
-In this scenario Eric Brewer’s CAP theorem comes into play, it states that, in a distributed system, we can only have two out of three of the following guarantees:
+\noindent While \textit{scaling up} is a good solution for certain type of application with well structured data, in today's technical landscape, especially in the web, is increasing the desire to \textit{scale out}. This is due to the fact that this approach is much cheaper since singular nodes does not require high computational capabilities, and, especially, due to the ability to run fault tolerant.
+
+\noindent In this scenario Eric Brewer's CAP theorem comes into play, it states that, in a distributed system, we can only have two out of three of the following guarantees:
 \begin{itemize}
 \item \textbf{Consistency}, a read is guaranteed to return the most recent write for a given client;
 \item \textbf{Availability}, a non-failing node will return a reasonable response within a reasonable amount of time (no error or timeout);
 \item \textbf{Partition Tolerance}, the system will continue to function when network partitions occur.
 \end{itemize}
 
-\noindent Given that networks aren't completely reliable, partitions must be tolerated. According to the CAP theorem, this means that essentially two are the valid options: Consistency and Availability.
+\noindent Given that networks aren't completely reliable, partitions must be tolerated. According to the CAP theorem, this means that essentially two are the remaining valid options: Consistency and Availability.
 \begin{itemize}
 \item \textbf{Consistency/Partition Tolerance}, wait for a response from the partitioned node which could result in a timeout error. This solution is adopted when business requirements dictate atomic reads and writes;
 \item \textbf{Availability/Partition Tolerance}, return the most recent version of the data in the system even if it could be stale. This solution is adopted when business requirements allow for some flexibility around when the data in the system synchronizes;
 \end{itemize}
 
 \subsection{NoSQL classification}
-NoSQL databases born to handle various type of unstructured data, each NoSQL database tries to solve the problem with different approaches due to different requirements on the data but all of them share the general objective of offering simple operations in a scalable way, with possibly massive throughput.
-Beside the great diversity of the data and thus of the solution that have been adopted, four main category can be pointed out.
+NoSQL databases born to handle various type of unstructured data. Each one of them tries to solve the problem with different approaches due to different requirements on the data but all of them share the general objective of offering simple operations in a scalable way, with possibly massive throughput.
+Beside the great diversity of the data, and thus of the solution that have been adopted, four main general category can be pointed out.
 
 \subsubsection{Key/Value stores} 
-In Key/Value stores, data is stored within fields composed of a name and a value which are then grouped and assigned to a key. This way, given a key, is possible to retrieve the associated value which in turn is composed of various fields. This kind of databases are thus very similar to data structures as Map or Hashtables.
-Examples of this kind of databases are Redis and Voldemort.
+In Key/Value stores, data is stored within fields composed of a name and a value which are then grouped and assigned to a key. This way, given a key, is possible to retrieve the associated value which in turn is the data composed of the various fields. This kind of databases are very similar to data structures such as Maps or Hashtables.
+Examples of this kind of databases are Redis\footnote{\url{http://redis.io}} and Voldemort\footnote{\url{http://www.project-voldemort.com}}.
 
 \subsubsection{Column-oriented databases}
 In Column-oriented databases, entity properties are stored inside Columns, data structures that can are generally grouped inside Column Families.
-Set of columns are identified by a key.
-Examples of this kind of databases are Google Big Table, Cassandra and HBase.
+Set of columns are then identified by a key.
+
+\noindent Examples of this kind of databases are Cassandra\footnote{\url{http://cassandra.apache.org}} and HBase\footnote{\url{http://hbase.apache.org}}.
 
 \subsubsection{Document-oriented databases}
 Document-oriented databases are designed for storing, retrieving, and managing document-oriented information, also known as semi-structured data. 
 These systems are designed around an abstract notion of a Document identified in the database via a unique key. 
-Document database typically offer a query language that allows the user to retrieve documents based on their content. because they extract and index all kinds of meta-data, and usually also the entire data content of the documents. 
-Documents can stored  in many different ways such as JSON, YAML or XML.
-An example of this kind of database is MongoDB and Couchbase.
+Document database typically offer a query language that allows the user to retrieve documents based on their content because they extract and index all kinds of meta-data and usually also the entire content of the documents. 
+Documents can be stored in many different ways such as JSON, BSON, YAML or XML.
+
+\noindent An example of this kind of database is MongoDB\footnote{\url{http://www.mongodb.org}} and Couchbase\footnote{\url{http://www.couchbase.com}}.
 
 \subsubsection{Graph databases} 
 Graph databases are databases that uses graph structures with nodes, edges, and properties to represent and store data.
 The node are the entity persisted into the database and edges can represents relationships among them. Nodes maintains the information about the entity they represents by storing them into properties.
-An example of this kind of database is Neo4j.
 
-\noindent As we write there are more than 150 \cite{online:nosql-database.org} different NoSQL databases and no all of them can be strictly categorized in one of the presented classification. Hybrid solutions came to be more versatile and appetible to the industry. An example is OrientDB which is a hybrid solution which data model span across graph and document databases. 
+\noindent An example of this kind of database is Neo4j\footnote{\url{http://neo4j.com}}.
+
+\newparagraph As we write there are more than 150 \cite{online:nosql-database.org} different NoSQL databases and no all of them can be strictly categorized in one of the previous classification. Hybrid solutions came to be more versatile and appetible to the industry. An example is OrientDB\footnote{\url{http://www.orientechnologies.com}} which is a hybrid solution which data model span across graph and document databases. 
 
 \section{Approaches for a common language}
 \label{sec:common-language}
@@ -66,31 +69,34 @@ Also, most of the NoSQL interfaces support a lower level of interaction than SQL
 
 \subsection{SQLifying NoSQL}
 A fist approach that is emerging is the \textit{SQLfication} of NoSQL databases.
-NoSQL vendors, to overcome the problem of the industry of wasting the expertise maturated over SQL systems, started so to create SQL-like wrapper around their NoSQL solutions which typically offer different features from those of a query language for a traditional relational database, but maintains a grammar similar to that of SQL.
+NoSQL vendors, to overcome the problem of industry of wasting the expertise maturated over SQL systems, started to create, around their NoSQL solutions, SQL-like wrappers,  which typically offer different features from those of a query language for a traditional relational database, but maintains a grammar similar to that of SQL.
 
 \noindent For example Google, for Datastore, provides GQL, a SQL-like language for retrieving entities or keys from Datastore.
 Other NoSQL database such as Cassandra (with CQL) or OrientDB provides natively such type of SQL-like language support.
 
+\newparagraph There exists also some independent projects that aim to create such kind of SQL-like languages upon existing NoSQL databases.
+
 \subsubsection{Apache Phoenix} 
 Apache Phoenix \cite{online:apache-phoenix} aims to become the standard means of accessing HBase data through a well-defined, industry standard API.
-Apache Phoenix is a relational database layer over HBase delivered as a client-embedded JDBC driver over HBase data. Apache Phoenix takes standard SQL queries, compiles them into a series of HBase scans, and orchestrates the running of those scans to produce regular JDBC result sets. 
+Is a relational database layer over HBase delivered as a client-embedded JDBC driver over HBase data. Apache Phoenix takes standard SQL queries, compiles them into a series of HBase scans, and orchestrates the running of those scans to produce regular JDBC result sets. 
 
 \subsubsection{UnQL}  
 Unstructured Data Query Language \cite{online:unql}, or UnQL (pronounced “Uncle”), is a tentative to bring a familiar and standardized data definition and manipulation language to the NoSQL domain. The project was started in 2011 by the joint effort of Couchbase and SQLite.
 
-\noindent The project was stsrted with quite some hype in 2011, but, after some burst of activity, the project came to a hold. So it seems, that at least as a project UNQL has been a failure. 
+\noindent After the project was started, and after some burst of activity, the project came to a hold. So it seems, that at least as a project UnQL has been a failure. 
 
 \subsection{ORM approaches}
 Object Relational Mapping (ORM) solutions came into existence to solve OO-impedance mismatching problem. Each ORM solution had its own API and object query language (like HQL for Hibernate) which made it difficult for programmers to switch from one framework to another. As a result, efforts were made to make standards and specifications. 
 
-\noindent Problem with NoSQL databases is that people lack in-depth knowledge of NoSQL and even if they do, their knowledge is limited to a couple of them. People depend upon their knowledge of SQL and JDBC to work on databases, switching to another database requires little or almost no effort, which otherwise is painful for NoSQL.
-The idea is to give to developers a way to interact with NoSQL with which they are comfortable, leaving the complexity of NoSQLs to the ORM.
+\noindent People depend upon their knowledge of SQL and JDBC to work on databases, switching to another database requires little or almost no effort, which otherwise is painful for NoSQL, the problem, in fact, is that people lack in-depth knowledge of NoSQL and even if they do, their knowledge is limited to a couple of them. .
+
+\noindent The idea of the project with this approach, is to give to developers a way to interact with NoSQL which they are comfortable with , leaving the complexity of NoSQLs to the ORM.
 
 \subsubsection{Kundera}
-Kundera is an opensource project starded by \textbf{Impetus Inc.} an India based tech company active in BigData and Cloud engineering.
+Kundera is an open source project started by \textbf{Impetus Inc.} an India based tech company active in Big Data and Cloud engineering.
 Kundera provides a JPA 2.1 compliant object-datastore mapping library for NoSQL datastores leveraging the existing NoSQL database libraries, and builds on top of them a wrapper compliant to the JPA specifications.
 
-\newparagraph The main advantage of the Kundera approach is that, using a well known and defined interface, developers do not need to learn a new framework, furthermore, the use of the JPA interface permits code reusability since each annotated entity and each JPQL query will works independently by the underlying technology actually used.
+\noindent The main advantage of the Kundera approach is that, using a well known and defined interface, developers do not need to learn a new framework, furthermore, the use of the JPA interface permits code re-usability since each annotated entity and each JPQL query will works independently by the underlying technology actually used.
 
 \subsubsection{Spring-data}
 Spring Data \cite{online:spring-data} is a high level \textbf{SpringSource} project whose purpose is to unify and ease the access to different kinds of persistence stores, both relational database systems and NoSQL data stores. Is an umbrella project which contains many sub-projects that are specific to a given database. The database currently supported are the following:
@@ -105,8 +111,6 @@ Spring Data \cite{online:spring-data} is a high level \textbf{SpringSource} proj
 \item Cassandra
 \item DynamoDB
 \end{itemize}
-
-\noindent Framework architecture is reported in figure \ref{fig:spring-data-overview}.
 
 \begin{figure}[tbh]
   \centering
@@ -153,8 +157,8 @@ public interface UserRepository extends MongoRepository<User, String> {
 \subsubsection{PlayORM}
 PlayORM \cite{online:playorm} is an open-source library developed by \textbf{Buffalo Software} with the aim of speeding up developer productivity of developing a NoSQL scalable solution. Currently supports Cassandra, MongoDB and HBase. 
 
-\newparagraph PlayORM takes great inspiration from JPA interface but recognizes that JPA was designed fro DBMS and thus they have re-defined the JPA interface  for NoSQL purposes.
-The framework thus make use of the JPA interfaces such as \texttt{EntityManager} for CRUD operations and the \texttt{Query} interface for queries but it re-define all the annotations.
+\noindent PlayORM takes great inspiration from JPA interface but recognizes that JPA was designed fro DBMS and thus they have re-defined the JPA interface  for NoSQL purposes.
+The framework make use of some JPA interfaces such as \texttt{EntityManager}, for CRUD operations, and the \texttt{Query} interface, for queries, but it re-define all the annotations.
 Furthermore it defines an extensions of JPQL called S-JQL which stands for Scalable JQL that adds to JPQL the keyword \texttt{PARTITIONS} that allows the user to specify the specific data partition on which execute the query.
 
 \noindent An example of entity defined with PlayORM is shown in the code snippet \ref{code:playorm-entity} and shows the similarities with the JPA approach.
@@ -172,7 +176,7 @@ public class Employee {
 \end{lstlisting}
 
 \subsubsection{Apache Gora}
-Apache Gora \cite{online:apache-gora} born by notice that while excellent ORM frameworks (such as JPA, Apache OpenJPA or Hibernate) exists for relational databases, data modeling in NoSQL data stores, which differ profoundly from their relational cousins, lacks of a similar tool. The aim of the project is to extend the concept of Object Relational Mapping tools (ORM), to introduce Object-to-Datastore Mapping where the underlying technological implementations rely mostly on non-relational data modeling. In essence Gora provides storage abstraction for NoSQL technologies. 
+The aim of Apache Gora \cite{online:apache-gora} is to extend the concept of Object Relational Mapping tools (ORM) to introduce Object-to-Datastore Mapping where the underlying technological implementations rely mostly on non-relational data modeling. In essence Gora provides storage abstraction for NoSQL technologies. 
 Gora thus gives the user an easy-to-use in-memory data model and persistence for big data framework with data store specific mappings and built in Apache Hadoop support.
 
 \newparagraph The objectives of Gora can be grouped as follows:
@@ -186,7 +190,7 @@ Gora thus gives the user an easy-to-use in-memory data model and persistence for
 \subsubsection{SOS Platform}
 The SOS (Save Our Systems) Platform \cite{paper:sos-platform} is a academic project developed by Unversita' Roma Tre.
 
-\noindent The platform achieve interoperability among NoSQL databases by defining a common interface  and a meta-layer of abstraction used to maintains entities information. Database specific handlers, read the meta-layer and translate the meta-operations to database-specific operations that are finally performed over the database instance.
+\noindent The platform achieve interoperability among NoSQL databases by defining a common interface through a meta-layer of abstraction used to maintains entities information. Database specific handlers, read the meta-layer and translate the meta-operations to database-specific operations that are finally performed over the database instance.
 The architecture is shown in figure \ref{fig:sos-architecture}.
 
 \begin{figure}[tbh]
@@ -198,7 +202,7 @@ The architecture is shown in figure \ref{fig:sos-architecture}.
 
 \noindent The particularity of this approach is that meta-model has been defined spotting common concepts in the model of the supported database. The meta-layer thus span among different types of NoSQL databases, in fact, three database has been chosen by the authors: Hbase to represent Column-based databases, MongoDB to represent Document-oriented databases and Redis for Key/Value stores. 
 
-\noindent The resulting meta-layer, exploiting the models similarities, is actually very simple. It is composed by three main constructs: Struct, Set and Attribute.
+\noindent The resulting meta-layer, exploiting the models similarities, is actually very simple; it is composed by three main constructs: Struct, Set and Attribute.
 Attributes contains simple values, such as Strings or Integers; Structs and Sets are instead complex elements whose values may contains both Attributes and Sets or Structs as well.
 Each database is represented as a Set of collections whose is a Set itself, containing an arbitrary number of objects. Each object is identified by a key that is unique in the collections it belongs to.
 
@@ -214,8 +218,8 @@ The Java Persistence API \cite{book:projpa2} was first released as part of Enter
 \end{itemize}
 
 \noindent Mapping meta-data are defined by the user as Java annotations upon the classes that he wants to be mapped to the underlying database.
-The user annotated classes represents entities; typically an entity represents a table in a relational database, and each entity instance corresponds to a row in that table. Entities are managed by the entity manager, the EntityManager API creates and removes persistent entity instances, finds entities by the entity’s primary key, and allows queries to be run on entities. 
-The \texttt{EntityManager.createQuery} and \texttt{EntityManager.createNamedQuery} methods are used to query the datastore using Java Persistence query language queries. 
+The user annotated classes represents entities; typically an entity represents a table in a relational database, and each entity instance corresponds to a row in that table. Entities are managed by the entity manager, the \texttt{EntityManager} API creates and removes persistent entity instances, finds entities by their primary key, and allows queries to be run on entities. 
+The \texttt{EntityManager.createQuery} and \texttt{EntityManager.createNamedQuery} methods are used to query the database using Java Persistence query language queries. 
 
 \noindent The set of all entity classes managed by the \texttt{EntityManager} instance, is defined by a \textit{peristence unit}.
 Persistence units are defined in the \textit{persistence.xml} configuration file, each persistence unit is identified with a name that is unique to the persistence units scope. 
@@ -223,17 +227,19 @@ Persistence units are defined in the \textit{persistence.xml} configuration file
 \newparagraph JPA supports two methods for expressing queries to retrieve entities and other persistent data from the database: query languages and the criteria API. The primary query language is Java Persistence Query Language (JPQL), a database-independent query language that operates on the logical entity model as opposed to the physical data model. Queries may also be expressed in SQL to take advantage of the underlying database. The criteria API provides an alternative method for constructing queries based on Java objects instead of query strings.
 
 \noindent JPQL have its roots in the Enterprise JavaBeans Query Language (EJB QL) that was first introduced in the EJB 2.0 specification to allow developers to write portable find and select methods for container-managed entity beans. It was based on a small subset of SQL and it introduced a way to navigate across entity relationships both to select data and to filter the results.
-As part of JPA was then introduced JPQL that significantly extends EJB QL, eliminating many weaknesses of its father while preserving backward compatibility.
+As part of JPA was then introduced JPQL that significantly extends EJB QL, eliminating many of its weaknesses while preserving backward compatibility.
 
 \section{Cloud Platform Independent Model}
 \label{sec:cpim}
 Cloud Platform Independent Model \cite{thesis:cpim} is a Java library build in order to make Java developers able to abstract their application logic from the specific Cloud Provider on which the application will actually be deployed.
 
-\newparagraph The aim of CPIM is to overtake the vendor lock-in that affect the current PaaS industry. Each cloud provider define its own API for the services available in the PaaS environment it expose and, even if services are the same among various providers, they expose different API. This locks an application to the PaaS environment it was developed for.
+\noindent The aim of CPIM is to overtake the vendor lock-in that affect the current PaaS industry. Each cloud provider define its own API for the services available in the PaaS environment and, even if services are the same among various providers, they expose different API; this locks an application to the PaaS environment it was developed for, and is a problem known as vendor lock-in.
 
-\noindent Since there is no a common interface for such services, if the need of change Cloud Provider arises, maybe due to an increased cost of maintenance, the costs of re-engineer the applciation for the new Cloud provider environment dissolves the benefit of a provider migration.
+\noindent Since there is no a common interface for such services, if the need of change Cloud Provider arises, maybe due to an increased cost of maintenance, the costs of re-engineer the application for the new Cloud provider environment dissolves the benefit of a provider migration.
+
+\noindent CPIM fills this gap providing a common interface that is mapped at run-time, through some XML configuration files, to the specific cloud provider service interface.
 
 \section{Summary}
 In this chapter has been introduced some of the main reasons that leads to the NoSQL database definition and why industry is so interested in those kind of technology. 
 \noindent Has been presented the main projects that have born trying to define a standard NoSQL language or a standard way to communicate with different NoSQL databases, giving a quick overview of the choices made by each one. 
-\noindent Finally has been presented an overview of the JPA interface specification and the CPIM library, a more general approach for a common language definition in PaaS environment.
+\noindent Finally has been presented an overview of the JPA interface and the CPIM library, a more general approach for a common language definition in PaaS environment.

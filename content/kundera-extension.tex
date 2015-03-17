@@ -167,9 +167,6 @@ public class Employee {
     @Column(name = "NAME")
     private String name;
 
-    @Column(name = "SALARY")
-    private Long salary;
-
     /* an employee have one and only one phone */
     @OneToOne
     @JoinColumn(name = "PHONE_ID")
@@ -193,20 +190,20 @@ public class Phone {
 \small
 \centering
 \subfloat[PHONE]{
-	\begin{tabular}{|cc|}
+	\begin{tabular}{|ccc|}
 	\hline
-	\textbf{PHONE\textunderscore ID} & \textbf{NUMBER}\\ 
+	\textbf{Key} & \textbf{ID/Name} & \textbf{NUMBER}\\ 
 	\hline\hline
-	\textbf{3cb26744} & 123456789 \\ \hline
+	\textbf{PHONE:3cb26744} & 3cb26744 & 123456789 \\ \hline
 	\end{tabular}
 }
 \\
 \subfloat[EMPLOYEE]{
 	\begin{tabular}{|cccc|}
 	\hline
-	\textbf{EMPLOYEE\textunderscore ID} & \textbf{NAME} & \textbf{SALARY} & \textbf{PHONE\textunderscore ID}\\ 
+	\textbf{Key} & \textbf{ID/Name} & \textbf{NAME} & \textbf{PHONE\textunderscore ID}\\ 
 	\hline\hline
-	\textbf{112b18e7} & Fabio & 123  & \textbf{3cb26744} \\ \hline
+	\textbf{EMPLOYEE:112b18e7} & \textbf{112b18e7} & Fabio & \textbf{PHONE:3cb26744} \\ \hline
 	\end{tabular}
 }
 \caption{Mapping of entity fields on Google Datastore}

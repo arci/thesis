@@ -19,6 +19,7 @@
 
 \linespread{1.3}
 \renewcommand{\baselinestretch}{1.3}
+\pagestyle{fancy}
 
 \makeatletter
 \def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
@@ -104,28 +105,19 @@
 }
 
 %--------------------------------------------------------------------------------
-% include title page
+% title page
 %--------------------------------------------------------------------------------
 \include{title}
 
-\pagestyle{fancy}
-\renewcommand{\contentsname}{Table of Contents}%
-
 %--------------------------------------------------------------------------------
-% include the abstract in italian
+% abstracts
 %--------------------------------------------------------------------------------
-\chapter*{Estratto}
-\input{content/estratto}
-
-%--------------------------------------------------------------------------------
-% include the abstract in english
-%--------------------------------------------------------------------------------
-\chapter*{Abstract}
-\input{content/abstract}
+\include{content/abstracts}
 
 %--------------------------------------------------------------------------------
 % talbe of contents
 %--------------------------------------------------------------------------------
+\renewcommand{\contentsname}{Table of Contents}
 \tableofcontents
 \cleardoublepage
 \listoffigures
@@ -134,32 +126,31 @@
 %\lstlistoflistings
 
 \pagenumbering{arabic}
-
 \setcounter{page}{1}
 
 %--------------------------------------------------------------------------------
-% introduction
+% Introduction
 %--------------------------------------------------------------------------------
 \chapter{Introduction}
 \label{chap:one}
 \input{content/introduction}
 
 %--------------------------------------------------------------------------------
-% state of the art
+% State of the art
 %--------------------------------------------------------------------------------
 \chapter{State of the art}
 \label{chap:sota}
 \input{content/sota}
 
 %--------------------------------------------------------------------------------
-% problem setting
+% Problem setting
 %--------------------------------------------------------------------------------
 \chapter{Problem setting}
 \label{chap:ps}
 \input{content/problem-setting}
 
 %--------------------------------------------------------------------------------
-% kundera extension
+% Kundera extension
 %--------------------------------------------------------------------------------
 \chapter{Kundera extension}
 \label{chap:kundera}
@@ -173,7 +164,7 @@
 \input{content/cpim-extension}
 
 %--------------------------------------------------------------------------------
-% evaluation
+% Evaluation
 %--------------------------------------------------------------------------------
 \chapter{Evaluation}
 \label{chap:eval}

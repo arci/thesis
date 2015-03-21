@@ -1,8 +1,44 @@
 \section{Introduction}
-Introduzione agli argomenti trattati nel capitolo, dalle 4 alle 10 righe.
+In this chapter, in section \ref{sec:crud} will be discussed the tests used to develop the two Kundera extensions.
+IN section \ref{sec:performance} will be described the YCSB framework that we have used to test the performance of the developed extensions with respect to the low level API.
+Finally in section \ref{sec:data} we present the application developed to test the data synchronization capabilities of CPIM while persisting data through the Datastore Kundera extension. 
 
-\section{Test correctness of CRUD operations}
-JUnit tests
+\section{Test CRUD operations}
+The Kundera extensions development, due to the lack of information both in the documentation and from the community, has been approached in a test driven way.
+The first step was then writing the required JUnit tests for the features we have planned to support.
+
+\newparagraph We primarily want to achieve code portability of model classes, this should be exploited by the usage of the JPA interface but, as stated in chapter \ref{chapter:ps}, there were problems in the old NoSQL service implementation relatively to this point.
+Secondary we want to be sure that while entities are persisted in the underlying NoSQL database, they can be restored without any loss of information and thus the mapping between entities and the NoSQL database data model behave correctly in both verses.
+Hence test the extensions cannot be done directly by testing single methods behavior inside the extensions code, this will for sure test the correctness of the operations but, since Kundera clients are not obliged to follow a rigid structure for their code in the implementation of the required interfaces, tests written for a client are not guaranteed to run correctly for another one. 
+
+\noindent The approach we adopted was to define a single test suite, that will test each one of the feature we planned to support, by interacting directly with Kundera through the JPA interface. This make us able to use the same tests independently of the specific extension and thus testing the correctness of CRUD operations through the JPA interface and the portability of the code by means of tests portability.
+
+\subsection{Tests structure}
+Tests are composed by the entities, annotated with the JPA annotations, and a test class for each feature.
+There are 20 defined entities that includes:
+\begin{itemize}
+\item simple entities related with the JPA relationships annotations, used to test relationships among entities;
+\item embeddable entities and specific entities that uses those embeddable entities as data types, both types used to test the embedded feature;
+\item entities with enum fields, used to test the enum fields support;
+\item entities declared with different data types for the primary key identifier, used to test ids auto-generation and user-defined ids validation.
+\end{itemize}
+
+\noindent The test classes developed for testing the correctness of relationships are:
+\begin{itemize}
+\item \texttt{MTMTest}, to test the \textit{Many to Many} relationship type;
+\item \texttt{MTOTest}, to test the \textit{Many to One} relationship type;
+\item \texttt{OTMTest}, to test the \textit{One to Many} relationship type;
+\item \texttt{OTOTest}, to test the \textit{One to One} relationship type;
+\end{itemize}
+\noindent All of those test classes implements two different methods: \texttt{testCRUD()}, that test the relationship by interacting with the method of the \texttt{EntityManager} interface, and \texttt{testQuery()}, that test the relationships by reading, updating and deleting entities through JPQL queries.
+
+\newparagraph The remaining tests classes are:
+\begin{itemize}
+\item \texttt{ElementCollectionTest}, that tests the JPA feature for persisting list of entities within another one;
+\item \texttt{EmbeddedTest}, that tests the JPA feature of persisting user-defined data-types as field of entities;
+\item \texttt{EnumeratedTest}, that tests the JPA feature of persisting enum fields;
+\item \texttt{QueryTest}, that tests the execution of various \textit{SELECT} queries and the support for the various JPQL clauses in queries.
+\end{itemize}
 
 \section{Performance tests}
 Task about YCSB and Kundera-benchmarks
@@ -11,4 +47,5 @@ Task about YCSB and Kundera-benchmarks
 app that generate data for migration test
 
 \section{Summary}
-Riassunto del capitolo
+In this chapter we have presented the test of correctness and performance made for the two developed Kundera extension showing the minimal performance loss that Kundera add to the low-level API.
+Finally we have presented \textit{Hegira-generator}, the application developed to test the interaction between the synchronization system and the mechanisms developed inside CPIM to interacts with it.

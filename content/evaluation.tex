@@ -61,7 +61,13 @@ The key feature of the benchmark system is extensibility, it in facts supports e
   \label{fig:ycsb-architecture}
 \end{figure} 
 
-\newparagraph The architecture of the framework is shown in figure \ref{fig:ycsb-architecture} TODO
+\newparagraph The access point to the benchmark framework is the \textit{YCSB Client} which is responsible of generating the operations which make up the workload. The workload is then executed by the \textit{Workload executor} that drives multiple client threads which in turn execute a sequential series of operations by making calls to the \textit{database interface layer}.
+The workloads are executed in two separate phases:
+\begin{enumerate}
+\item the \textbf{load phase}, which loads the workload data to the datastore instance;
+\item the \textbf{transaction phase}, which execute the workload on the loaded data.
+\end{enumerate}
+\noindent Each thread rules the rate at which it generate requests ad measure the latency and the throughput of its operation. At the end of the benchmark, the statistics modules aggregates the measurements and build the report.
 
 \subsection{YCSB adapters}
 The YCSB Client abstracts from the specific database system under test through the \textit{database interface layer}. This allows YCSB to generate operations like ``read record'' or ``update record'' without having to understand the specific API of the underlying database. The  \textit{database interface layer} is a simple abstract class that provides read, insert, update, delete and scan operations. 
@@ -83,7 +89,7 @@ The YCSB Client abstracts from the specific database system under test through t
 \end{itemize}
 \noindent Even if the adapters for Hbase were already been developed by Kundera, they have been both re-written. The Kundera client adapter were re-written to be identical to the ones for Google Datastore and Azure Tables; the low-level API version were re-written because the Kundera client for Hbase has been updated to supported the latest version of the software but the YCSB adapter was not.
 
-\subsection{Kundera adapters}
+\subsubsection{Kundera adapters}
 For the Kundera version of the adapters the same structure has been kept for all three databases. The \texttt{EntityManagerFactory} is instantiated at the adapter construction since this operation causes Kundera to initialize all its internal structure; an instance of the entity manager is instead created in the \texttt{init} method since the initialization of the \texttt{EntityManager} causes the initialization of the specific Kundera client, in this way each thread will have its own \texttt{EntityManager} with which interact and the same overhead with regards to database connection operation.
 Apart from the \texttt{scan} method, which was not implemented, every other operations calls the responsible method on the \texttt{EntityManager}, in the code \ref{code:insert-operation} is shown an example for the insert operation.
 
@@ -112,7 +118,7 @@ public int insert(String table, String key, ...) {
 \end{itemize} 
 \noindent The second thing to notice is the call to the \texttt{timeToClearEntityManager()} method, which checks, with respect to an internal counter, if has been persisted 500 entities, if this is the case the persistence cache is cleared by calling \texttt{EntityManager.clear()}. If this operation is not performed, entities read can occur within the persistence cache bypassing the request to the underling database. We choose to clear the cache every 500 entities in our workloads of 100.000 entities, to maintains the same proportion with the one used by Kundera in their test in which they clear the entity manager every 5.000 entities on workloads of 1 million operations.
 
-\subsection{Low-level API adapters}
+\subsubsection{Low-level API adapters}
 Also the adapters for the low-level API version follows the same general structure. The connection to the database is performed, through low-level API in the \texttt{init} method, to have a common behavior with respect to the Kundera adapters; read, insert and delete operations are performed by a call to the low-level API, while the \texttt{scan} method has not been implemented.
 
 \noindent The \texttt{init} method uses the properties defined in the property filesm specified in the execution command of the benchmark, to locate the remote database and instantiate a connection.

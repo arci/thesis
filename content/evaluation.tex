@@ -8,7 +8,7 @@ Finally in section \ref{sec:data} we present the application developed to test t
 The Kundera extensions development, due to the lack of information both in the documentation and from the community, has been approached in a test driven way.
 The first step was then writing the required JUnit tests for the features we have planned to support.
 
-\newparagraph We primarily want to achieve code portability of model classes, this should be exploited by the usage of the JPA interface but, as stated in chapter \ref{chapter:ps}, there were problems in the old NoSQL service implementation relatively to this point.
+\newparagraph We primarily want to achieve code portability of model classes, this should be exploited by the usage of the JPA interface but, as stated in chapter \ref{chap:ps}, there were problems in the old NoSQL service implementation relatively to this point.
 Secondary we want to be sure that while entities are persisted in the underlying NoSQL database, they can be restored without any loss of information and thus the mapping between entities and the NoSQL database data model behave correctly in both verses.
 Hence test the extensions cannot be done directly by testing single methods behavior inside the extensions code, this will for sure test the correctness of the operations but, since Kundera clients are not obliged to follow a rigid structure for their code in the implementation of the required interfaces, tests written for a client are not guaranteed to run correctly for another one. 
 
@@ -93,9 +93,9 @@ public class EmployeeOTO implements Randomizable<EmployeeOTO, Phone> {
 \end{lstlisting}
  
 \subsection{Exploited CPIM features}
-To perform the persist operation of the generated entities is used the \texttt{EntityManager} interface on which is called the \texttt{persist} method, this is completely JPA compliant and the user is not aware of what is done under the hood since communication with the synchronization system is handled automatically. An example is provided in the code \ref{code:persist}.
+To perform the persist operation of the generated entities is used the \texttt{EntityManager} interface on which is called the \texttt{persist} method, this is completely JPA compliant and the user is not aware of what is done under the hood since communication with the synchronization system is handled automatically. An example is provided in the code \ref{code:example-persist}.
 
-\begin{lstlisting}[language=Java, caption=Persisting entities in CPIM, label=code:persist]
+\begin{lstlisting}[language=Java, caption=Persisting entities in CPIM, label=code:example-persist]
 CloudEntityManager em = MF.getFactory().getEntityManager();
 Department dep = new Department("Computer Science")
 em.persist(dep)
@@ -103,7 +103,7 @@ em.persist(dep)
 
 \noindent The persist operation through \texttt{CloudEntityManager} contacts the synchronization system to get the assigned sequence numbers for the specific tables and assign the first of them to the entity before delegating to Kundera the persist operation.
 
-\newparagraph The application make use of the possibility of modifying at run-time the size of sequence numbers range that is requested to the synchronization system. Hence before the persist operation, the size of the sequence number range is set to the double of the number of entities to be generated. This is done through a call to \texttt{SeqNumberProvider.getInstance().setOffset(tableName, offset);}, if the resulting range size is grater than the maximum size that can be requested, is limited to that value. 
+\newparagraph The application make use of the possibility of modifying at run-time the size of sequence numbers range that is requested to the synchronization system. Hence before the persist operation, the size of the sequence number range is set to the double of the number of entities to be generated. This is done through a call to \texttt{SeqNumberProvider.getInstance().setOffset(tableName, offset)}, if the resulting range size is grater than the maximum size that can be requested, is limited to that value. 
 
 \newparagraph the last feature that is exploited by the application is the sequence number backup to file. The backup is configured in the \texttt{migration.xml} file as described in the appendix \ref{app:migration}.
 This permit to the application, when is restarted, to restore the sequence numbers without the need of contacting the synchronization system.
@@ -112,4 +112,4 @@ This permit to the application, when is restarted, to restore the sequence numbe
 
 \section{Summary}
 In this chapter we have presented the test of correctness and performance made for the two developed Kundera extension showing the minimal performance loss that Kundera add to the low-level API.
-Finally we have presented \textit{Hegira-generator}, the application developed to test the interaction between the synchronization system and the mechanisms developed inside CPIM to interacts with it.
+Finally we have presented \textit{Hegira-generator}, the application developed to test the mechanisms developed inside CPIM to interacts with the synchronization system.

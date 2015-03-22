@@ -45,16 +45,94 @@ There are 20 defined entities that includes:
 
 \section{Performance tests}
 \label{sec:performance}
-We wanted to test the overhead of the developed Kundera extensions with respect to direct use of low-level API. To test those kind of performance in terms of throughput and latency of the read and write operations, we have used Yahoo Cloud Serving Benchmark \cite{paper:ycsb}.
+We wanted to test the overhead of the developed Kundera extensions with respect to direct use of low-level API. To test those kind of performance in terms of throughput and latency of the read and write operations, we have used Yahoo Cloud Serving Benchmark.
 We choose this approach since it was already used by Kundera developers to estimate the overhead that Kundera adds to the low-level API versions of its clients. Hence by using the same method we are able to compare our results to the ones of Kundera.
 
 \subsection{Yahoo Cloud Serving Benchmark}
- 
-\subsection{YCSB adapters}
+Yahoo Cloud Serving Benchmark (YCSB) is a framework with the general goal of facilitating performance comparisons of the new generations o cloud serving systems \cite{paper:ycsb}.
 
-\subsection{YCSB tests results}
+\noindent YCSB provides the facility to benchmark various NoSQL database systems such Cassandra, DynamoDB, Voldemort, MongoDB and many others.
+The key feature of the benchmark system is extensibility, it in facts supports easy definition of new \textit{workloads} and new systems to benchmark.
+
+\begin{figure}[tbh]
+  \centering
+  \includegraphics[width=10cm]{images/ycsb_architecture}
+  \caption{YCSB architecture \cite{paper:ycsb}}
+  \label{fig:ycsb-architecture}
+\end{figure} 
+
+\newparagraph The architecture of the framework is shown in figure \ref{fig:ycsb-architecture} TODO
+
+\subsection{YCSB adapters}
+The YCSB Client abstracts from the specific database system under test through the \textit{database interface layer}. This allows YCSB to generate operations like ``read record'' or ``update record'' without having to understand the specific API of the underlying database. The  \textit{database interface layer} is a simple abstract class that provides read, insert, update, delete and scan operations. 
+\noindent To create a database adapter the abstract class \texttt{com.yahoo.ycsb.DB} must be extended and the following methods needs to be implemented:
+\begin{itemize}
+\item \texttt{init()}, which is used to perform any initialization operation such as connecting to the database instance and is called once per thread;
+\item \texttt{read(String table, String key, ...)}, which is supposed to read a single record;
+\item \texttt{scan(String table, String startkey, int recordcount, ...)}, which is supposed to perform a range scan;
+\item \texttt{insert(String table, String key, ...)}, which is supposed to update a single record;
+\item \texttt{delete(String table, String key)}, which is supposed to delete a record.
+\end{itemize}
+
+\newparagraph To be able to compare the benchmarks result to the Kundera ones, we developed  several YCSB adapters:
+\begin{itemize}
+\item an adapter for Google Datastore low-level API
+\item an adapter for Google Datastore through the developed Kundera extension
+\item an adapter for Azure Tables low-level API
+\item an adapter for Azure Tables through the developed Kundera extension
+\end{itemize}
+\noindent Even if the adapters for Hbase were already been developed by Kundera, they have been both re-written. The Kundera client adapter were re-written to be identical to the ones for Google Datastore and Azure Tables; the low-level API version were re-written because the Kundera client for Hbase has been updated to supported the latest version of the software but the YCSB adapter was not.
+
+\subsection{Kundera adapters}
+For the Kundera version of the adapters the same structure has been kept for all three databases. The \texttt{EntityManagerFactory} is instantiated at the adapter construction since this operation causes Kundera to initialize all its internal structure; an instance of the entity manager is instead created in the \texttt{init} method since the initialization of the \texttt{EntityManager} causes the initialization of the specific Kundera client, in this way each thread will have its own \texttt{EntityManager} with which interact and the same overhead with regards to database connection operation.
+Apart from the \texttt{scan} method, which was not implemented, every other operations calls the responsible method on the \texttt{EntityManager}, in the code \ref{code:insert-operation} is shown an example for the insert operation.
+
+\begin{lstlisting}[language=Java, caption=Insert operation of the Azure Tables adapter, label=code:insert-operation]
+@Override
+public int insert(String table, String key, ...) {
+    ...
+    try {
+        AzureTableUser user = new AzureTableUser(key, nextString(),, ...);
+        em.persist(user);
+        if (timeToClearEntityManager()) {
+            em.clear();
+        }
+        return OK;
+    } catch (Exception e) {
+        return ERROR;
+    }
+}
+\end{lstlisting}
+
+\noindent In the code \ref{code:insert-operation} there are two elements that are worth deep explanation. The first thing to notice is that is persisted an instance of \texttt{AzureTableUser} in fact we were not able to persist the entities generated by YCSB because, to be able to persist an entity with the JPA, we need an annotated class which is then listed in the \textit{persistence.xml}. For this reasons three different user class and three different persistence units has been defined:
+\begin{itemize}
+\item \texttt{AzureTableUser}, which refer to \texttt{kundera\textunderscore azure\textunderscore pu}, the persistence unit with the configuration for Azure Tables;
+\item \texttt{DatastoreUser}, which refer to \texttt{kundera\textunderscore datastore\textunderscore pu}, the persistence unit with the configuration for Google Datastore;
+\item \texttt{HBaseUser}, which refer to \texttt{kundera\textunderscore hbase\textunderscore pu}, the persistence unit with the configuration for Hbase.
+\end{itemize} 
+\noindent The second thing to notice is the call to the \texttt{timeToClearEntityManager()} method, which checks, with respect to an internal counter, if has been persisted 500 entities, if this is the case the persistence cache is cleared by calling \texttt{EntityManager.clear()}. If this operation is not performed, entities read can occur within the persistence cache bypassing the request to the underling database. We choose to clear the cache every 500 entities in our workloads of 100.000 entities, to maintains the same proportion with the one used by Kundera in their test in which they clear the entity manager every 5.000 entities on workloads of 1 million operations.
+
+\subsection{Low-level API adapters}
+Also the adapters for the low-level API version follows the same general structure. The connection to the database is performed, through low-level API in the \texttt{init} method, to have a common behavior with respect to the Kundera adapters; read, insert and delete operations are performed by a call to the low-level API, while the \texttt{scan} method has not been implemented.
+
+\newparagraph There is only a caveat regarding the Hbase adapter.
+
+\subsection{YCSB tests}
+YCSB comes with a core set of workloads, each workloads represents a particular mix of read and write operations and define the total number of operations that should be executed. 
+\noindent YCSB benchmarks are executed in two separate phases and each of them generates a report. From the report of the \textit{load} phase, since this phase is responsible of storing the data required to run the workload to the target database, we obtains information about the throughput and the latency for the write operation; from the \textit{transaction} phase we want to obtain information about throughput and latency for the read operation. To do this we run a custom workload composed of 100.000 operations entirely of type read so that the \textit{transaction} phase will generates the statistics we need.
+\noindent Defined the adapters and the workload we were able to execute the tests.
+
+\subsubsection{Google Datastore tests}
+\newparagraph TODO
+
+\subsubsection{Azure Tables tests}
+\newparagraph TODO
+
+\subsubsection{Hbase tests}
+\newparagraph TODO
 
 \subsection{Discussion}
+\newparagraph TODO
 
 \section{Hegira generator}
 \label{sec:data}

@@ -115,7 +115,7 @@ public int insert(String table, String key, ...) {
 \subsection{Low-level API adapters}
 Also the adapters for the low-level API version follows the same general structure. The connection to the database is performed, through low-level API in the \texttt{init} method, to have a common behavior with respect to the Kundera adapters; read, insert and delete operations are performed by a call to the low-level API, while the \texttt{scan} method has not been implemented.
 
-\newparagraph There is only a caveat regarding the Hbase adapter.
+\noindent The \texttt{init} method uses the properties defined in the property filesm specified in the execution command of the benchmark, to locate the remote database and instantiate a connection.
 
 \subsection{YCSB tests}
 YCSB comes with a core set of workloads, each workloads represents a particular mix of read and write operations and define the total number of operations that should be executed. 

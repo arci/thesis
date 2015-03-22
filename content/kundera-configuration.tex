@@ -99,9 +99,9 @@ The template of the file is the following:
 
 \noindent The available properties are:
 \begin{itemize}
-\item \texttt{datastore.policy.read} (\texttt{optional}) [eventual$\vert$strong] default is \textbf{strong}. Set the read policy;
+\item \texttt{datastore.policy.read} (\texttt{optional}) [eventual\textbar strong] default is \textbf{strong}. Set the read policy;
 \item \texttt{datastore.deadline} (\textit{optional}). RPCs deadline in seconds;
-\item \texttt{datastore.policy.transaction} (\textit{optional}) [auto$\vert$none] default is \textbf{none}. Define if use implicit transaction.
+\item \texttt{datastore.policy.transaction} (\textit{optional}) [auto\textbar none] default is \textbf{none}. Define if use implicit transaction.
 \end{itemize}
 
 \section{Azure Table}
@@ -141,9 +141,9 @@ The template of the file is the following:
 
 \noindent The available properties are:
 \begin{itemize}
-\item \texttt{table.emulator} (\textit{optional}) [true$\vert$false] default is \textbf{false}. If present (and set to true) storage emulator is used. When using development server \texttt{kundera.username} and \texttt{kundera.password }in \textit{persistence.xml} are ignored;
+\item \texttt{table.emulator} (\textit{optional}) [true\textbar false] default is \textbf{false}. If present (and set to true) storage emulator is used. When using development server \texttt{kundera.username} and \texttt{kundera.password }in \textit{persistence.xml} are ignored;
 \item \texttt{table.emulator.proxy} (\textit{optional}) default is \textbf{localhost}. If storage emulator is used set the value for the emulator proxy;
-\item \texttt{table.protocol} (\textit{optional}) [http$\vert$https] default is \textbf{https}. Define the protocol to be used within requests;
+\item \texttt{table.protocol} (\textit{optional}) [http\textbar https] default is \textbf{https}. Define the protocol to be used within requests;
 \item \texttt{table.partition.default} (\textit{optional}) default is \textbf{DEFAULT}.
 The value for the default partition key, used when no one is specified by the user.
 \end{itemize}

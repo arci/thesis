@@ -1,18 +1,20 @@
 \section{Introduction}
-In this chapter will be presented the work made for CPIM extension. In section \ref{sec:cpim-architecture} and \ref{sec:kundera-integration} is described the previous state for the NoSQL service of CPIM and how it has been modified to integrate Kundera as unique persistence provider and what problem has been faced during the process.
+This chapter presents the CPIM library extension. Sections \ref{sec:cpim-architecture} and \ref{sec:kundera-integration} describe the previous state of the NoSQL service in the CPIM and the changes made to integrate Kundera as unique persistence provider and the problems faced during the process.
 
-\noindent From section \ref{sec:hegira} are described the various part developed for \textit{Hegira} integration, what are the feature supported by this integration and which design choices has been put in place. 
+\noindent From section \ref{sec:hegira} up to section \ref{sec:data-interoperability} describe the various parts we developed to support \textit{Hegira}, an interoperable data migration sand synchronization system for NoSQL databases \cite{paper:modaclouds-deliverable}, the supported features and the design choices that have been put in place. 
 
 \section{CPIM architecture}
 \label{sec:cpim-architecture}
-To be able to expose a common interface for the multiple services supported by the library, CPIM adopts heavily the factory and singleton patterns.
+In order to be able to expose a common interface for the multiple services supported by the library, CPIM adopts heavily the factory and singleton patterns.
 
 \noindent The main access point of the library is the \texttt{MF} (Manager Factory) a singleton object which is responsible of reading the configuration files and exposing a set of methods that will build instances for the service factories.
-The initialization is done through the first call to \texttt{MF.getFactory()} which read the configuration files and build an instance of the \texttt{CloudMetadata} class which will be referenced by all the other services and contains all the information stored in the configuration files.
+The initialization is done through a first call to \texttt{MF.getFactory()} method which reads the configuration files and build an instance of the \texttt{CloudMetadata} class. 
+
+\noindent This class will be referenced by all the other services and it contains all the information stored in the configuration files.
  
-\newparagraph The library is organized in several packages each of one is responsible of a particular service.
-\noindent Each service exposes a factory class which is invoked through the \texttt{MF} factory, the service factory maintains a singleton instance of the provider-specific service implementation which is built at the first call based on the configuration available inside the singleton instance of \texttt{CloudMetadata}.
-The result of this process is that with the same method call, based on the configuration file, is instantiated one service implementation or another.
+\newparagraph The CPIM library is organized in several packages, each of which is responsible of a particular service.
+\noindent Each service exposes a factory class which is invoked through the \texttt{MF} factory; the service factory maintains a singleton instance of the provider-specific service implementation which is built, at the first call, based on the configuration available inside the singleton instance of \texttt{CloudMetadata}.
+The result of this process is that with the same method call, based on the configuration file, can be instantiated different service implementation.
 
 \subsection{NoSQL service}
 The architecture of the NoSQL service before this work has been reported in figure \ref{fig:cpim-nosql}.
@@ -24,26 +26,26 @@ The architecture of the NoSQL service before this work has been reported in figu
   \label{fig:cpim-nosql}
 \end{figure}
 
-\noindent To use the service, the first step is instantiate a \texttt{CloudEntityManagerFactory} and, depending on the configuration file, this factory instantiate the vendor specific factory. For example in case that Google is the chosen vendor, the instantiated factory will be \texttt{GoogleEntityManagerFactory}. 
-Each provider-specific \texttt{EntityManagerFactory} is responsible of instantiating an \texttt{EntityManager} which is the gateway to the underlying database. All the vendor-specific \texttt{EntityManager}(s) implement the common \texttt{CloudEntityManager} interface to achieve uniformity in methods and behavior.
+\noindent To use the service, the first step is to instantiate a \texttt{CloudEntityManagerFactory} and, depending on the configuration file, this factory instantiates the vendor specific factory. For example, in case Google is chosen as vendor, the instantiated factory will be \texttt{GoogleEntityManagerFactory}. 
+Each provider-specific \texttt{EntityManagerFactory} is responsible of instantiating an \texttt{EntityManager} which is the gateway to the underlying database. All vendor-specific \texttt{EntityManager}(s) implement the common \texttt{CloudEntityManager} interface to achieve uniformity in methods and behavior.
 The various implementation of the \texttt{CloudEntityManager} delegates every method call to the vendor-specific persistence provider. 
 
-\newparagraph JPA is not a default language for NoSQL but, due to its wide usage among Java developers, several JPA implementation has been build for various NoSQL databases both developed by the vendor of the NoSQL storage or by the community.
-This means that to support the NoSQL service through the JPA interface, an implementation of the JPA interface must be found or developed \textit{ad hoc}. For this reason there were three different persistence provider in CPIM, one for each cloud provider:
+\newparagraph The JPA is not a default language for NoSQL but, due to its wide usage among Java developers, several JPA implementations have been built for various NoSQL databases (both developed by the vendor of the NoSQL storage or by the community).
+This means that to support the NoSQL service through the JPA interface, an implementation of the JPA interface must be found or developed \textit{ad hoc}. For this reason there were three different persistence providers in the CPIM library, one for each cloud provider:
 \begin{itemize}
-\item for \textit{Google Datastore} its used an official JPA implementation, available inside the SDK;
-\item for \textit{Amazon SimpleDB} its used \textbf{SimpleJPA}, a third-party implementation of the JPA interface;
-\item for \textit{Azure Tables} its used \textbf{jpa4azure}, a third-party implementation of the JPA interface.
+\item for \textit{Google Datastore} an official JPA implementation (available inside the SDK) was used;
+\item for \textit{Amazon SimpleDB} it used \textbf{SimpleJPA}, a third-party implementation of the JPA interface;
+\item for \textit{Azure Tables} it used \textbf{jpa4azure}, a third-party implementation of the JPA interface.
 \end{itemize}
 
-\noindent There are couple of things to notice: Amazon SimpleDB has been deprecated in favor of DynamoDB and \textit{jpa4azure} is not being maintained anymore, therefore CPIM needs to be updated in order to get rid of those outdated software.
+\noindent There are a couple of things to notice: Amazon SimpleDB has been deprecated in favor of DynamoDB and \textit{jpa4azure} is not being maintained anymore, therefore the CPIM library needs to be updated in order to get rid of those outdated software.
 
 \section{Kundera integration}
 \label{sec:kundera-integration}
-To solve these problems and reduce the number of software on which the CPIM rely on to provide the NoSQL service, the proposed solution  to modify the current CPIM architecture with a unique persistence provider that has been identified in Kundera.
+To solve these problems and reduce the number of software on which the CPIM relies to provide the NoSQL service, the proposed solution is to modify the current CPIM architecture with a unique persistence provider that has been identified in Kundera.
 
-\newparagraph The renewed architecture is resumed in figure \ref{fig:cpim-kundera} in which the benefit of having a single JPA provider are clearly visible, the architecture is slightly less articulated and no check on the selected underlying technology is needed since this is handled by Kundera while reading the \textit{persistence.xml} file in which the user will define what datastore is interested in.
-Another benefit of this architecture is that the choice of the NoSQL technology is no more bound to the vendor specified in the CPIM configuration file, is in fact possible deploy the application in one of the supported PaaS provider and choose as NoSQL solution of another one which will be addressed remotely simply by configuring the \textit{persistence.xml} Moreover its possible exploiting the Kundera polyglot persistency, to persist part of the data in a database and another part in another one defining the persistence units accordingly.
+\newparagraph The renewed architecture is resumed in figure \ref{fig:cpim-kundera} in which the benefit of having a single JPA provider are clearly visible, the architecture is slightly less articulated and no check on the selected underlying technology is needed since this is handled by Kundera, while reading the \textit{persistence.xml} file, in which the user defines the datastores he is interested in.
+Another benefit of this architecture is that the choice of the NoSQL technology is not bound to the vendor specified in the CPIM configuration file anymore, in fact, it is possible, by configuring the \textit{persistence.xml}, to deploy the application in one of the supported PaaS providers and choose to persist the data in a NoSQL database of another provider. Moreover it is possible to exploit the Kundera polyglot persistency to persist part of the data in a database and another part in another one, defining the persistence units accordingly.
 
 \begin{figure}[tbh]
   \centering
@@ -52,31 +54,31 @@ Another benefit of this architecture is that the choice of the NoSQL technology 
   \label{fig:cpim-kundera}
 \end{figure}
 
-\noindent The actual implementation is completely provider agnostic in the sense that actually Kundera is not required as dependency and in fact is not listed as a dependency for CPIM. At run-time, when a Kundera client will be listed in the dependency of the user application, as well as CPIM, the persistence provider dependency will be satisfied.
+\noindent The actual implementation is completely provider agnostic in the sense that actually Kundera is not required as dependency and in fact it is not listed as a dependency for the CPIM. At run-time, when a Kundera client will be listed among the dependencies of the user application, as well as the CPIM library, the persistence provider dependency will be satisfied.
 
-\noindent This provider agnostic implementation is due to the fact that the \texttt{CloudEntityManagerFactory} and the \texttt{CloudEntityManager} implements respectively the JPA interfaces  \texttt{EntityManagerFactory}  and \texttt{EntityManager}.
-The actual call to the run-time provider is within the \texttt{CloudEntityManager} that on construction instantiate an instance of the provider \texttt{EntityManager} and uses that reference to delegate every method execution to it.
+\noindent This provider agnostic implementation is due to the fact that the \texttt{CloudEntityManagerFactory} and the \texttt{CloudEntityManager} respectively implement the JPA interfaces \texttt{EntityManagerFactory}  and \texttt{EntityManager}.
+The actual call to the run-time provider is made within the \texttt{CloudEntityManager} that, on construction, instantiate an instances of the provider \texttt{EntityManager} and uses that reference to delegate every method execution to it.
 
-\noindent This can seems a over-designed architecture but it turns out to be extremely necessary in order to provides a transparent interaction with the migration system as it will explained later on in this chapter.
+\noindent This can seem an over-designed architecture, but it turns out to be extremely necessary in order to provide a transparent interaction with the migration system, as it will explained later on in this chapter.
 
 \subsection{Problems encountered}
-Kundera provides an uniform access through the JPA interface independently from the provider, the desired database is defined in the \textit{persistence.xml} through the Kundera client selection. For this reasons all the old libraries that provides a JPA implementation for a specific provider can be removed from the CPIM. 
-This tentative of cleaning the dependency of CPIM caused two main problems:
+Kundera provides an uniform access through the JPA interface, independently from the NoSQL provider which is being used. The desired database is defined in the \textit{persistence.xml} file through the \texttt{kundera.client.lookup.class} property. For this reason all the old libraries that provide a JPA implementation for a specific vendor can be removed from the CPIM. 
+This tentative of cleaning the dependency of the CPIM caused two main problems:
 \begin{enumerate}
 \item \textit{jpa4azure} turns out to be used also for Queue and Blob service of Windows Azure;
-\item Kundera seems to have problem when multiple persistence provider are found in the classpath and has not be found a way to force the selection of Kundera as persistence provider (besides specifying it in the \textit{persistence.xml} file).
+\item Kundera seems to have problems when multiple persistence providers are found in the classpath and currently no way to force the selection of Kundera as persistence provider has been found(besides specifying it in the \textit{persistence.xml} file).
 \end{enumerate} 
 
-\noindent To solve the first problem, the code of the extended version of \textit{jpa4azure} has been inspected. The library previously  was extended to support some missing functionalities of the JPA interface and contains two main packages:
+\noindent To solve the first problem, the code of the extended version of \textit{jpa4azure} has been inspected. We found that the library was previously extended to support some missing functionalities of the JPA interface and contained two main packages:
 \begin{itemize}
-\item \texttt{jpa4azure}, which contains the code that implement the JPA interface;
-\item \texttt{com.windowsazure.samples}, which contains the code do ease the communication with the Azure services.
+\item \texttt{jpa4azure}, which contained the code that implements the JPA interface;
+\item \texttt{com.windowsazure.samples}, which contains the code to ease the communication with the Azure services.
 \end{itemize}
-The \texttt{jpa4azure} package has been removed and the library rebuild since the other package is the one used in the Blob and Queue service. Its possible to completely remove \texttt{jpa4azure} but is necessary to rewrite also the CPIM Blob storage service for Azure using the API provided by the Azure SDK.
+The \texttt{jpa4azure} package has been removed and the library rebuilt since the other package is the one used in the Blob and Queue service. Its possible to completely remove \texttt{jpa4azure} but is necessary to rewrite also the CPIM Blob storage service for Azure using the API provided by the Azure SDK.
 
-\newparagraph CPIM shows more errors of the code in the Queue service and after some investigations, turns out that when \textit{jpa4azure} was extended the class \texttt{AzureQueueManagerFactory} and other were introduced.
-The problem was that \texttt{AzureQueueManagerFactory} use the JPA interface to communicate with the Queue service so removing the support to JPA interface we have lost the support to Azure Queue service.
-A solution to this would be rewrite the CPIM Queue services for Azure using the API provided by the Azure SDK.
+\newparagraph Removing the \texttt{jpa4azure} library caused unexpected errors in CPIM in the code of the Queue service. After some investigations, turns out that, when \textit{jpa4azure} was extended, the class \texttt{AzureQueueManagerFactory} were introduced.
+The problem was that \texttt{AzureQueueManagerFactory} make use of the JPA interface to communicate with the Queue service of Azure and thus by removing the support to the JPA interface we have lost the support for Azure Queue service.
+A solution to this would be to rewrite the CPIM Queue service for Azure, using the API provided by the Azure SDK.
 
 \section{Hegira integration}
 \label{sec:hegira}
@@ -91,7 +93,7 @@ To support data synchronization and migration, the NoSQL service was further mod
 
 \noindent In the above schema, \textit{dashed} lines represents the normal flow of data from the user application to the local database, the filled ones represents the behavior in case a migration is in process.
 
-\noindent CPIM library needs to connect to the migration system in order to understand when migration is in progress and in that case only bypass the interaction with Kundera by building a string representation of the user operation as a SQL statement, then this string is sent to the commit log of \textit{Hegira} that then will pop the statements and translate then into a datastore-specific operation.
+\noindent The CPIM library needs to connect to the migration system in order to understand when a migration is in progress and in that case only bypass the interaction with Kundera (for data manipulation operations) by building a string representation of the user query as a SQL statement. Once this SQL generated string is sent to the \textit{Hegira} commit log that pop the statements and translate them into a datastore-specific operation.
 
 \subsection{Migration Manager}
 Interaction with the migration system is handled primarily by the \texttt{MigrationManager} class which follows a state pattern represented in the class diagram \ref{fig:migration-class-diagram}. 
@@ -103,7 +105,7 @@ Interaction with the migration system is handled primarily by the \texttt{Migrat
   \label{fig:migration-class-diagram}
 \end{figure} 
 
-\noindent The pattern permits to the \texttt{MigrationManager} to delegates the method execution to the current state, the state diagram is the one represented in figure \ref{fig:migration-fsa} and is composed by two states \texttt{Migration} and \texttt{Normal} that encapsulate the required behavior.
+\noindent The pattern allows to the \texttt{MigrationManager} to delegate the method execution to the current state, the state diagram is the one represented in figure \ref{fig:migration-fsa} and is composed by two states \texttt{Migration} and \texttt{Normal} that encapsulate the required behavior.
     
 \begin{figure}[tbh]
   \centering
@@ -111,8 +113,6 @@ Interaction with the migration system is handled primarily by the \texttt{Migrat
   \caption{\texttt{MigrationManager} states}
   \label{fig:migration-fsa}
 \end{figure} 
-
-\noindent This part of the design was actually made before knowing how the interactions will exactly be since the component to interact with were not complete yet. Hence in order to have a well-defined place in which behavior has to be encapsulated, the state pattern was the best solution even for future extensibility in case the interaction with the migration system will become more complex.  
 
 \section{Intercept user operations}
 The first operation that needs to be analyzed is where is possible to intercept user operation is a way that is completely transparent to the user.
@@ -400,6 +400,7 @@ Both the method \texttt{propagate(Query query)} and \texttt{propagate(Object ent
 %\newparagraph \textbf{TODO update when this part will be done}
 
 \section{Interoperability of stored data}
+\label{sec:data-interoperability}
 The Kundera client developed and described in chapter \ref{chap:kundera} was developed to be as much as consistent to the other client developed for Kundera to be more likely accepted by the community and so are not completely interoperable.
 In an optic of data migration what we want to achieve is that data stored within a database and migrated to another one are still readable to the application without changes besides the new database configuration. 
 

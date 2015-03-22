@@ -1,6 +1,6 @@
 \section{Introduction}
 In this chapter, in section \ref{sec:crud} will be discussed the tests used to develop the two Kundera extensions.
-IN section \ref{sec:performance} will be described the YCSB framework that we have used to test the performance of the developed extensions with respect to the low level API.
+In section \ref{sec:performance} will be described the YCSB framework that we have used to test the performance of the developed extensions with respect to the low level API.
 Finally in section \ref{sec:data} we present the application developed to test the data synchronization capabilities of CPIM while persisting data through the Datastore Kundera extension. 
 
 \section{Test CRUD operations}
@@ -45,12 +45,16 @@ There are 20 defined entities that includes:
 
 \section{Performance tests}
 \label{sec:performance}
+We wanted to test the overhead of the developed Kundera extensions with respect to direct use of low-level API. To test those kind of performance in terms of throughput and latency of the read and write operations, we have used Yahoo Cloud Serving Benchmark \cite{paper:ycsb}.
+We choose this approach since it was already used by Kundera developers to estimate the overhead that Kundera adds to the low-level API versions of its clients. Hence by using the same method we are able to compare our results to the ones of Kundera.
 
 \subsection{Yahoo Cloud Serving Benchmark}
  
 \subsection{YCSB adapters}
 
 \subsection{YCSB tests results}
+
+\subsection{Discussion}
 
 \section{Hegira generator}
 \label{sec:data}

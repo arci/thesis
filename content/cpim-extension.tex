@@ -115,17 +115,17 @@ Interaction with the migration system is handled primarily by the \texttt{Migrat
 \end{figure} 
 
 \section{Intercept user operations}
-The first operation that needs to be analyzed is where is possible to intercept user operation is a way that is completely transparent to the user.
-The operation that we want to intercept are the insert, update and delete operation cause those are the operation that alter the structure of the data and thus are the one that needs to be processed by the migration system.
+The first operation that needs to be analyzed is whether it is possible to intercept user operations in a way that is completely transparent to the user.
+The operations that we want to intercept are the insert, update and delete operations, in that, they are the operations that alter data and, thus, are the ones that the synchronization system needs to process.
 
 \subsection{Intercepting CRUD operations}
-CRUD operation are handled by the \texttt{EntityManager}, three are the methods that needs to be intercepted:
+CRUD operations are handled by the \texttt{EntityManager}, three are the methods that need to be intercepted:
 \begin{itemize}
 \item \texttt{EntityManager.persist(Object entity)} for insert operations;
 \item \texttt{EntityManager.merge(Object entity)} for update operations;
 \item \texttt{EntityManager.remove(Object entity)} for delete operations.
 \end{itemize}
-\noindent User does not invoke methods directly on the provider entity manager but interacts with the persistence provider through the \texttt{CloudEntityManager} class. Without the support for the migration system the \texttt{CloudEntityManager}, as stated previously, delegates every method call to the provider entity manager, to integrate migration and synchronization logic, the methods mentioned above should contain a little more amount of logic shown in the snippet of code \ref{code:isMigrating} taking as example the update operation.
+\noindent The user does not invoke methods directly on the provider entity manager, but he interacts with the persistence provider, through the \texttt{CloudEntityManager} class. In the standard implementation (i.e. without the support for the migration system) the \texttt{CloudEntityManager}, delegates every method call to the provider entity manager; hence, in order to integrate the  migration and synchronization logic, the methods mentioned above should contain the application of logic shown in the snippet of code \ref{code:isMigrating}, which takes as an taking as example, the update operation.
 
 \begin{lstlisting}[language=Java, caption=Integrate migration logic, label=code:isMigrating]
 public <T> T merge(T entity) {
@@ -138,12 +138,12 @@ public <T> T merge(T entity) {
 }
 \end{lstlisting}
 
-\noindent In case of migration the provider is bypassed and is visible a call to the \texttt{propagate} method, it accept two arguments: the entity to be converted to a statement and the operation that needs to be generated. The method is called on the \texttt{MigrationManager} which then delegates the execution to the current state, which should be the migration one. The \texttt{propagate} method of the migration state is responsible of building the requested statements using the statement builders and then sending the generated statements to the commit log of \textit{Hegira}. Both action are described in detail in the following sections.
+\noindent In case of data migration, the provider is bypassed and a call to the \texttt{propagate} method is visible. The call accepts two arguments: the entity to be converted to a SQL statement and the operation that needs to be generated. The method is called on the \texttt{MigrationManager} which then delegates the execution to the current state (which should be the migration one). The migration state \texttt{propagate} method is responsible for building the requested statements, using the statement builders and then sending the generated statements to \textit{Hegira} commit log. Both actions are described in detail in the following sections.
 
 \subsection{Intercepting queries}
-Looking at the JPQL specification \cite{book:projpa2} turns out that JPQL does not support \textit{INSERT} statements and so the only way user have to persist entities is through \texttt{EntityManager.persist(Object entity)} that is one of the case described in the previous section, so only the remaining cases (\textit{UPDATE} and \textit{DELETE}) needs to be intercepted as query.
+Looking at the JPQL specification \cite{book:projpa2} it turns out that JPQL does not support \textit{INSERT} statements and so the only way a user has to persist some entities is by means of \texttt{EntityManager.persist(Object entity)} method, which was described in the previous section; so, only the remaining queries (\textit{UPDATE} and \textit{DELETE}) need to be intercepted as query.
 
-\noindent JPA interface provides several ways to build and execute queries, all available by calling the proper methods defined in the \texttt{EntityManager} interface: 
+\noindent The JPA interface provides several ways to build and execute queries, all available by calling the proper methods defined in the \texttt{EntityManager} interface: 
 \begin{itemize}
 \item \texttt{createQuery}, which creates a \texttt{Query} instance from JPQL query string;
 \item \texttt{createQuery}, which creates a \texttt{Query} instance from an instance of \texttt{CriteriaQuery};
@@ -151,18 +151,18 @@ Looking at the JPQL specification \cite{book:projpa2} turns out that JPQL does n
 \item \texttt{createNativeQuery}, which creates a \texttt{Query} instance from a string representation of the underlying database specific SQL dialect.
 \end{itemize}
  
-\noindent Native queries are not supported by Kundera and thus from the migration system because there are not so many storage that provides a SQL-like language to specify queries; \texttt{createQuery} and \texttt{createNamedQuery} are supported, instead query creation through \texttt{CriteriaQuery} is currently not supported.
+\noindent Native queries are not supported by Kundera, moreover the migration system tries to abstract from the specific database query language, hence there is no point in supporting this kind of queries. \texttt{createQuery} and \texttt{createNamedQuery} are supported, instead query creation through \texttt{CriteriaQuery} is currently not supported.
 
-\newparagraph JPA does not provide, through the \texttt{Query} interface, a way to get the JPQL representation of the query. Queries are supposed to be written as method argument when creating them through the \texttt{EntityManager} or called by name if they are defined as named queries upon some class.
-This was actually a problem since in order to be able to parse the query its JPQL representation is crucial.
+\newparagraph The JPA does not provide, through the \texttt{Query} interface, a way to get the JPQL representation of the query. Queries are supposed to be written as method argument when creating them through the \texttt{EntityManager} or called by name if they are defined as named queries upon some class.
+This was actually a problem since, in order to be able to parse the query, its JPQL representation is crucial.
 
 \noindent The easiest solution was to implement the interfaces for \texttt{Query} and \texttt{TypedQuery} respectively with the classes \texttt{CloudQuery} and \texttt{TypedCloudQuery}. 
 
-\noindent The wrapping of the persistence provider queries is achieved in the entity manager and is performed in the query creation method  in both the versions that return an instance of \texttt{Query} and \texttt{TypedQuery}. The actual JPA query generation is delegated to the persistence provider then, before returning to the user the result query is wrapped in a \texttt{CloudQuery} that contains both the generated query and its string representation.
+\noindent The wrapping of the persistence provider queries is achieved in the entity manager and it is performed by the query creation method both for the \texttt{Query} and \texttt{TypedQuery} returned objects. The actual JPA query generation is delegated to the persistence provider; before returning to the user, the result query is wrapped in a \texttt{CloudQuery} that contains both the generated query and its string representation.
 
-\newparagraph For named queries things are little trickier since the user create instance of \texttt{Query} or \texttt{TypedQuery} just by giving the query name.
-\noindent As can be seen from the code snippet \ref{code:wrap-named-queries}, named queries meta-data are maintained inside the \texttt{PersistenceMetadata} class. This class, besides maintaining information about named queries, maintains principally a mapping between table names and their class canonical name (full package plus the class name). The content of this class is built the first time is queried (since is a singleton instance) and does not read directly the  configuration files but the \texttt{CloudMetadata} instance that has been modified to include all the required parameters that needs to be read from configuration files. 
-Information of table to class mapping is required for statements building and for sequence number handling both described in the following sections.
+\newparagraph For named queries things are little trickier since the user create instance of \texttt{Query} or \texttt{TypedQuery} just by passing the query name.
+\noindent As can be seen from the code snippet \ref{code:wrap-named-queries}, named queries meta-data are maintained inside the \texttt{PersistenceMetadata} class. This class, besides maintaining information about named queries, principally maintains a mapping between table names and their class canonical name (full package plus the class name). The first time this class is queried, its content is created (since it is a singleton instance) and it does not directly read the  configuration files, but the \texttt{CloudMetadata} instance that has been modified to include all the required parameters that needs to be read from configuration files. 
+The information of table to class mapping is required for statements building and for sequence number handling both described in the following sections.
 
 \begin{lstlisting}[language=Java, caption=Wrap named queries, label=code:wrap-named-queries]
 public Query createNamedQuery(String name) {
@@ -172,13 +172,13 @@ public Query createNamedQuery(String name) {
 }
 \end{lstlisting}
 
-\section{Data synchronization}
+\section{Adding support for data synchronization}
 \label{sec:sync}
-In this section is faced the problem of synchronization that allows the migration to be performed live.
+In this section we report the solution adopted for supporting \textit{Hegira} data synchronization \cite{paper:modaclouds-deliverable}, which allows to perform online data migration.
 
-\noindent A special look needs to be reserved to the insert operation. When the user updates or delete an entity no matter if through the entity manager or through a query, he already knows the identifier of that entity since the insert operation have already persisted the entity into the underlying database and thus generated the identifier.
-Since we want to guarantee a synchronization with the migration system, user cannot define its own identifiers but them needs to be assigned from the migration system.
-The main caveats is that such assignment has to be made even if the migration is not running yet so the identifier assignment has to be made in two cases:
+\noindent A special look needs to be reserved to the insert operation. When the user updates or delete an entity no matter if through the entity manager or through a query, he already knows the that entity identifier, since the insert operation has already persisted that entity into the underlying database and thus generated on identifier.
+Since we want to support the migration system, the user cannot define its own identifiers, but they need to be assigned from the migration system itself.
+The main caveats is that such assignment needs to be made even if the migration is not running yet so the identifier assignment has to be made in two cases:
 \begin{enumerate}
 \item insert statements built from persist operation during a migration phase
 \item \textit{standard} insert operation through the entity manager during a normal state
@@ -199,7 +199,7 @@ public void persist(Object entity) {
 }
 \end{lstlisting}
 
-\noindent In the code snippet is visible a call to the  \texttt{SeqNumberProvider} class which is the class responsible of actually interacts with the synchronization service of Hegira and handle the \textit{sequence numbers} i.e. the entities identifiers defined by Hegira to achieve synchronization. 
+\noindent In the code snippet is visible a call to the  \texttt{SeqNumberProvider} class, which is the class responsible of actually interacting with the Hegira component gabdling and handle the \textit{sequence numbers} generation i.e., the entities identifiers defined by Hegira to achieve fault-tolerant data migration and synchronization. 
 
 \subsubsection{Handling the sequence numbers}
 The sequence numbers are handled by the class \texttt{SeqNumberProvider}, a singleton instance that provides a simple way to get the assigned sequence numbers per table.
@@ -212,14 +212,14 @@ The sequence numbers are handled by the class \texttt{SeqNumberProvider}, a sing
   \label{fig:seq-provider}
 \end{figure} 
 
-\noindent The \texttt{SeqNumberProvider} keeps an instance of \texttt{SeqNumberDispenser} for each table that needs to be persisted and is responsible of:
+\noindent The \texttt{SeqNumberProvider} keeps an instance of \texttt{SeqNumberDispenser} for each table that needs to be persisted, and it is responsible of:
 \begin{enumerate}
-\item provide a unique access point where requesting the next assigned sequence number for a table
-\item initialize or restore the state of the dispenser for each of the persisted tables
+\item providing a unique access point when requesting the next assigned sequence number for a table;
+\item initializing or restoring the state of the dispenser for each table.
 \end{enumerate}
-\noindent The first is performed through the method \texttt{getNextSequenceNumber(String tableName)} that delegates the operation to the correct \texttt{SeqNumberDispenser} associated to the requested table.
+\noindent The first point is performed through the method \texttt{getNextSequenceNumber(String tableName)} that delegates the operation to the correct \texttt{SeqNumberDispenser} associated to the requested table.
 Since \texttt{SeqNumberDispenser} is an interface, the actual implementation is delegated to the \texttt{SeqNumberDispenserImpl} class, this mechanism has been used to be able to create more dispensers with different logic.
-\noindent The \texttt{SeqNumberDispenserImpl} class maintains internally the assigned range of identifiers provided by the synchronization system by specifying the first and the last element of the range. The class consumes one by one the identifiers in the range and when the range has been completed requests the next range. This mechanism is internally handled, in fact the \texttt{SeqNumberProvider} is only required to call the \texttt{getNextSequenceNumber()} method on the dispenser.
+\noindent The \texttt{SeqNumberDispenserImpl} class maintains internally the assigned range of identifiers provided by the synchronization system by specifying the first and the last element of the range. The class consumes, one by one, the identifiers in the range and when the range has been completed requests the next range. This mechanism is internally handled, in fact the \texttt{SeqNumberProvider} is only required to call the \texttt{getNextSequenceNumber()} method on the dispenser.
 
 \noindent In case the user wants to have control over the sequence number range for a particular table, it has been made configurable at run-time. At construction time each \texttt{SeqNumberDispenserImpl}  class reads the default range from \texttt{CloudMetadata} but by calling the method \texttt{setOffset(String tableName, int offset)} on the \texttt{SeqNumberProvider}, will be changed the offset of the \texttt{SeqNumberDispenser} responsible of the given table.
 

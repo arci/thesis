@@ -228,7 +228,9 @@ The main objective of our tests was to guarantee that the loss of performance, b
 Moreover, Kundera tests were quite out-dated since they has been executed on version 2.6 of the clients while as, we write, the latest version is the 2.16.
 
 \newparagraph Apart from the comparison with the Kundera results that cannot be done due to the problem in having a functioning Hbase cluster in the Politecnico di Milano cloud, the tests shows that the performance loss due to the Kundera overhead is minimum or at least acceptable given the advantages that Kundera offer in hiding the NoSQL complexity to the user.
-As regards the throughput, can be noticed that the Hbase test done locally over 1.000 entities have a considerably lager value with respect to the throughput of the Google Datastore and Azure Tables tests. This is due to the fact that while running remotely, the databases instances are addressed through TCP requests and thus the number of connections that the system has to handle becomes the bottleneck. Running the tests with less entities will increase the throughput as the number of connection that needs to be maintained open is significantly lower.
+As regards the throughput, can be noticed that the Hbase test done locally over 1.000 entities have a considerably lager value with respect to the throughput of the Google Datastore and Azure Tables tests. This is due to two reasons; the first one is that YCSB benchmarks run until the target database reach saturation and thus tries to estimate the maximum possible throughput, the second reason is due to the fact that, while running remotely, the databases instances are addressed through TCP requests and thus the number of connections that the testing system has to handle becomes the bottleneck. 
+
+\noindent Running the tests with less entities will increase the throughput as the number of connection that needs to be maintained open is significantly lower.
 As an evidence of this are reported in figure \ref{fig:gae-1000} and \ref{fig:azure-1000} the results of a test run on the same remote instances but with just 1.000 entities.   
 
 \begin{figure}[tbh]

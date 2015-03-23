@@ -129,16 +129,133 @@ YCSB comes with a core set of workloads, each workloads represents a particular 
 \noindent Defined the adapters and the workload we were able to execute the tests.
 
 \subsubsection{Google Datastore tests}
-\newparagraph TODO
+The tests for Google Datastore has been executed over a remote Datastore instance in an application billed by Politecnico di Milano and configured to accept remote API execution.
 
+\noindent The results of the tests are reported in figure \ref{fig:gae-test-read} for the read operation and in figure \ref{fig:gae-test-write} for the write operation.
+ 
+\begin{figure}[tbh]
+  \centering
+  \subfloat[Throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \qquad
+  \subfloat[Latency]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \caption{Google Datastore - read operation benchmark results}
+  \label{fig:gae-test-read}
+\end{figure} 
+
+\begin{figure}[tbh]
+  \centering
+  \subfloat[Throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \qquad
+  \subfloat[Latency]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \caption{Google Datastore - write operation benchmark results}
+  \label{fig:gae-test-write}
+\end{figure} 
+ 
 \subsubsection{Azure Tables tests}
-\newparagraph TODO
+The tests for Azure Tables has been executed over a remote storage instance deployed in Azure from the billing account of Politecnico di Milano.
+
+\noindent The results of the tests are reported in figure \ref{fig:azure-test-read} for the read operation and in figure \ref{fig:azure-test-write} for the write operation.
+ 
+\begin{figure}[tbh]
+  \centering
+  \subfloat[Throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \qquad
+  \subfloat[Latency]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \caption{Azure Tables - read operation benchmark results}
+  \label{fig:azure-test-read}
+\end{figure} 
+
+\begin{figure}[tbh]
+  \centering
+  \subfloat[Throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \qquad
+  \subfloat[Latency]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \caption{Azure Tables - write operation benchmark results}
+  \label{fig:azure-test-write}
+\end{figure} 
 
 \subsubsection{Hbase tests}
-\newparagraph TODO
+Hbase test should have been executed over an instance of Hbase, in full distributed configuration, in the cloud of Politecnico di Milano but due to a failure of the host machines the tests cannot be performed.
+
+\noindent In figure \ref{fig:hbase-test-read} and \ref{fig:hbase-test-write} are reported the results obtained while testing the Hbase adapters. They have been executed on a workload of 1.000 entities in a locally installed instance of Hbase.
+
+\begin{figure}[tbh]
+  \centering
+  \subfloat[Throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \qquad
+  \subfloat[Latency]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \caption{Hbase - read operation benchmark results}
+  \label{fig:hbase-test-read}
+\end{figure} 
+
+\begin{figure}[tbh]
+  \centering
+  \subfloat[Throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \qquad
+  \subfloat[Latency]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \caption{Hbase - write operation benchmark results}
+  \label{fig:hbase-test-write}
+\end{figure} 
 
 \subsection{Discussion}
-\newparagraph TODO
+The main objective of our tests was to guarantee that the loss of performance, between the Kundera version of the client and the client written with direct use of the low-level API, was minimum.
+
+\noindent The objective was also to compare our results with the results obtained by Kundera with the other client extensions. Since Kundera executed the tests on databases instance that reside on the testing machine we cannot compare our results, in fact, is meaningless to execute the tests for Google Datastore and Azure Table on the storage emulator installed on a development machine. What we decide to do to has been to test the performance of the newly developed client extensions remotely and thus testing on a real instance of the databases on the cloud but, to be able to compare the results with the Kundera ones, we decided also to replicate the test for Hbase on a instance in the cloud infrastructure of Politecnico di Milano.
+Moreover, Kundera tests were quite out-dated since they has been executed on version 2.6 of the clients while as, we write, the latest version is the 2.16.
+
+\newparagraph Apart from the comparison with the Kundera results that cannot be done due to the problem in having a functioning Hbase cluster in the Politecnico di Milano cloud, the tests shows that the performance loss due to the Kundera overhead is minimum or at least acceptable given the advantages that Kundera offer in hiding the NoSQL complexity to the user.
+As regards the throughput, can be noticed that the Hbase test done locally over 1.000 entities have a considerably lager value with respect to the throughput of the Google Datastore and Azure Tables tests. This is due to the fact that while running remotely, the databases instances are addressed through TCP requests and thus the number of connections that the system has to handle becomes the bottleneck. Running the tests with less entities will increase the throughput as the number of connection that needs to be maintained open is significantly lower.
+As an evidence of this are reported in figure \ref{fig:gae-1000} and \ref{fig:azure-1000} the results of a test run on the same remote instances but with just 1.000 entities.   
+
+\begin{figure}[tbh]
+  \centering
+  \subfloat[Write throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \qquad
+  \subfloat[Read throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \caption{Google Datastore - 1.000 entities benchmark results}
+  \label{fig:gae-1000}
+\end{figure} 
+
+\begin{figure}[tbh]
+  \centering
+  \subfloat[Write throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \qquad
+  \subfloat[Read throughput]{
+    \includegraphics[width=5cm]{images/logopm}
+  }
+  \caption{Azure Tables - 1.000 entities benchmark results}
+  \label{fig:azure-1000}
+\end{figure} 
 
 \section{Hegira generator}
 \label{sec:data}

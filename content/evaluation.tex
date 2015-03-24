@@ -216,42 +216,22 @@ Hbase test should have been executed over an instance of Hbase, in full distribu
 \end{figure} 
 
 \subsection{Discussion}
-The main objective of our tests was to guarantee that the loss of performance, between the Kundera version of the client and the client written with direct use of the low-level API, was minimum.
+The main objective of our tests was to guarantee that the loss of performance, between the Kundera version of the client and the client written with direct use of the low-level API, was minimum or at least not as much to discourage the JPA approach for NoSQL databases.
 
-\noindent The objective was also to compare our results with the results obtained by Kundera with the other client extensions. Since Kundera executed the tests on databases instance that reside on the testing machine we cannot compare our results, in fact, is meaningless to execute the tests for Google Datastore and Azure Table on the storage emulator installed on a development machine. What we decide to do to has been to test the performance of the newly developed client extensions remotely and thus testing on a real instance of the databases on the cloud but, to be able to compare the results with the Kundera ones, we decided also to replicate the test for Hbase on a instance in the cloud infrastructure of Politecnico di Milano.
-Moreover, Kundera tests were quite out-dated since they has been executed on version 2.6 of the clients while as, we write, the latest version is the 2.16.
+\noindent Since Kundera provides a set of benchmark results obtained through YCSB and due to the fact that they shows an acceptable performance loss, our objective include the comparison of our results with the results obtained by Kundera. Kundera executes its tests on instances of the databases that reside on the testing machine, since is meaningless for us to test the developed extensions against their local emulator, we cannot directly compare our results with the Kundera ones.
 
-\newparagraph Apart from the comparison with the Kundera results that cannot be done due to the problem in having a functioning Hbase cluster in the Politecnico di Milano cloud, the tests shows that the performance loss due to the Kundera overhead is minimum or at least acceptable given the advantages that Kundera offer in hiding the NoSQL complexity to the user.
-As regards the throughput, can be noticed that the Hbase test done locally over 1.000 entities have a considerably lager value with respect to the throughput of the Google Datastore and Azure Tables tests. This is due to two reasons; the first one is that YCSB benchmarks run until the target database reach saturation and thus tries to estimate the maximum possible throughput, the second reason is due to the fact that, while running remotely, the databases instances are addressed through TCP requests and thus the number of connections that the testing system has to handle becomes the bottleneck. 
+\noindent Thus we decided to replicate the results of Kundera on Hbase executing the tests no more on a local instance of Hbase but on a remote instance that was deployed in the Politecnico di Milano cloud; this will make us able to compare our tests executed over remote instances of the NoSQL database with the replicated version of tests on Hbase.
 
-\noindent Running the tests with less entities will increase the throughput as the number of connection that needs to be maintained open is significantly lower.
-As an evidence of this are reported in figure \ref{fig:gae-1000} and \ref{fig:azure-1000} the results of a test run on the same remote instances but with just 1.000 entities.   
+\noindent Unfortunately this comparison cannot be done due to two problems that raised during the development. The first problem we encountered was relative to the version of the client that were tested by Kundera, the tests were executed with the version 2.6 of Kundera but as we write Kundera have reached version 2.16. This caused an incompatibility between the code of the tests and the low-level API of Hbase and thus we needed to re-write the low-level API YCSB adapter for Hbase.
+Finally we faced a problem on the Hbase instance on the Politecnico di Milano cloud that would have required a complete re-install of the Hbase cluster.
 
-\begin{figure}[tbh]
-  \centering
-  \subfloat[Write throughput]{
-    \includegraphics[width=5cm]{images/logopm}
-  }
-  \qquad
-  \subfloat[Read throughput]{
-    \includegraphics[width=5cm]{images/logopm}
-  }
-  \caption{Google Datastore - 1.000 entities benchmark results}
-  \label{fig:gae-1000}
-\end{figure} 
 
-\begin{figure}[tbh]
-  \centering
-  \subfloat[Write throughput]{
-    \includegraphics[width=5cm]{images/logopm}
-  }
-  \qquad
-  \subfloat[Read throughput]{
-    \includegraphics[width=5cm]{images/logopm}
-  }
-  \caption{Azure Tables - 1.000 entities benchmark results}
-  \label{fig:azure-1000}
-\end{figure} 
+\newparagraph As can be seen comparing the values of throughput of Hbase and of the other tests, while tests are executed over the network, throughput drops significantly.
+YCSB tries to go as fast as possible in issuing operation on the database instance trying to reach the maximum throughput the system can afford, said that, the cause of the throughput drop is due to the high number of TCP connections that needs to be maintained during the benchmark execution, in fact, each requests needs a TCP connection to be opened and maintained at leas until the response comes from the server. When executing the tests with 100.000 entities this becomes the bottleneck for the benchmark.
+
+\noindent Similar considerations holds for the latency, the values reported for Google Datastore and Azure Tables, includes the round trip time of the requests and furthermore it depends on the state of network congestion. By looking at the data reported by the operating system of the testing machine, about network consumption, we estimated that the average round trip time was of 56,29 ms.
+
+\newparagraph After these considerations and by looking at the differences in both throughput and latency for the low-level API and the developed Kundera extension we conclude that exists a performance loss, about which we were aware, is not enough to discourage the usage of those NoSQL databases through Kundera given the benefits this solution bring.
 
 \section{Hegira generator}
 \label{sec:data}

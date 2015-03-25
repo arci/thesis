@@ -221,23 +221,23 @@ The sequence numbers are handled by the class \texttt{SeqNumberProvider}, a sing
 Since \texttt{SeqNumberDispenser} is an interface, the actual implementation is delegated to the \texttt{SeqNumberDispenserImpl} class, this mechanism has been used to be able to create more dispensers with different logic.
 \noindent The \texttt{SeqNumberDispenserImpl} class maintains internally the assigned range of identifiers provided by the synchronization system by specifying the first and the last element of the range. The class consumes, one by one, the identifiers in the range and when the range has been completed requests the next range. This mechanism is internally handled, in fact the \texttt{SeqNumberProvider} is only required to call the \texttt{getNextSequenceNumber()} method on the dispenser.
 
-\noindent In case the user wants to have control over the sequence number range for a particular table, it has been made configurable at run-time. At construction time each \texttt{SeqNumberDispenserImpl}  class reads the default range from \texttt{CloudMetadata} but by calling the method \texttt{setOffset(String tableName, int offset)} on the \texttt{SeqNumberProvider}, will be changed the offset of the \texttt{SeqNumberDispenser} responsible of the given table.
+\noindent The size of the range of sequence numbers requested to the synchronization system, that is used by the \texttt{SeqNumberDispenser}, has been made configurable at run-time. A default range size can be set using the \textit{migration.xml} file, otherwise, a call to the \texttt{setOffset(String tableName, int offset)} method on the \texttt{SeqNumberProvider}, will change, at-runtime, the size of the range of the \texttt{SeqNumberDispenser} responsible for the specified table.
 
-\newparagraph The second functionality is achieved by requesting to the \texttt{SeqNumberDispenser}(s) their state representation (as a \texttt{byte} array) by calling the method \texttt{save()} on the dispensers and then saving it to a Blob storage or to file depending to the configuration specified inside \textit{migration.xml}, described in appendix \ref{app:migration}. 
+\newparagraph The second functionality is achieved by requesting the state representation to the \texttt{SeqNumberDispenser}(s) (as a \texttt{byte} array), calling the method \texttt{save()} on the dispensers and, then, saving it to a Blob storage or to a file depending on the configuration specified inside the \textit{migration.xml} file, described in Appendix \ref{app:migration}. 
 \noindent The restoring phase is performed just after construction, if a backup exists either on file or on the Blob storage, the method \texttt{restore(byte[] state)} is called on the dispensers giving them its state representation to restore.
-In this mechanism the \texttt{SeqNumberProvider} is completely agnostic to the actual state representation chosen by the \texttt{SeqNumberDispenser}(s), this design choice has been made to make future extensibility more easy and less constrained.
+In this mechanism, the \texttt{SeqNumberProvider} is completely agnostic with respect to the actual state representation chosen by the \texttt{SeqNumberDispenser}(s). This makes future extensibility more easy and less constrained.
 
-\noindent The list of all the tables to be persisted is retrieved from the \texttt{PersistenceMetadata} mentioned previously for named queries.
+\noindent The list of all the tables to be persisted is retrieved from the \texttt{PersistenceMetadata} previously mentioned for named queries.
  
 \subsection{Contacting the synchronization system}
-The interaction with the synchronization system as now was only described as a method call. Those calls are made on an external library (\texttt{zkWrapper}) that connects to a zookeeper instance to communicate with the synchronization system and receive the assigned sequence numbers.
-Since the zookeeper library issues threads to handle communication, was not possible to use this library for Google App Engine since the App Engine run-time does not permit to spawn thread.
-Two are the feature that requires to communicate with the synchronization system and so use the \texttt{zkWrapper} library:
+The interaction with the synchronization system as now was only described as a method call. Those calls are made on an external library (\texttt{zkWrapper}) which provides an interface to a zookeeper instance, in order to communicate with the synchronization system, and to receive the assigned sequence numbers.
+Since the zookeeper library uses threads to handle communication, it was not possible to use this library for Google App Engine since the App Engine run-time does not permit to spawn thread.
+The main reasons to communicate with the synchronization system are:
 \begin{itemize}
-\item the migration state listener that modify the \texttt{MigrationManager} state accordingly;
-\item the \texttt{SeqNumberDispenser}(s) that needs to retrieve the sequence number assigned to tables.
+\item the migration state listener modifies the \texttt{MigrationManager} state accordingly;
+\item the \texttt{SeqNumberDispenser} that needs to retrieve the sequence number assigned to tables.
 \end{itemize} 
-\noindent The solution adopted was to modify the \texttt{zkWrapper} library to include an HTTP version that handle the calls not by connecting directly to a zookeeper instance but contacting a remote server through some defined API that ultimately interacts with the migration system.
+\noindent The adopted solution was to modify the \texttt{zkWrapper} library to include an HTTP version that handles the calls not by connecting directly to a zookeeper instance, but contacting a remote server through some defined API that ultimately interacts with the migration system.
 
 \newparagraph A simple structure has been built to make both the \texttt{MigrationManager} and the \texttt{SeqNumberDispenser}(s) transparent to the type of client that is used to retrieve information from the synchronization system. The architecture is shown in figure \ref{fig:zk-adapter}
 
@@ -248,16 +248,15 @@ Two are the feature that requires to communicate with the synchronization system
   \label{fig:zk-adapter}
 \end{figure} 
 
-\noindent The \texttt{HegiraConnector} is the class responsible of deciding which kind of client needs to be instantiated reading the configuration parsed  in \texttt{CloudMetadata}. The \texttt{HegiraConnector}  keeps internally an instance of the chosen client and provides access to its method by delegation.
+\noindent The \texttt{HegiraConnector} is the class responsible of deciding which kind of client needs to be instantiated, the decision is done by reading the configuration that the user specified in the \textit{migration.xml} file, which is parsed by the CPIM and kept in the \texttt{CloudMetadata} class. The \texttt{HegiraConnector}  keeps internally an instance of the chosen client and provides access to its method by delegation.
 The two available clients implements the interface \texttt{ZKAdapter}, built to uniform the methods of the two implementations.
 
-\paragraph{Thread-based client} If the user deploy the application on a thread-capable client and configure the \textit{migration.xml} accordingly, an instance of \texttt{ZKThread} is built. This version of the client uses directly the implementation of the library \texttt{zkWrapper} since there should not be any problem in thread spawning.
-The \texttt{isSynchronizing()} methods returns a value which is kept inside the \texttt{ZKThread} instance and is queried by the \texttt{MigrationManager}.
-Both the state of the \texttt{MigrationManager} and the value inside \texttt{ZKThread} are modified by the \texttt{SynchronizationListener} which is asynchronously notified by the \texttt{zkWrapper} library when the migration state change.
+\paragraph{Thread-based client} If the user deploies the application on a thread-capable client, and configures the \textit{migration.xml} accordingly, an instance of \texttt{ZKThread} is built. This version of the client directly uses the implementation of the library \texttt{zkWrapper} (since there should not be any problem in thread spawning).
+The \texttt{isSynchronizing()} method returns a value which is kept inside the \texttt{ZKThread} instance and is queried by the \texttt{MigrationManager}.
+Both the state of the \texttt{MigrationManager} and the value inside \texttt{ZKThread} are modified by the \texttt{SynchronizationListener} which is asynchronously notified by the \texttt{zkWrapper} library when the synchronization state changes.
 
-\paragraph{HTTP-based client} In case that threads are not supported by the cloud provider the client version that is instantiated (by looking at the configuration) is \texttt{ZKHttp} which uses the API-caller added to the \texttt{zkWrapper} library.
-Since no listener can be register and asynchronously notified of a change in the migration state and is not possible to somehow cache the state or make assumption on it, each call of the \texttt{MigrationManager} to the method \texttt{isSynchronizing()} will perform an API call to the remote server and will return the state of the synchronization just queried.
-
+\paragraph{HTTP-based client} In the case in which threads are not supported by the cloud provider (for example on PaaS), the client version that is instantiated (by looking at the configuration) is \texttt{ZKHttp} which uses the API-caller added to the \texttt{zkWrapper} library.
+Since no listener can be register to be asynchronously notified of a change in the synchronization state, each call of the \texttt{MigrationManager} to the method \texttt{isSynchronizing()} will perform an API call to the remote server, which will return the state of the synchronization system.
 
 \newparagraph Before focusing on the statements building, it may be useful to visualize the interaction so far presented in the high-level flow chart presented in figure \ref{fig:flow-chart}.
 

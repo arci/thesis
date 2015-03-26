@@ -1,13 +1,22 @@
-Introduzione al lavoro. Inizia direttamente, senza nessuna sezione.
+In the last few years, the kind of data that applications needs to take care slightly changed from the data that applications used to handle in the years before, in particular the volume of the data to be both stored and served to the end-user is increased dramatically and moreover data has become unstructured.
+Those changes in the data can be seen especially in Web application such as social networks in which handles a huge amount of user generated data.
+In this scenario traditional DBMS solutions has been discussed since they not provide the performance that modern application require in handling such data. Hence, in recent years, NoSQL databases have emerged.
 
-\noindent Argomenti trattati suddivisi sezione per sezione\dots
+\noindent NoSQL databases try to address the new applications requirements in different ways, proposing different properties and characteristics. Each NoSQL database provides to its users a different API interface which, in general, does not abstract from the physical representation of the stored data and, thus, users need to deeply understand the internals of the NoSQL solution they are going to use. This is a problem that does not affect DBMS since SQL permit to manipulate data independently by the vendor implementation. 
 
+\noindent The lack of a common language for NoSQL databases, require, when developing application, a clear understanding of the available NoSQL solutions, to be able to choose the right technology for the application requirements but, during the life cycle of the applications, many changes can arise but at this point, change the adopted NoSQL technology may become a problem. This problem is known as \textit{vendor lock-in}.  
+
+\noindent To mitigate the problem this work proposes an extension of the CPIM library, which already try to address the vendor lock-in problem in PaaS environment, in order to provide to the user a way to abstract from the specific NoSQL technology used to store the data.
+Many solutions has been proposed by both communities and industry in defining a common way to access different NoSQL technologies, we propose to use the one that seems to get most interest, especially by the industry, which is the JPA interface. We develop new extensions for Kundera, an ORM for NoSQL databases based on the JPA standard and we use it as abstraction layer in the NoSQL service of the CPIM library.
+The complexity of using NoSQL databases is moved inside Kundera clients and this permit to the user to access several NoSQL technologies by using both a standard language, which is SQL, and a well known interface among Java developer, which is the JPA.
+
+\noindent To achieve complete portability both of the code and of the data, this work also propose the integration of the migration and synchronization system \textit{Hegira}, in the CPIM. This permit to the user a way of moving its data from a NoSQL technology to another without experiencing application down time, and thus be able to change the NoSQL technology due, for example, to requirement changes.
+ 
 \section*{Original Contributions}
 This work include the following original contributions:
 \begin{itemize}
 \item two brand new Kundera clients, one for Google Datastore and one for Azure Tables;
-\item a completely rewritten CPIM library NoSQL service, capable of interacting with a migration system for data synchronization and migration; 
-\item new database adapters for the YCSB benchmark.
+\item the support, for the  NoSQL service of CPIM library, for the interaction with the migration system \textit{Hegira}, both for data synchronization and migration; 
 \end{itemize}
 
 \section*{Outline of the Thesis}

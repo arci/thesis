@@ -1,1 +1,15 @@
-Conclusioni del lavoro e sviluppi futuri. Massimo una o due pagine.
+This work presented an approach that allow the users of the CPIM library to interact with different NoSQL solution through a common language. This was possible by exploiting the functionalities of Kundera, a JPA compliant ORM and thus using JPQL as the common language.
+
+\noindent In the state of the art analysis of chapter \ref{chap:sota}, has been highlighted the necessity of a common language, or interface, to communicate with different NoSQL databases, due to the many different approaches that NoSQL databases uses to address many different data requirements.
+
+\noindent Chapter \ref{chap:ps} provides a detailed description of the motivation that lead to the necessity of modify the NoSQL service of the CPIM library and to the decision of integrate the migration and synchronization system \textit{Hegira} as part of the NoSQL service.
+
+\noindent In Chapter \ref{chap:kundera} has been described what is Kundera, its architecture and the development of two brand new extensions for it, the first one to support Google Datastore and the second one to support Azure Tables. The extension has been developed as part of a more general work on the CPIM library, described in Chapter \ref{chap:cpim}, indeed Kundera extension has been developed to maintain the CPIM support for Google Datastore and Azure Tables. Chapter \ref{chap:cpim} describe in detail the work made on the NoSQL service which is about the integration of Kundera as the unique persistence layer, and the integration of \textit{Hegira} to support transparent data synchronization and migration.
+
+\noindent Finally, chapter \ref{chap:eval} shows the performance tests executed over the developed Kundera extensions with respect to the low-level API version,using the YCSB framework. The results showed that the overhead introduced by Kundera and by the client extension, in terms of operation throughput and latency, is absolutely acceptable.
+
+\newparagraph Possible future works should continue in the following directions:
+\begin{itemize}
+\item \textbf{extend Kundera to support more NoSQL database} \dots
+\item \textbf{refine the work on CPIM} \dots
+\end{itemize}

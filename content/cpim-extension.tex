@@ -60,6 +60,7 @@ The actual call to the run-time provider is made within the \texttt{CloudEntityM
 \noindent This can seem an over-designed architecture, but it turns out to be extremely necessary in order to provide a transparent interaction with the migration system, as it will explained later on in this chapter.
 
 \subsection{Problems encountered}
+\label{sec:cpim-problems}
 Kundera provides an uniform access through the JPA interface, independently from the NoSQL provider which is being used. The desired target database is defined in the \textit{persistence.xml} file through the \texttt{kundera.client.lookup.class} property. For this reason all the old libraries that provide a JPA implementation for a specific vendor can be removed from the CPIM. 
 This tentative of cleaning the dependency of the CPIM caused two main problems:
 \begin{enumerate}
@@ -139,6 +140,7 @@ public <T> T merge(T entity) {
 \noindent In case of data migration, the provider is bypassed and a call to the \texttt{propagate} method is visible. The call accepts two arguments: the entity to be converted to a SQL statement and the operation that needs to be generated. The method is called on the \texttt{MigrationManager} which then delegates the execution to the current state (which should be the migration one). The migration state \texttt{propagate} method is responsible for building the requested statements, using the statement builders and then sending the generated statements to \textit{Hegira} commit log. Both actions are described in detail in the following sections.
 
 \subsection{Intercepting queries}
+\label{sec:cpim-intercept-queries}
 Looking at the JPQL specification \cite{book:projpa2} it turns out that JPQL does not support \textit{INSERT} statements and so the only way a user has to persist some entities is by means of \texttt{EntityManager.persist(Object entity)} method, which was described in the previous section; so, only the remaining queries (\textit{UPDATE} and \textit{DELETE}) need to be intercepted as query.
 
 \noindent The JPA interface provides several ways to build and execute queries, all available by calling the proper methods defined in the \texttt{EntityManager} interface: 

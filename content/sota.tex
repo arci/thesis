@@ -33,34 +33,36 @@ While DBMS systems tends to \textit{scale up} and thus adding resources to a sin
 \end{itemize}
 
 \subsection{NoSQL classification}
-NoSQL databases born to handle various type of unstructured data. Each one of them tries to solve the problem with different approaches due to different requirements on the data but all of them share the general objective of offering simple operations in a scalable way, with possibly massive throughput.
-Beside the great diversity of the data, and thus of the solution that have been adopted, four main general category can be pointed out.
+Many NoSQL datastore has been developed and each of them manage data in different ways depending on the companies requirements it tries to address and how it ranks as compared to the CAP theorem.
+There is not a general classification for NoSQL databases, many are the method that can be used to classify them: the data model, the architecture, the sharding or replication methods. We will consider the classification based on the data model since is the most common method used to categorize them.
+Accordingly to the meta model, NoSQL databases can be classified in four groups: key-value, column-oriented, document-oriented and grap-based.
 
-\subsubsection{Key/Value stores} 
-In Key/Value stores, data is stored within fields composed of a name and a value which are then grouped and assigned to a key. This way, given a key, is possible to retrieve the associated value which in turn is the data composed of the various fields. This kind of databases are very similar to data structures such as Maps or Hashtables.
+\paragraph{Key/Value stores} 
+This kind of databases are very similar to data structures such as Maps or Hashtables, indeed, data are stored as values which are then associated to a key. This databases are thus completely schema-free and can easily store non structured data.This permits to write huge amounts of data and even to horizontally distribute them (sharded) among the nodes of the system.
 Examples of this kind of databases are Redis\footnote{\url{http://redis.io}} and Voldemort\footnote{\url{http://www.project-voldemort.com}}.
 
-\subsubsection{Column-oriented databases}
-In Column-oriented databases, entity properties are stored inside Columns, data structures that can are generally grouped inside Column Families.
-Set of columns are then identified by a key.
+\paragraph{Column-oriented databases}
+Those databases are mainly inspired by the Google Big Table \cite{paper:bigtable} data model.
 
+\noindent These databases are designed for storing data tables as sections of columns of data, rather than as rows of data. Thus, entity properties are stored in \textit{Columns} that are then grouped in \textit{Column families}; rows are identified by a key and composed by a set of column, each row can have a different set of columns with respect to other rows to be able to persist even semi-structured and unstructured data.
+This kind of databases allows great scalability options as they can both scale horizontally (sharding), by distributing rows, and vertically, by distributing column families among the node of the system.
 \noindent Examples of this kind of databases are Cassandra\footnote{\url{http://cassandra.apache.org}} and HBase\footnote{\url{http://hbase.apache.org}}.
 
-\subsubsection{Document-oriented databases}
-Document-oriented databases are designed for storing, retrieving, and managing document-oriented information, also known as semi-structured data. 
+\paragraph{Document-oriented databases}
+Document-oriented databases are designed for storing, retrieving, and managing document-oriented data, also known as semi-structured data. 
 These systems are designed around an abstract notion of a Document identified in the database via a unique key. 
 Document database typically offer a query language that allows the user to retrieve documents based on their content because they extract and index all kinds of meta-data and usually also the entire content of the documents. 
 Documents can be stored in many different ways such as JSON, BSON, YAML or XML.
 
 \noindent An example of this kind of database is MongoDB\footnote{\url{http://www.mongodb.org}} and Couchbase\footnote{\url{http://www.couchbase.com}}.
 
-\subsubsection{Graph databases} 
-Graph databases are databases that uses graph structures with nodes, edges, and properties to represent and store data.
-The node are the entity persisted into the database and edges can represents relationships among them. Nodes maintains the information about the entity they represents by storing them into properties.
+\paragraph{Graph databases} 
+Graph databases are databases that uses graph structures with nodes, edges, and properties to represent.
+Persisted entities are represented by nodes. Each node maintains the information about the entity it represents by storing them into properties, while edges can be used to represent relationships among the entities.
 
 \noindent An example of this kind of database is Neo4j\footnote{\url{http://neo4j.com}}.
 
-\newparagraph As we write there are more than 150 \cite{online:nosql-database.org} different NoSQL databases and no all of them can be strictly categorized in one of the previous classification. Hybrid solutions came to be more versatile and appetible to the industry. An example is OrientDB\footnote{\url{http://www.orientechnologies.com}} which is a hybrid solution which data model span across graph and document databases. 
+\newparagraph As we write there are more than 150 \cite{online:nosql-database.org} different NoSQL databases and not all of them can be strictly categorized in one of the previous classification. Furthermore other solutions trying to propose multiple data models are being developed. Example of those systems are: OrientDB\footnote{\url{http://www.orientechnologies.com}}, an hybrid solution which data model span across graph and document databases and ArangoDB\footnote{\url{https://www.arangodb.com/}}, which data model is an hybrid of document, graph and key-value data models.
 
 \section{Approaches for offering a common language over NoSQL}
 \label{sec:common-language}

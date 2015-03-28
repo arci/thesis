@@ -5,32 +5,30 @@ In this chapter NoSQL databases are firstly introduced and then are described th
 
 \section{NoSQL databases}
 \label{sec:nosql}
-The relational model and SQL were invented at a time when data management targeted primarily administrative applications. However, the data management landscape has evolved, and today's landscape of data management applications is much more diverse than it was when the relational model and SQL were born.
-There are cases where RDBMSs performances are not adequate and the structure of the relational model, while being effective for many traditional applications, is considered to be too rigid or not useful in other cases.
-At the same time, the full power of relational databases, with complex transactions and complex queries, is not needed in some contexts. Also ACID consistency, the complete form of consistency guaranteed by RDBMSs, is not essential, and can be sacrificed for the sake of efficiency. 
-Many Internet application domains,for example the social networking domain, require both scalability and flexibility in structure, that can be satisfied with simple operations and weak forms of consistency.
+NoSQL databases have recently became popular, due to the inadequacy of traditional RBDMSs to guarantee adequate performances with respect to the new application requirements that in these years have outlined. These requirements primarily concern the ability of handling huge amount of unstructured or semi-structured data.
 
-\newparagraph With these motivations, a number of new systems, not following the RDBMS paradigm, have been developed. Their common features are scalability and support to simple operations only, with some flexibility in the structure of data. Most of them also relax consistency requirements. They are often indicated as NoSQL systems, which stands for \textit{Not only SQL}, even if other thinks that it would be more appropriate to call them non-relational,  because they can be accessed by APIs that offer much simpler operations than those that can be expressed in SQL. 
+\noindent RDBMSs provide a general-purpose solutions that balance the various requirements of applications, but works well for application handling structured data and for applications that have strict requirement on consistency (as they guarantee full ACID consistency). Examples are business or administrative application since RBDMSs were born when these were the most common applications.
 
-\noindent Thus, while relational database systems were first proposed as a way to store and manage structured data, NoSQL databases have emerged as a way to store unstructured data and other complex objects such as documents, data streams, and graphs. With the rise of the real-time web, NoSQL databases were designed to deal with very large volumes of data.
+\noindent NoSQL databases, have emerged as a way to store unstructured, semi-structured data and other complex objects such as documents, data streams, and graphs. Moreover they provide the capabilities for handling huge amount of those data while providing reasonable performance.
+This is done primarily by recognizing that many modern applications such as social networks, does not need full ACID compliance. Hence NoSQL database sacrifice consistency for the sake of efficiency an thus they are said to be BASE compliant, which is an acronym for:
+\begin{itemize}
+\item \textbf{basically available}, which indicates that the system does guarantee availability, in terms of the CAP theorem.
+\item \textbf{soft state}, which indicates that the state of the system may change over time, even without input. 
+\item \textbf{eventual consistency}, which indicates that the system will become consistent over time, given that the system doesn't receive input during that time.
+\end{itemize}
 
-\subsection{NoSQL characteristics}
-While DBMS systems tends to \textit{scale up} and thus adding resources to a single node (such as CPUs or memory) in the system to increase its computational capabilities, NoSQL systems, to afford the great amount of data they have to deal with, are designed to \textit{scale out} and thus by adding more nodes in the system.
 
-\noindent While \textit{scaling up} is a good solution for certain type of application with well structured data, in today's technical landscape, especially in the web, is increasing the desire to \textit{scale out}. This is due to the fact that this approach is much cheaper since singular nodes does not require high computational capabilities, and, especially, due to the ability to run fault tolerant.
-
-\noindent In this scenario Eric Brewer's CAP theorem comes into play, it states that, in a distributed system, we can only have two out of three of the following guarantees:
+\noindent NoSQL systems are thus developed as distributed systems and thus are governed by Eric Brewer's CAP theorem; it states that, in a distributed system, we can only have two out of three of the following guarantees:
 \begin{itemize}
 \item \textbf{Consistency}, a read is guaranteed to return the most recent write for a given client;
 \item \textbf{Availability}, a non-failing node will return a reasonable response within a reasonable amount of time (no error or timeout);
 \item \textbf{Partition Tolerance}, the system will continue to function when network partitions occur.
 \end{itemize}
 
-\noindent Given that networks aren't completely reliable, partitions must be tolerated. According to the CAP theorem, this means that essentially two are the remaining valid options: Consistency and Availability.
-\begin{itemize}
-\item \textbf{Consistency/Partition Tolerance}, wait for a response from the partitioned node which could result in a timeout error. This solution is adopted when business requirements dictate atomic reads and writes;
-\item \textbf{Availability/Partition Tolerance}, return the most recent version of the data in the system even if it could be stale. This solution is adopted when business requirements allow for some flexibility around when the data in the system synchronizes;
-\end{itemize}
+\noindent While RDBMS scale very well vertically, and thus adding computational power to the node, they do not scale particularly well horizontally and thus through sharding. This is because RDBMS guarantee ACID properties and thus consistency while sharding make the system tolerant to partition but being a distributed system this means, in terms of the CAP theorem that therefore RDMBS cannot guarantee availability.
+
+\noindent In contrast, NoSQL databases neglecting consistency can scale very well horizontally.
+
 
 \subsection{NoSQL classification}
 Many NoSQL datastore has been developed and each of them manage data in different ways depending on the companies requirements it tries to address and how it ranks as compared to the CAP theorem.
@@ -44,7 +42,7 @@ Examples of this kind of databases are Redis\footnote{\url{http://redis.io}} and
 \paragraph{Column-oriented databases}
 Those databases are mainly inspired by the Google Big Table \cite{paper:bigtable} data model.
 
-\noindent These databases are designed for storing data tables as sections of columns of data, rather than as rows of data. Thus, entity properties are stored in \textit{Columns} that are then grouped in \textit{Column families}; rows are identified by a key and composed by a set of column, each row can have a different set of columns with respect to other rows to be able to persist even semi-structured and unstructured data.
+\noindent These databases are designed for storing data tables as sections of columns of data, rather than as rows of data. Hence, entity properties are stored in \textit{Columns} that are then grouped in \textit{Column families}; rows are identified by a key and composed by a set of column, each row can have a different set of columns with respect to other rows to be able to persist even semi-structured and unstructured data.
 This kind of databases allows great scalability options as they can both scale horizontally (sharding), by distributing rows, and vertically, by distributing column families among the node of the system.
 \noindent Examples of this kind of databases are Cassandra\footnote{\url{http://cassandra.apache.org}} and HBase\footnote{\url{http://hbase.apache.org}}.
 

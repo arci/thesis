@@ -49,13 +49,27 @@ The proposed solution is mainly about the integration of Kundera, a JPA complian
 \end{itemize}
 
 \section{Hegira integration}
-NoSQL technologies do not offer a common querying language to interact with them, as SQL does for RDBMS. Furthermore, NoSQLs offer a simpler interface with respect to RDBMS. This require user to interact with NoSQL databases at a lower level of interaction, moreover no effort is made by NoSQL database in hiding to the user the physical representation of the data, this move a good amount of developing effort toward the user.
-This approach, and the many different NoSQL solution available nowadays, causes a lock-in on the technology chosen since re-engineer an application is often an operation with huge costs for companies.
+NoSQL technologies do not offer a common querying language to interact with them, as SQL does for RDBMS. Furthermore, NoSQLs offer a simpler interface with respect to RDBMS and each of them exposes a proprietary API tailored to the specific database needs. This requires to interact with NoSQL databases at a lower level of abstraction, moving a good amount of developing effort toward the user.
+Given the amount of NoSQL solutions available nowadays \cite{online:nosql-database.org}, and this low-level approach in using such technologies, a company that want to adopt a NoSQL solution to manage its data, finds itself locked to the chosen technology. 
+For this reasons while NoSQL solutions can be appetible, the high costs of application re-engineering and the necessity of investments on qualified personnel, disrupt the adoption of such technologies.
 
-\newparagraph To mitigate this lock-in problem we want to extend CPIM to make it able to interact with \textit{Hegira} a migration system able to perform interoperable data migration and synchronization across column-based NoSQL databases \cite{paper:modaclouds-deliverable}.
+\noindent The CPIM library can mitigate this vendor lock-in problem by giving to the user the freedom to choose the NoSQL solution that best fit its application requirements and, furthermore, by using the JPA interface, gives the possibility to interacts with NoSQL databases with expertise that companies already have.
 
-\noindent \textit{Hegira} is already able to migrate data offline but in many cases this solution is not acceptable since this require to turn off the application for a period of time that depends on how many data needs to be migrated to the new database. 
-Downtime cost and risk of data loss can be problematic so \textit{Hegira} was extended to be able to perform a live-migration of the data by keeping them synchronized on the source and the destination database.
-This feature needs to be exploited at application level and thus we decide to embed it inside the CPIM NoSQL service in order to make it as transparent as possible to the user.
+\newparagraph However when a company actually faces the problem of changing the storage solution for its data, even if the application, through frameworks like CPIM, permits effortless code portability, data migration from the old storage to the new one became a huge problem. 
+Data migration has became a key feature in modern IT, there exists many reasons to migrate moving data from one storage device to
+another: for load balancing, system expansion, failure recovery, etc.
 
-\noindent CPIM needs to be aware of the state of both the synchronization and migration systems and acts accordingly intercepting user operation and sending data manipulation queries (DMQ) to the migration system wile keeping the data synchronized interacting with the synchronization system when required.
+\noindent Typical migration solutions involve applications stop to migrate the data offline and restart the application when the process has been completed, to guarantee the correctness. On the other hand, modern computer systems are expected to be up continuously and thus even planned downtime to accomplish system reconfiguration is becoming unacceptable \cite{paper:hitachi}.
+
+\begin{figure}[tbh]
+  \centering
+  \includegraphics[width=13cm]{images/hitachi_survey}
+  \caption{Hitachi survey on perceived risk in data migration \cite{paper:hitachi} }
+  \label{fig:cpim-nosql}
+\end{figure}
+
+\newparagraph To mitigate those problems we want to extend the CPIM library to make it able to interact with \textit{Hegira} a migration system able to perform interoperable data migration and synchronization across column-based NoSQL databases \cite{paper:modaclouds-deliverable}. \textit{Hegira} is already able to migrate data offline, but in many cases this solution is not acceptable since this requires to turn off the application for a period of time that depends on the volume of data that needs to be migrated towards the new database. 
+Downtime costs and risks of data loss can be problematic so, \textit{Hegira} was extended to be able to perform a live-migration of the data by keeping them synchronized on the source and the destination database.
+This feature needs to be exploited at application level and thus we decided to embed it inside the CPIM NoSQL service, in order to make it as transparent as possible to the user.
+
+\noindent The CPIM library needs to be aware of the state of both the synchronization and migration systems and acts accordingly intercepting user operation and sending data manipulation queries (DMQ) to the migration system which is in charge of keeping the data consistent across the replicated databases.

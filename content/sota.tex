@@ -7,27 +7,33 @@ In this chapter NoSQL databases are firstly introduced and then are described th
 \label{sec:nosql}
 NoSQL databases have recently became popular, due to the inadequacy of traditional RBDMSs to guarantee adequate performances with respect to the new application requirements that in these years have outlined. These requirements primarily concern the ability of handling huge amount of unstructured or semi-structured data.
 
-\noindent RDBMSs provide a general-purpose solutions that balance the various requirements of applications, but works well for application handling structured data and for applications that have strict requirement on consistency (as they guarantee full ACID consistency). Examples are business or administrative application since RBDMSs were born when these were the most common applications.
+\noindent RDBMSs provide a general-purpose solutions that balance the various requirements of applications, but works well for application handling structured data and for applications that have strict requirement on consistency (as they guarantee full ACID consistency). Examples are business or administrative application since RBDMSs were born more than 30 years ago, when these were the most common applications.
 
-\noindent NoSQL databases, have emerged as a way to store unstructured, semi-structured data and other complex objects such as documents, data streams, and graphs. Moreover they provide the capabilities for handling huge amount of those data while providing reasonable performance.
-This is done primarily by recognizing that many modern applications such as social networks, does not need full ACID compliance. Hence NoSQL database sacrifice consistency for the sake of efficiency an thus they are said to be BASE compliant, which is an acronym for:
-\begin{itemize}
-\item \textbf{basically available}, which indicates that the system does guarantee availability, in terms of the CAP theorem.
-\item \textbf{soft state}, which indicates that the state of the system may change over time, even without input. 
-\item \textbf{eventual consistency}, which indicates that the system will become consistent over time, given that the system doesn't receive input during that time.
-\end{itemize}
+\noindent NoSQL databases, have emerged as a way to store unstructured, semi-structured data and other complex objects such as documents, data streams, and graphs. Moreover they provide the capabilities for handling huge amount of those kind of data, while providing reasonable performance.
+This is done primarily by recognizing that many modern applications such as social networks, does not need full ACID compliance. Indeed, ACID compliance may not be important to a search engine that may return different results to two users simultaneously, or to Amazon when returning sets of different reviews to two users.
 
-\noindent NoSQL systems are thus developed as distributed systems and thus are governed by Eric Brewer's CAP theorem; it states that, in a distributed system, we can only have two out of three of the following guarantees:
+\subsection{NoSQL characteristics}
+Due to the different approaches that NoSQL database put in place to meet the new application requirements, there is no a unique NoSQL definition but since all of them provides similar features, we can say that NoSQL databases are distributed databases with flexible data models and aimed to provide: horizontal scalability, fault tolerance and high availability.
+
+\noindent As distributed systems, NoSQL databases are governed by Eric Brewer's CAP theorem; it states that, in a distributed system, we can only have two out of three of the following guarantees:
 \begin{itemize}
 \item \textbf{Consistency}, a read is guaranteed to return the most recent write for a given client;
 \item \textbf{Availability}, a non-failing node will return a reasonable response within a reasonable amount of time (no error or timeout);
-\item \textbf{Partition Tolerance}, the system will continue to function when network partitions occur.
+\item \textbf{Partition tolerance}, the system will continue to function when network partitions occur.
 \end{itemize}
 
-\noindent While RDBMS scale very well vertically, and thus adding computational power to the node, they do not scale particularly well horizontally and thus through sharding. This is because RDBMS guarantee ACID properties and thus consistency while sharding make the system tolerant to partition but being a distributed system this means, in terms of the CAP theorem that therefore RDMBS cannot guarantee availability.
+\noindent As a result, we can have a database with only one of these three combination of properties: CA, CP or AP.
+Given that networks aren't completely reliable, partitions must be tolerated. According to the CAP theorem, this means that essentially two are the remaining valid options: Consistency and Availability.
 
-\noindent In contrast, NoSQL databases neglecting consistency can scale very well horizontally.
+\noindent For those reasons, while RDBMS scale very well vertically, and thus adding computational power to the node, they do not scale particularly well horizontally and thus through sharding. This is because RDBMS guarantee ACID properties, and thus consistency, while for sharding, the system should be tolerant to partition but, being a distributed system, this means, in terms of the CAP theorem, that therefore RDMBS cannot guarantee availability. In contrast, NoSQL database sacrifice consistency for the sake of efficiency an thus, with respect to the CAP theorem, they can guarantee both partition tolerance and availability, properties that permit them to scale very well horizontally by means of sharding.
 
+\noindent The decision of neglecting consistency, makes NoSQL databases no more ACID compliant, to highlight this fact, they are said to be BASE compliant, where BASE the acronym of:
+\begin{itemize}
+\item \textbf{Basically Available}, which indicates that the system does guarantee availability, in terms of the CAP theorem.
+\item \textbf{Soft state}, which indicates that the state of the system may change over time, even without input. 
+\item \textbf{Eventual consistency}, which indicates that the system will become consistent over time, given that the system doesn't receive input during that time.
+\end{itemize}
+\noindent Those properties are perfect for certain type of web application, as pointed out previously and permits to those system to guarantee valuable performance in the scenario of Web 2.0 applications requirements.
 
 \subsection{NoSQL classification}
 Many NoSQL datastore has been developed and each of them manage data in different ways depending on the companies requirements it tries to address and how it ranks as compared to the CAP theorem.

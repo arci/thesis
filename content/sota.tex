@@ -1,67 +1,63 @@
 \section{Introduction}
-In this chapter NoSQL databases are firstly introduced and then are described their main characteristics and a general classification. In section \ref{sec:common-language} are listed some of the solutions that have been developed trying to define a common interface to interact with different NoSQL databases.
+In this chapter NoSQL databases are firstly introduced, described in their main characteristics and a general classification is provided. In section \ref{sec:common-language} are listed some of the solutions that have been developed trying to define a common interface to interact with different NoSQL databases.
 
-\noindent In section \ref{sec:jpa} is described the JPA interface and JPQL, the querying language used for issuing queries. In section \ref{sec:cpim} the CPIM library is introduced as a tentative of defining a common interface to interact with different vendors in PaaS environments (which includes accessing their NoSQL solution).
+\noindent In section \ref{sec:jpa} is also described the JPA interface and JPQL, the querying language used for issuing queries. In section \ref{sec:cpim} the CPIM library is introduced as a tentative of defining a common interface to interact with different vendors in PaaS environments (which includes accessing their NoSQL solution).
 
 \section{NoSQL databases}
 \label{sec:nosql}
 NoSQL databases have recently became popular, due to the inadequacy of traditional RBDMSs to guarantee adequate performances with respect to the new application requirements that in these years have outlined. These requirements primarily concern the ability of handling huge amount of unstructured or semi-structured data.
 
-\noindent RDBMSs provide a general-purpose solutions that balance the various requirements of applications, but works well for application handling structured data and for applications that have strict requirement on consistency (as they guarantee full ACID consistency). Examples are business or administrative application since RBDMSs were born more than 30 years ago, when these were the most common applications.
+\noindent RDBMSs provide a general-purpose solutions that balance the various requirements of applications, but they works well for application handling structured data and for applications that have strict requirement on consistency (as they guarantee full ACID consistency). Examples are business or administrative application since RBDMSs were born more than 30 years ago, when these were the most common applications.
 
-\noindent NoSQL databases, have emerged as a way to store unstructured, semi-structured data and other complex objects such as documents, data streams, and graphs. Moreover they provide the capabilities for handling huge amount of those kind of data, while providing reasonable performance.
-This is done primarily by recognizing that many modern applications such as social networks, does not need full ACID compliance. Indeed, ACID compliance may not be important to a search engine that may return different results to two users simultaneously, or to Amazon when returning sets of different reviews to two users.
+\noindent NoSQL databases have emerged as a way to store unstructured, semi-structured data and other complex objects such as documents, data streams, and graphs. Moreover they provide the capabilities for handling huge amount of those kind of data, while providing reasonable performance.
+This is done primarily by recognizing that many modern applications such as social networks, does not need full ACID compliance. Indeed, full ACID compliance may not be important to a search engine that may return different results to two users simultaneously, or to Amazon when returning sets of different reviews to two users.
 
 \subsection{NoSQL characteristics}
-Due to the different approaches that NoSQL database put in place to meet the new application requirements, there is no a unique NoSQL definition but since all of them provides similar features, we can say that NoSQL databases are distributed databases with flexible data models and aimed to provide: horizontal scalability, fault tolerance and high availability.
+Due to the different approaches that NoSQL database put in place to meet the new application requirements, there is no a unique NoSQL definition but since all of them provides similar features, we can say that NoSQL databases are distributed databases with flexible data models aimed to provide: horizontal scalability, fault tolerance and high availability.
 
-\noindent As distributed systems, NoSQL databases are governed by Eric Brewer's CAP theorem; it states that, in a distributed system, we can only have two out of three of the following guarantees:
+\noindent As distributed systems, NoSQL databases are governed by the CAP theorem; it states that, in a distributed system, we can only have two out of three of the following guarantees:
 \begin{itemize}
 \item \textbf{Consistency}, a read is guaranteed to return the most recent write for a given client;
 \item \textbf{Availability}, a non-failing node will return a reasonable response within a reasonable amount of time (no error or timeout);
 \item \textbf{Partition tolerance}, the system will continue to function when network partitions occur.
 \end{itemize}
 
-\noindent As a result, we can have a database with only one of these three combination of properties: CA, CP or AP.
-Given that networks aren't completely reliable, partitions must be tolerated. According to the CAP theorem, this means that essentially two are the remaining valid options: Consistency and Availability.
+\noindent As a result, we can have a distributed system with only one of these three combination of properties: CA, CP or AP.
 
-\noindent For those reasons, while RDBMS scale very well vertically, and thus adding computational power to the node, they do not scale particularly well horizontally and thus through sharding. This is because RDBMS guarantee ACID properties, and thus consistency, while for sharding, the system should be tolerant to partition but, being a distributed system, this means, in terms of the CAP theorem, that therefore RDMBS cannot guarantee availability. In contrast, NoSQL database sacrifice consistency for the sake of efficiency an thus, with respect to the CAP theorem, they can guarantee both partition tolerance and availability, properties that permit them to scale very well horizontally by means of sharding.
+\noindent Given that networks aren't completely reliable, partitions must be tolerated; according to the CAP theorem, this means that essentially two are the remaining valid options: Consistency and Availability.
 
-\noindent The decision of neglecting consistency, makes NoSQL databases no more ACID compliant, to highlight this fact, they are said to be BASE compliant, where BASE the acronym of:
+\noindent For those reasons, while RDBMS scale very well vertically, and thus adding computational power to the node, they do not scale particularly well horizontally and thus through sharding. This is because RDBMS guarantee ACID properties, and thus consistency, while for sharding, the system should be tolerant to partition but, being a distributed system, this means, in terms of the CAP theorem, that RDMBS cannot guarantee availability. In contrast, NoSQL database sacrifice consistency for the sake of efficiency an thus, with respect to the CAP theorem, they can guarantee both partition tolerance and availability, properties that permit them to scale well horizontally by means of sharding.
+
+\noindent The decision of neglecting consistency, makes NoSQL databases no more ACID compliant, to highlight this fact, they are said to be BASE compliant, where BASE is the acronym of:
 \begin{itemize}
-\item \textbf{Basically Available}, which indicates that the system does guarantee availability, in terms of the CAP theorem.
-\item \textbf{Soft state}, which indicates that the state of the system may change over time, even without input. 
+\item \textbf{Basically Available}, which indicates that the system does guarantee availability, in terms of the CAP theorem;
+\item \textbf{Soft state}, which indicates that the state of the system may change over time, even without input;
 \item \textbf{Eventual consistency}, which indicates that the system will become consistent over time, given that the system doesn't receive input during that time.
 \end{itemize}
-\noindent Those properties are perfect for certain type of web application, as pointed out previously and permits to those system to guarantee valuable performance in the scenario of Web 2.0 applications requirements.
+\noindent Those properties are perfect for certain type of web application, as pointed out previously, and permits to NoSQL databases to guarantee valuable performance in the scenario of Web 2.0 applications requirements.
 
 \subsection{NoSQL classification}
-Many NoSQL datastore has been developed and each of them manage data in different ways depending on the companies requirements it tries to address and how it ranks as compared to the CAP theorem.
+Many NoSQL datastore has been developed and each of them manage data in different ways depending on the requirements it tries to address and how it ranks as compared to the CAP theorem.
 There is not a general classification for NoSQL databases, many are the method that can be used to classify them: the data model, the architecture, the sharding or replication methods. We will consider the classification based on the data model since is the most common method used to categorize them.
-Accordingly to the meta model, NoSQL databases can be classified in four groups: key-value, column-oriented, document-oriented and grap-based.
 
-\paragraph{Key/Value stores} 
-This kind of databases are very similar to data structures such as Maps or Hashtables, indeed, data are stored as values which are then associated to a key. This databases are thus completely schema-free and can easily store non structured data.This permits to write huge amounts of data and even to horizontally distribute them (sharded) among the nodes of the system.
+\noindent Accordingly to the meta model, NoSQL databases can be classified in four groups: key-value, column-oriented, document-oriented and grap-based.
+
+\paragraph{Key/Value stores} This kind of databases are very similar to data structures such as Maps or Hashtables, indeed, data are stored as values which are then associated to a key. This databases are thus completely schema-free and can easily store non structured data.This permits to write huge amounts of data and even to horizontally distribute them (sharded) among the nodes of the system.
 Examples of this kind of databases are Redis\footnote{\url{http://redis.io}} and Voldemort\footnote{\url{http://www.project-voldemort.com}}.
 
-\paragraph{Column-oriented databases}
-Those databases are mainly inspired by the Google Big Table \cite{paper:bigtable} data model.
-
-\noindent These databases are designed for storing data tables as sections of columns of data, rather than as rows of data. Hence, entity properties are stored in \textit{Columns} that are then grouped in \textit{Column families}; rows are identified by a key and composed by a set of column, each row can have a different set of columns with respect to other rows to be able to persist even semi-structured and unstructured data.
+\paragraph{Column-oriented databases} Those databases are mainly inspired by the Google Big Table \cite{paper:bigtable} data model, and are designed for storing data tables as sections of columns of data, rather than as rows of data. Hence, entity properties are stored in \textit{Columns} that are then grouped in \textit{Column families}; rows are identified by a key and composed by a set of column, each row can have a different set of columns with respect to other rows to be able to persist even semi-structured and unstructured data.
 This kind of databases allows great scalability options as they can both scale horizontally (sharding), by distributing rows, and vertically, by distributing column families among the node of the system.
+
 \noindent Examples of this kind of databases are Cassandra\footnote{\url{http://cassandra.apache.org}} and HBase\footnote{\url{http://hbase.apache.org}}.
 
-\paragraph{Document-oriented databases}
-Document-oriented databases are designed for storing, retrieving, and managing document-oriented data, also known as semi-structured data. 
-These systems are designed around an abstract notion of a Document identified in the database via a unique key. 
+\paragraph{Document-oriented databases} Document-oriented databases are designed for storing, retrieving, and managing document-oriented data. These systems are designed around an abstract notion of a Document identified in the database via a unique key. 
 Document database typically offer a query language that allows the user to retrieve documents based on their content because they extract and index all kinds of meta-data and usually also the entire content of the documents. 
 Documents can be stored in many different ways such as JSON, BSON, YAML or XML.
 
 \noindent An example of this kind of database is MongoDB\footnote{\url{http://www.mongodb.org}} and Couchbase\footnote{\url{http://www.couchbase.com}}.
 
-\paragraph{Graph databases} 
-Graph databases are databases that uses graph structures with nodes, edges, and properties to represent.
-Persisted entities are represented by nodes. Each node maintains the information about the entity it represents by storing them into properties, while edges can be used to represent relationships among the entities.
+\paragraph{Graph databases}  Graph databases are databases that uses graph theory to represent the data.
+Persisted entities are represented by nodes; each node maintains the information about the entity it represents by storing them into properties, while edges can be used to represent relationships among the entities.
 
 \noindent An example of this kind of database is Neo4j\footnote{\url{http://neo4j.com}}.
 
@@ -91,14 +87,14 @@ Unstructured Data Query Language \cite{online:unql}, or UnQL (pronounced “Uncl
 \noindent After the project was started, and after some burst of activity, the project came to a hold. So it seems, that at least as a project UnQL has been a failure. 
 
 \subsection{Meta-model approaches}
-Another way that has been investigated in order to achieve interoparability,  is trying to abstract from the data model spotting common concepts in the data model of various NoSQL solutions, in order to define a general meta-model that can offer an common interface to store data.
+Another way that has been investigated in order to achieve interoparability,  is trying to abstract from the data model by spotting common concepts in the data model of various NoSQL solutions, in order to define a more general meta-model that can offer an common interface to store data.
 
 \subsubsection{Apache MetaModel}
 The aim of Apache MetaModel is to provide a common interface for discovery, exploration of metadata and querying of different types of data sources \cite{online:apache-metamodel}.
 
-\noindent The peculiarity of this project is that it does not only provide support for NoSQL database (such as CouchDB, MongoDB, Hbase, Cassandra and ElasticSearch) but also for relational databases (such as PostgreSQL MySQL, Oracle DB and SQL Server) and for various raw data format (such as JSON, XML and CSV files).
+\noindent The peculiarity of this project is that it does not only provide support for NoSQL database (such as CouchDB, MongoDB, Hbase, Cassandra and ElasticSearch) but also for relational databases (such as PostgreSQL, MySQL, Oracle DB and SQL Server) and even for various raw data format (such as JSON, XML and CSV files).
  
-\noindent The defined meta-model gives the ability to add data sources at run-time and provides a type-safe SQL-like API. An example for a table creation is reported in the code \ref{code:apache-metamodel-table}, the meta-model defines a different semantic for the concept of \textit{table} depending on the underlying storage technology. For example, for JDBC issues a CREATE TABLE statement to the database, for a CSV file it creates or overwrites the file and for MongoDB it creates a new collection in the MongoDB database.
+\noindent The defined meta-model gives the ability to add data sources at run-time and provides a type-safe SQL-like API. An example for a table creation is reported in the code \ref{code:apache-metamodel-table}, the meta-model defines a different semantic for the concept of \textit{table} depending on the underlying storage technology. For example, for JDBC it issues a CREATE TABLE statement to the database, for a CSV file, it creates or overwrites the file and for MongoDB, it creates a new collection in the MongoDB database.
 
 \begin{lstlisting}[language=Java, caption=Apache MetaModel example, label=code:apache-metamodel-table]
 // CREATE a table

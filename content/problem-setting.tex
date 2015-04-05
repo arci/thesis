@@ -2,7 +2,12 @@
 In this chapter we expose the motivations that lead us to conduct this work, in particular, we analyze the current problems in the NoSQL service implementation of the CPIM library and propose a solution to address them and, at the same time, increasing the number of NoSQL database supported by the library.
 \noindent Furthermore, we will discuss why we decided to include the possibility for the CPIM library users to be able to migrate and synchronize data, across databases, by means of a migration system called \textit{Hegira}.
 
-\section{CPIM NoSQL service}
+\section{CPIM library extension}
+Cloud Platform Independent Model (CPIM) \cite{thesis:cpim} is a Java library built in order to make Java developers able to abstract their application logic from the specific PaaS Provider on which the application will actually be deployed.
+
+
+
+\subsection{CPIM NoSQL service}
 The CPIM library uses various implementation of the JPA interface to ease the communication with different NoSQL databases:
 \begin{itemize}
 \item Google Datastore is supported by means of the Google JPA implementation around Datastore API;
@@ -48,7 +53,7 @@ The proposed solution is mainly about the integration of Kundera, a JPA complian
 \item the development of two brand new Kundera extensions, one for Google Datastore and one for Azure Tables.
 \end{itemize}
 
-\section{Hegira integration}
+\section{Data migration}
 NoSQL technologies do not offer a common querying language to interact with them, as SQL does for RDBMS. Furthermore, NoSQLs offer a simpler interface with respect to RDBMS and each of them exposes a proprietary API tailored to the specific database needs. This requires to interact with NoSQL databases at a lower level of abstraction, moving a good amount of developing effort toward the user.
 Given the amount of NoSQL solutions available nowadays \cite{online:nosql-database.org}, and this low-level approach in using such technologies, a company that want to adopt a NoSQL solution to manage its data, finds itself locked to the chosen technology. 
 For this reasons while NoSQL solutions can be appetible to industry, the high costs of application re-engineering and the necessity of investments on qualified personnel, disrupt the adoption of such technologies.
@@ -68,8 +73,13 @@ For this reasons while NoSQL solutions can be appetible to industry, the high co
   \label{fig:cpim-nosql}
 \end{figure}
 
-\newparagraph To mitigate those problems we want to extend the CPIM library to make it able to interact with \textit{Hegira} a migration system able to perform interoperable data migration and synchronization across column-based NoSQL databases \cite{paper:modaclouds-deliverable}. \textit{Hegira} is already able to migrate data offline, but in many cases this solution is not acceptable since this requires to turn off the application for a period of time that depends on the volume of data that needs to be migrated towards the new database. 
+\noindent However migrating data between database without causing application downtime brings several new problems such as data synchronization between the two involved systems.
+
+\subsection{Hegira integration}
+To mitigate those problems we want to extend the CPIM library to make it able to interact with \textit{Hegira} a migration system able to perform interoperable data migration and synchronization across column-based NoSQL databases \cite{paper:modaclouds-deliverable}. \textit{Hegira} is already able to migrate data offline, but in many cases this solution is not acceptable since this requires to turn off the application for a period of time that depends on the volume of data that needs to be migrated towards the new database. 
 Downtime costs and risks of data loss can be problematic so, \textit{Hegira} was extended to be able to perform a live-migration of the data by keeping them synchronized on the source and the destination database.
 This feature needs to be exploited at application level and thus we decided to embed it inside the CPIM NoSQL service, in order to make it as transparent as possible to the user.
 
 \noindent The CPIM library needs to be aware of the state of both the synchronization and migration systems and acts accordingly intercepting user operation and sending data manipulation queries (DMQ) to the migration system which is in charge of keeping the data consistent across the replicated databases.
+
+\noindent The result of such integration in the CPIM library will be the ability of the user to migrate data from a NoSQL storage to another, while the application is running, and still be able to read the data on the new system without modifying the application code

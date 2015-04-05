@@ -3,9 +3,7 @@ In this chapter we expose the motivations that lead us to conduct this work, in 
 \noindent Furthermore, we will discuss why we decided to include the possibility for the CPIM library users to be able to migrate and synchronize data, across databases, by means of a migration system called \textit{Hegira}.
 
 \section{CPIM library extension}
-Cloud Platform Independent Model (CPIM) \cite{thesis:cpim} is a Java library built in order to make Java developers able to abstract their application logic from the specific PaaS Provider on which the application will actually be deployed.
-
-
+The CPIM library achieve the objective of making a developer able to interact with many different services in the cloud. Due to modern application requirements in handling large volumes of data, CPIM should be extended, primarily in order to let it support more NoSQL technologies; indeed, the great diversity of the various NoSQL solutions makes curtains solutions more suitable than others in handling certain types of data. Hence, the possibility of choosing among many different NoSQL solution and, at the same time, be able to interact with them through a common interface, is an important feature to be added in CPIM. 
 
 \subsection{CPIM NoSQL service}
 The CPIM library uses various implementation of the JPA interface to ease the communication with different NoSQL databases:
@@ -16,10 +14,9 @@ The CPIM library uses various implementation of the JPA interface to ease the co
 \end{itemize}
 \noindent By choosing the cloud provider inside the \textit{configuration.xml}, the library knows, at run-time, which interface should be used for the service and this holds also for the NoSQL service. Hence to use Google Datastore as NoSQL database, Google must be selected as cloud provider.
 
-\noindent The aim of CPIM is to offer to the user a way of writing cloud application in a provider-independent fashion, to be able to migrate the application from a provider to another without the necessity of re-engineer the application. For the NoSQL service this is achieved by meas of the JPA interface that, beside the fact that is is not a standard for accessing NoSQLs, many projects came into play trying to bring the benefit of the JPA interface also in the NoSQL world.
+\newparagraph The aim of CPIM is to offer to the user a way of writing cloud application in a provider-independent fashion, to be able to migrate the application from a provider to another without the necessity of re-engineer the application. For the NoSQL service this is achieved by meas of the JPA interface that, beside the fact that is is not a standard for accessing NoSQLs, many projects came into play trying to bring the benefit of the JPA interface also in the NoSQL world. 
 
-\newparagraph As discussed in chapter \ref{chap:sota}, the use of the JPA interface in defining a common interface for accessing NoSQL databases is a solution widely adopted, thus the choice of using the JPA as abstraction layer for the NoSQL service in the CPIM is a valuable choice. 
-However the current implementation have significant problem:
+\noindent However the current implementation have significant problems:
 \begin{enumerate}
 \item[\textbf{P.1}] the application code written to interact with the NoSQL service is not interoperable and thus, the user is required to modify the application code in order to be able to move the application to a different cloud provider.  
 \end{enumerate}
@@ -36,21 +33,17 @@ However the current implementation have significant problem:
 \newparagraph As regards \textbf{L.1} and \textbf{L.2}, we would like to  give to the user the ability to persist data in the database that best fit his requirements. For example if the user application will generate data that should be processed with Hadoop, the best solution is to store those data in an HBase instance since its integrate easily in Hadoop. Therefore we want to make the user able to persist different entities in different datastore based on his needs and without the limitation of a specific NoSQL technology.
 
 \subsection{Proposed solution}
-The proposed solution is mainly about the integration of Kundera, a JPA compliant ORM for NoSQL databases, as unique persistence layer for the NoSQL service. This integration will be useful to solve the problems and mitigte the limitation outlined as follow:
+The proposed solution is mainly about the integration of Kundera, a JPA compliant ORM for NoSQL databases, as unique persistence layer for the NoSQL service. 
+
+\noindent There are many reasons why we choose to use Kundera among the other available solutions in the scenario of NoSQLs common language. The main reason is that Kundera, through the use of the JPA interface will permit to the user to handle the complexity of NoSQL databases with expertise he already uses for SQL systems. Furthermore Kundera is in the field from 2010 and thus have a big and active community, built in many years of activity, and has been used successfully in some production environment. Furthermore its implementation of \textit{polyglot persistency} permits the development of complex applications that can potentially use many different NoSQL technologies at once.
+
+\noindent The only drawback of using Kundera is that it does not support any of the NoSQL datastore currently supported by CPIM. Fortunately Kundera have, as its primary goal, to make the library as much extensible as possible, to let developers build their own client around new NoSQL technologies. The solution will thus be to contribute to Kundera as an open source project by developing two new Kundera clients, one for support Google Datastore and the other to support Azure Tables.
+
+\newparagraph This integration will be useful to solve the problems and mitigate the limitation outlined as follow:
 \begin{itemize}
 \item since Kundera will be the unique persistence provider for the library we will relay only on one implementation of the JPA interface overtaking in this way, the problem \textbf{P.1}, related to different interpretation of the JPA annotation, and thus achieving complete portability of the code of the application model since no code modifications are required to work with different NoSQL database through Kundera;
 \item the integration of Kundera permits a redesign of the NoSQL service aimed to decouple the chosen PaaS provider and the NoSQL technology overcoming limitation \textbf{L.1}, by giving to the user the ability of deciding which technology is more suitable for his needs. Furthermore exploiting the polyglot-persistence provided by Kundera, the user will be able to persist entities within different NoSQL databases at the same time, simply by defining accordingly the persistence unit in the \textit{persistence.xml} file;
 \item choosing Kundera as persistence layer we can actually take advantage of the already developed extension for many different NoSQL databases, adding as a result the support of those database to CPIM, and thus overcoming the limitation \textbf{L.2}.
-\end{itemize}
-
-\noindent There are many reasons why we choose to use Kundera as persistence provider for the NoSQL service of the CPIM library. The main reason is that Kundera, through the use of the JPA interface will permit to the user to handle the complexity of NoSQL databases with expertise he already uses for SQL systems. Furthermore Kundera is in the field from 2010 and thus have a big and active community, built in many years of activity, and has been used successfully in some production environment.
-
-\noindent The only drawback is that Kundera does not support any of the NoSQL datastore currently supported by CPIM. Fortunately Kundera have, as its primary goal, to make the library as much extensible as possible, to let developers build their own client around new NoSQL technologies. The solution will thus be to develop the needed extensions for Kundera.
-
-\newparagraph The work on the CPIM NoSQL service will thus require:
-\begin{itemize}
-\item the integration of Kundera as the unique persistence provider in the NoSQL service of CPIM;
-\item the development of two brand new Kundera extensions, one for Google Datastore and one for Azure Tables.
 \end{itemize}
 
 \section{Data migration}

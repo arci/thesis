@@ -1,7 +1,8 @@
 \section{Introduction}
 In this chapter are reported the evaluation performed for the Kundera extensions.
 To support the implementation of the Kundera extensions, as described in chapter \ref{chap:kundera}, we have adopted a test driven approach; in section \ref{sec:crud}, those tests are described in detail.
-\noindent We will provide, in section \ref{sec:performance}, a comparison of the performance of the developed Kundera extensions in terms of throughput and latency. To measure those metrics we have used Yahoo Cloud Serving Benchmark (YCSB) \cite{paper:ycsb} since it was already used by the Kundera team to test the other implemented Kundera clients and since we wanted to compare our results to their.
+\noindent We will provide, in section \ref{sec:performance}, a comparison of the performance of the developed Kundera extensions in terms of throughput and latency. Tests has been performed to verify if the use of Kundera and its clients adds an acceptable overhead with respect to the use of low level API.
+To execute the benchmarks we have used Yahoo Cloud Serving Benchmark (YCSB) \cite{paper:ycsb} mainly because it was already used by the Kundera team to test the other implemented Kundera clients and since we wanted to compare our results with theirs.
 
 \section{Test CRUD operations}
 \label{sec:crud}
@@ -10,7 +11,6 @@ The first step was to write the required JUnit tests, one for each feature we ha
 
 \newparagraph We primarily wanted to achieve code portability of the application model classes, this should be exploited by the usage of the JPA interface but, as stated in chapter \ref{chap:ps}, there were problems in the old NoSQL service implementation relatively to this point.
 Secondary we want to be sure that, while entities are persisted in the underlying NoSQL database, they can be restored without any loss of information and thus, the mapping between entities and the NoSQL database data model, behaves correctly in both verses.
-Hence, the extensions cannot be tested directly by testing single methods behavior of the extensions classes, this will for sure test the correctness of the operations but, since Kundera clients are not obliged to follow a rigid structure for their code in the implementation of the required interfaces, tests written for a client are not guaranteed to run correctly for another one. 
 
 \noindent The approach we adopted was to define a single test suite, that will test each  of the features we planned to support, by interacting directly with Kundera through the JPA interface. This makes us able to use the same tests independently of the specific extension and, thus, testing the correctness of CRUD operations through the JPA interface and the portability of the code by means of tests portability.
 
@@ -97,8 +97,10 @@ The YCSB Client abstracts from the specific database system under test through t
 \item an adapter for Google Datastore through the developed Kundera extension
 \item an adapter for Azure Tables low-level API
 \item an adapter for Azure Tables through the developed Kundera extension
+\item an adapter for HBase low-level API
+\item an adapter for HBase through the developed Kundera extension
 \end{itemize}
-\noindent Furthermore we have re-written the adapters for HBase both the Kundera version and the low-level API version. This has been necessary since the YCSB adapter for HBase, written by the Kundera team, were outdated and was not working anymore with the latest versions of HBase.
+\noindent Even if the two adapters for HBase were already been developed by the Kundera team, they were outdated and therefore we had to rewrite them. The Kundera adapter for HBase was outdated since it was using Kundera 2.6 while, as we write, Kundera 2.16 is available; the low level API adapter was outdated too and was not functioning with the latest versions of HBase.
 
 \subsubsection{Kundera adapters}
 Regarding the Kundera version of the adapters, the same structure has been kept for all three databases. The \texttt{EntityManagerFactory} is instantiated at construction time since this operation causes Kundera to initialize all its internal structure; an instance of the entity manager is created in the \texttt{init} method since, the initialization of the \texttt{EntityManager} causes the initialization of the specific Kundera client; in this way each thread will have its own instance of the \texttt{EntityManager} with which interacting.
@@ -202,7 +204,7 @@ The tests for Azure Tables have been executed over a remote storage instance dep
 \noindent Also for Azure Tables, as for Google Datastore, we have observed a throughput loss of the Kundera adapter with respect to the low level API version and the higher latency. The loss in performance in this case is not as much as in Google Datastore and thus also here we can conclude that the overhead introduced by Kundera and the Azure Tables extension, measured in terms of latency and throughput, is very low compared to use of the low-level API, both for the read and for the write operation.
 
 \subsubsection{HBase tests}
-HBase test should have been executed over an instance of HBase, in full distributed configuration, in the cloud of Politecnico di Milano but due to a failure of the host machines the tests could not be performed.
+HBase test should have been executed over an instance of HBase, in full distributed configuration, in the cloud of Politecnico di Milano but, due to a failure of the host machines, the tests could not be performed.
 
 \noindent In figure \ref{fig:hbase-test-read} and \ref{fig:hbase-test-write} are reported the results obtained while testing the HBase adapters. They have been executed on a workload of 1.000 entities in a locally installed instance of HBase.
 
@@ -233,15 +235,13 @@ HBase test should have been executed over an instance of HBase, in full distribu
 \noindent Even if the tests for HBase has been made on a local instance of the database, they show a similar behavior with respect to the tests executed over the network for Google Datastore and Azure Tables.
 
 \subsection{Discussion}
-\label{sec:discussion}
 The main objective of our tests was to guarantee that the loss of performance, between the Kundera version of the client and the client written with direct use of the low-level API, was minimum or at least not as much to discourage the use of the JPA approach for NoSQL databases.
 
-\noindent Since Kundera provides a set of benchmark results obtained through YCSB, and since they show an acceptable performance loss, our objective included the comparison of our results with the results obtained by Kundera. Kundera executes its tests on instances of the databases that reside on a local testing machine, since it is meaningless for us to test the developed extensions against their local emulator due to the fact that Google Datastore and Azure Tables are NoSQL databases developed for DaaS, we cannot directly compare our results with the Kundera ones.
+\noindent Since Kundera provides a set of benchmark results obtained through YCSB, and since they show an acceptable performance loss, our objective included the comparison of our results with the results obtained by Kundera. However Kundera executes its tests on instances of the databases that reside on a local testing machine, since it is meaningless for us to test the developed extensions against their local emulator due to the fact that Google Datastore and Azure Tables are NoSQL databases developed for DaaS, we cannot directly compare our results with the Kundera ones. The idea was thus to replicate the results obtained by the Kundera team for HBase, executing the tests no more on a local instance of HBase but on a remote instance that deployed in the Politecnico di Milano cloud. Unfortunately the comparison of the results cannot be done due to a malfunctioning of the HBase intance installed in the Politecnico di Milano cloud.
 
-\noindent The idea was to replicate the results of Kundera on HBase, executing the tests, no more on a local instance of HBase but on a remote instance that was deployed in the Politecnico di Milano cloud. Unfortunately the comparison of the results cannot be done due to malfunctioning of the HBase cluster on the Politecnico di Milano cloud.
+\newparagraph Even if the comparison between our results and the Kundera results could not be performed, we have notice, while executing the tests for HBase adapters locally on the development machine, that with respect to the tests on Google Datastore and Azure Tables, executed over the network, throughput drops significantly.
 
-\newparagraph As can be seen from comparing the values of the throughput of HBase and those of the tests on Google Datastore and Azure Tables, while tests are executed over the network, throughput drops significantly.
-YCSB tries to go as fast as possible in issuing operation on the database instance trying to reach the maximum throughput the system can afford. The cause of the throughput drop is due to the high number of TCP connections that need to be maintained during the benchmark execution; in fact, each requests needs a TCP connection to be opened and maintained, at least until the response comes from the server. When executing the tests with 100.000 entities this becomes the bottleneck for the benchmark.
+\noindent YCSB tries to go as fast as possible in issuing operation on the database instance trying to reach the maximum throughput the system can afford. The cause of the throughput drop is due to the high number of TCP connections that need to be maintained during the benchmark execution; in fact, each requests needs a TCP connection to be opened and maintained, at least until the response comes from the server. When executing the tests with 100.000 entities this becomes the bottleneck for the benchmark.
 
 \noindent Similar considerations hold for the latency, the values reported for Google Datastore and Azure Tables, include the round trip time of the requests and furthermore it depends on the state of network congestion. By looking at the network consumption data reported by the operating system of the testing machine, we estimated that the average round trip time, during the tests, was of 56,29 ms.
 

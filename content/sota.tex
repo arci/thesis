@@ -169,10 +169,13 @@ TypedQuery<Employee> query = em.createQuery("SELECT e FROM Employee e");
 JPQL was then introduced as part of the JPA to significantly extend EJB QL, thus eliminating many of its weaknesses, while preserving backward compatibility.
 
 \subsubsection{Kundera}
-Kundera is an open source project started by \textbf{Impetus Inc.} an India based tech company active in Big Data and Cloud engineering.
+Kundera \cite{online:kundera} is an open source project started by \textbf{Impetus Inc.} an India based tech company active in Big Data and Cloud engineering.
 Kundera provides a JPA 2.1 compliant object-datastore mapping library for NoSQL datastores leveraging the existing NoSQL database libraries, and builds on top of them a wrapper compliant to the JPA specifications.
 
 \noindent The main advantage of the Kundera approach is that, using a well known and defined interface, developers do not need to learn a new framework, furthermore, the use of the JPA interface permits code re-usability since each annotated entity and each JPQL query will work independently from the underlying technology actually used.
+
+\noindent Kundera also implements the possibility of \textit{polyglot persistency} that allows the user to use different NoSQL technology at once by using different persistence units.
+Furthermore Kundera provides what they call \textit{Client Extension Framework}, which allows developers to build their own Kundera clients over new NoSQL technologies extending thus the support of Kundera to those technologies.
 
 \subsubsection{Spring-data}
 Spring Data \cite{online:spring-data} is a high level \textbf{SpringSource} project whose purpose is to unify and ease the access to different kinds of persistence stores, both relational database systems and NoSQL data stores. It is an umbrella project which contains many sub-projects that are specific to a given database. The database currently supported are: MongoDB, Redis, Neo4j, CouchBase, Elasticsearch, Cassandra, DynamoDB and JDBC support.
@@ -211,6 +214,8 @@ public interface UserRepository extends MongoRepository<User, String> {
 }
 \end{lstlisting}
 
+\noindent While this approach reduces drastically the amount of code needed to execute CRUD operations on the underlying technology, it requires code modification in case a user wants to change its storage technology since each supported technology have its own mapping as explained previously and shown in figure \ref{code:spring-object-mapping}.
+
 \subsubsection{PlayORM}
 PlayORM \cite{online:playorm} is an open-source library developed by \textbf{Buffalo Software} with the aim of speeding up developer productivity of developing applications which interfaces with NoSQL databases. Currently supports Cassandra, MongoDB and HBase. 
 
@@ -231,6 +236,8 @@ public class Employee {
     ...
 }
 \end{lstlisting}
+
+\noindent PlayORM, while correctly notice that JPA has not been thought to be used for NoSQLs, take too much inspiration from it but re-defines its annotations completely but, in many cases, without changing their semantic at all.
 
 \subsubsection{Apache Gora}
 The aim of Apache Gora \cite{online:apache-gora} is to extend the concept of Object Relational Mapping tools (ORM) to introduce Object-to-Datastore Mapping where the underlying technological implementations rely mostly on non-relational data models. In essence Gora provides a storage abstraction for NoSQL technologies. 

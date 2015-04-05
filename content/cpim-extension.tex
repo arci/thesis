@@ -81,18 +81,32 @@ A solution to this would be to rewrite the CPIM Queue service for Azure, using t
 
 \section{Hegira integration}
 \label{sec:hegira}
-To support data synchronization and migration, the NoSQL service was further modified to integrate \textit{Hegira} \cite{thesis:marco}. An high level schema of the interaction we want to achieve is reported in figure \ref{fig:high-level-interaction}
+To support data synchronization and migration, the NoSQL service was further modified to integrate \textit{Hegira} \cite{thesis:marco}. We have defined the interaction mechanism required to make the CPIM library able to communicate with \textit{Hegira} and summarized it in the high level schema reported in figure \ref{fig:high-level-interaction}.
 
 \begin{figure}[tbh]
   \centering
-  \includegraphics[width=12cm]{images/high_level_interaction}
+  \includegraphics[width=11cm]{images/high_level_interaction}
   \caption{High level schema of interaction}
   \label{fig:high-level-interaction}
 \end{figure} 
 
-\noindent In that schema, \textit{dashed} lines represents the normal flow of data from the user application to the local database, the \textit{filled} ones represents the behavior in case a migration is in process.
+\newparagraph  The user interacts with the NoSQL service of the CPIM library by using the JPA interface by expressing operations on the data though the \texttt{EntityManager}, for CRUD operations, or through JPQL queries. 
 
-\noindent The CPIM library needs to connect to the migration system in order to understand when a migration is in progress and in that case only bypass the interaction with Kundera (for data manipulation operations) by building a string representation of the user query as a SQL statement. Once this SQL generated string is sent to the \textit{Hegira} commit log that pop the statements and translate them into a datastore-specific operation.
+\noindent The normal operations flow is reported in the schema of figure \ref{fig:high-level-interaction} with \textbf{dashed} lines. In this scenario, user operations are delegated by the CPIM library to Kundera that, ultimately, interacts with the underlying database using the appropriated client.
+
+\noindent In the same figure, with \textbf{filled} lines, is reported the operation flow that needs to be followed when a migration is in process; user operation are intercepted and sent to the commit log of \textit{Hegira} from which are then pulled and written asynchronously on both the destination database and the source database.
+ 
+\noindent The CPIM library needs to connect to the migration system in order to understand when a migration is in progress to be able to choose the right destination of the user operations. Data manipulation operation, such as UPDATE and DELETE queries, and CRUD operations, are intercepted, translated in an equivalent SQL operation and sent to the commit log of \textit{Hegira}.
+The process is summarized in figure \ref{fig:flow-chart} and described in detail in section \ref{sec:intercept-user-operations}.
+
+\begin{figure}[tbh]
+  \centering
+  \includegraphics[width=12cm]{images/flow_chart}
+  \caption{Interaction flow chart}
+  \label{fig:flow-chart}
+\end{figure} 
+
+\noindent While data manipulation operations are intercepted, read operations, such as SELECT queries, are ignored and thus also during a migration, they are issued on the underlying databases by delegating them to Kundera.
 
 \subsection{Migration Manager}
 Interaction with the migration system is handled primarily by the \texttt{MigrationManager} class which follows a state pattern represented in the class diagram \ref{fig:migration-class-diagram}. 
@@ -114,6 +128,7 @@ Interaction with the migration system is handled primarily by the \texttt{Migrat
 \end{figure} 
 
 \section{Intercept user operations}
+\label{sec:intercept-user-operations}
 The first operation that needs to be analyzed is whether it is possible to intercept user operations in a way that is completely transparent to the user.
 The operations that we want to intercept are the insert, update and delete operations, in that, they are the operations that alter data and, thus, are the ones that the synchronization system needs to process.
 
@@ -257,15 +272,6 @@ Both the state of the \texttt{MigrationManager} and the value inside \texttt{ZKT
 
 \paragraph{HTTP-based client} In the case in which threads are not supported by the cloud provider (for example on PaaS), the client version that is instantiated (by looking at the configuration) is \texttt{ZKHttp} which uses the API-caller added to the \texttt{zkWrapper} library.
 Since no listener can be register to be asynchronously notified of a change in the synchronization state, each call of the \texttt{MigrationManager} to the method \texttt{isSynchronizing()} will perform an API call to the remote server, which will return the state of the synchronization system.
-
-\newparagraph Before focusing on the statements building, it may be useful to visualize the interaction so far presented. An high-level flow chart is reported in figure \ref{fig:flow-chart}.
-
-\begin{figure}[tbh]
-  \centering
-  \includegraphics[width=13.5cm]{images/flow_chart}
-  \caption{Interaction flow chart}
-  \label{fig:flow-chart}
-\end{figure} 
 
 \section{Build statements from user operations}
 \label{sec:statements}
@@ -432,7 +438,7 @@ The pair \textless\textit{column family}, \textit{key}\textgreater{} is sufficie
 \renewcommand{\arraystretch}{1.4}
 \begin{tabular}{lcc}
 \hline
-\textbf{General concept} & \textbf{Datastore} & \textbf{Azure Table}\\ 
+\textbf{General concept} & \textbf{Datastore} & \textbf{Azure Tables}\\ 
 \hline\hline
 Column Family & Kind & partition-key \\
 \hline
@@ -454,11 +460,11 @@ Join tables require particular care; Kundera does not provide the class of the e
 To be more consistent, and to apply the newly defined identifier pattern (\texttt{kind\textunderscore key-identifier}) even for join tables, a map is maintained in the client and built inspecting Kundera meta-data, to keep track of which entity classes are involved in which many to many relationship.
 
 \paragraph{Azure Tables} The Azure Tables extension has been modified too to reflect the newly defined standard for relationships. In Azure Tables relationships were already being saved as \texttt{partition-key\textunderscore row-key} due to the lack of a class similar to \texttt{Key} for Datastore that encapsulate them. The actual problem here is that user can manually handle the partition-key, but it is not a possibility that can be guaranteed anymore since, if an entity is persisted as \texttt{partition-key\textunderscore row-key}, the \textit{partition-key}, if read by the Datastore extension, will be interpreted as a \textit{Kind}.
-Since the \textit{Kind} in Datastore extension is the entity table name, it has been decided to lock the Azure Table \textit{partition-key} to the table name, so that the user cannot decide on its own, since this will break the interoperability of data.
+Since the \textit{Kind} in Datastore extension is the entity table name, it has been decided to lock the Azure Tables \textit{partition-key} to the table name, so that the user cannot decide on its own, since this will break the interoperability of data.
 
-\noindent The same discussion for the join tables previously made for Datastore , also applies for the Azure Table extension.
+\noindent The same discussion for the join tables previously made for Datastore , also applies for the Azure Tables extension.
 
 \section{Summary}
-In this chapter has been rapidly described the CPIM structure and the architecture of the NoSQL service before this work. Then it has been described how it was possible to integrate Kundera as unique persistence provider in the NoSQL service together wit the problems encountered in the process.
+In this chapter has been described the CPIM structure and the architecture of the NoSQL service before this work. Then has been described how it was possible to integrate Kundera as unique persistence provider in the NoSQL service together wit the problems encountered in the process.
 
 \noindent From section \ref{sec:hegira} has been described the general interaction we wanted to build to make CPIM and Hegira communicate. Then the architecture and the design choices operated in order to develop such interaction, were introduced and described.

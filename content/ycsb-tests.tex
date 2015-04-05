@@ -4,11 +4,11 @@ In this appendix is descried the required procedure to build the benchmark proje
 \section{Preliminary operations}
 In order to build the benchmark project, (available at \url{https://github.com/Arci/kundera-benchmark}) some libraries needs to be downloaded since are not available in any maven repository:
 \begin{itemize}
-\item Azure Table extension\\ \url{https://github.com/Arci/kundera-azure-table}
+\item Azure Tables extension\\ \url{https://github.com/Arci/kundera-azure-table}
 \item GAE Datastore extension \\\url{https://github.com/Arci/kundera-gae-datastore}
 \end{itemize}
 
-\noindent The Azure Table extension tests to run requires a reachable storage emulator on Windows so if this is not possible, skip tests by running \texttt{mvn clean install -DskipTests}.
+\noindent The Azure Tables extension tests to run requires a reachable storage emulator on Windows so if this is not possible, skip tests by running \texttt{mvn clean install -DskipTests}.
  
 \noindent Tests for the Datastore extension can be executed without any configuration as they are executed thought Google in-memory Datastore stub.
 
@@ -31,9 +31,9 @@ com.yahoo.ycsb.Client -t -db DATABASE-ADAPTER-CLASS-TO-USE
 
 \newparagraph  Available adapter classes are:
 \begin{itemize}
-\item \texttt{it.polimi.ycsb.database.AzureTableClient} for Azure Table;
+\item \texttt{it.polimi.ycsb.database.AzureTableClient} for Azure Tables;
 \item \texttt{it.polimi.ycsb.database.DatastoreClient} for GAE Datastore;
-\item \texttt{it.polimi.ycsb.database.KunderaHBaseClient} for Hbase.
+\item \texttt{it.polimi.ycsb.database.KunderaHBaseClient} for HBase.
 \end{itemize}
 
 \subsection{Property files}
@@ -47,7 +47,7 @@ As can be seen from the command, a property file must be specified. Properties f
 \item \texttt{password} (\textit{required}), can be omitted if tests are against localhost.
 \end{itemize}
 
-\paragraph{Azure Table} The available properties are:
+\paragraph{Azure Tables} The available properties are:
 \begin{itemize}
 \item \texttt{emulator} (\textit{optional}) [true\textbar false];
 \item \texttt{account.name} (\textit{required}) if not using emulator, available from azure portal;
@@ -56,7 +56,7 @@ As can be seen from the command, a property file must be specified. Properties f
 \end{itemize}
 \noindent If \texttt{emulator} is set to \textit{true} the remaining properties are ignored.
 
-\paragraph{Hbase}
+\paragraph{HBase}
 The properties must be configured inside the adapter class because, to be more accurate w.r.t. the Kundera client, connection cannot be done in the \texttt{init()} method. 
 
 \noindent The properties can be set modifying the following constants:
@@ -67,7 +67,7 @@ The properties must be configured inside the adapter class because, to be more a
 \item \texttt{zookeeper.port}, the node port for \texttt{hbase.zookeeper.property.clientPort}.
 \end{itemize}
 
-\noindent Since property file is not needed for Hbase, it does not need to be specified while running the benchmarks.
+\noindent Since property file is not needed for HBase, it does not need to be specified while running the benchmarks.
 
 \section{Run tests for Kundera version}
 \label{appendix:ycsb-kundera}
@@ -93,4 +93,4 @@ In the \textit{persistence.xml} file each persistence unit must be configured to
 
 \noindent The possible configurations are described in the appendix \ref{app:kconfig}.
 
-\noindent Hbase configuration make use also of a datastore specific property file \texttt{hbase-properties.xml} in which can be configured the value for \texttt{hbase.zookeeper.quorum} and \texttt{hbase.zookeeper.property.clientPort}.
+\noindent HBase configuration make use also of a datastore specific property file \texttt{hbase-properties.xml} in which can be configured the value for \texttt{hbase.zookeeper.quorum} and \texttt{hbase.zookeeper.property.clientPort}.

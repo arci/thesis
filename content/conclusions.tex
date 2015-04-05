@@ -1,16 +1,17 @@
-This work presented an approach that allow the users of the CPIM library to interact with different NoSQL solution through a common interface, identified in the JPA interface. This was possible by exploiting the functionalities of Kundera, a JPA compliant ORM built for NoSQL databases.
+This work presented an approach of interacting with many different NoSQL databases through the CPIM library and the integration of the migration and synchronization system \textit{Hegira}.
 
-\noindent In the state of the art analysis of chapter \ref{chap:sota}, NoSQL database has been presented as an alternative to RBDMS and, the necessity of a common interface to communicate with different NoSQL solutions has been highlighted, while presenting the different solutions available in this direction.
+\newparagraph The CPIM library has been modified in order to get rid of the previous implementation of the NoSQL service that was not able to guarantee full portability of the application code due to the numerous JPA implementation used to support different NoSQL databases. This work have made order in the CPIM library and added the ability for the users to interact with numerous different NoSQL solution through a common interface, identified in the JPA interface, thanks to Kundera, an open source, JPA compliant ORM for NoSQL databases.
 
-\noindent Chapter \ref{chap:ps} provide a detailed description of the motivation that lead to the necessity of modifying the NoSQL service of the CPIM library and to the decision of integrating the migration and synchronization system \textit{Hegira} as part of the NoSQL service.
+\noindent Furthermore have been produced two brand new clients for Kundera contributing thus to the project by adding the support for Google Datastore and Azure Tables. The developed extensions has been tested in terms of throughput and latency in order to verify that the overhead added by Kundera and by its clients was not destructive for performance with respect to the use of low level API for interacting with the NoSQL databases.
 
-\noindent In Chapter \ref{chap:kundera} has been described what Kundera is, its architecture and, has been descried in detail, the development process that lead to the two new Kundera extensions, the first one to support Google Datastore and the second one to support Azure Tables. The extensions has been developed as part of a more general work on the CPIM library, indeed the develop of those Kundera extension was aimed to maintain the CPIM support for Google Datastore and Azure Tables. Chapter \ref{chap:cpim} described in detail the work made on the NoSQL service of CPIM, which is about the integration of Kundera as the unique persistence provider, and the integration of \textit{Hegira} to support transparent data synchronization and migration.
+\noindent The results showed that, since no significant overhead is added to the low level API version of NoSQLs, the approach we propose is worth the little loss of performance due to the great benefit it brings in terms of code portability through the CPIM library and the ability of interacting with many different NoSQL databases with a unique and well known interface.
 
-\noindent Finally, chapter \ref{chap:eval} shows the performance tests executed over the developed Kundera extensions with respect to the use of the low-level API, using the YCSB framework. The results showed that the overhead introduced by Kundera, and by the client extension, in terms of operation throughput and latency, is absolutely acceptable to justify the benefit that the use of Kundera introduces.
-Furthermore, the chapter described \textit{Hegira-generator}, the application developed to generate data and testing the interaction with CPIM and \textit{Hegira}.
-
+\newparagraph The NoSQL service of CPIM library has been further modified to integrate the required logic for interacting with the migration and synchronization system \textit{Hegira}. This allows an user of the CPIM library 
+ 
 \newparagraph Possible future works should continue on both CPIM and Kundera. Indeed, CPIM needs to be updated to interacts with the latest version of the various cloud provider API and some components needs to be rewritten, as explained in section \ref{sec:cpim-problems} for the Queue service.
 
 \noindent Further work can also be done in intercepting the user queries, that are then sent to the migration system, supporting for example the \textit{criteria API} discussed in section \ref{sec:cpim-intercept-queries}.
+
+\noindent Some work can be made in solving the problems that have prevented us from replicating the YCSB tests for Hbase. In this way the results presented in this work can be compared with the results of the tests performed by the Kundera team on the other clients.
 
 \noindent Finally some work can be done in adding to Kundera the support for more NoSQL databases such as Dynamo DB.
